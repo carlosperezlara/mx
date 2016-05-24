@@ -1,7 +1,12 @@
 #ifndef __mxReconstruction_HH__
 #define __mxReconstruction_HH__
 
-#include "TMath.h"
+#include <vector>
+
+#include "mxHit.h"
+#include "mxParty.h"
+#include "mxCoalition.h"
+
 class mxGeometry;
 
 class mxReconstruction {
@@ -12,16 +17,17 @@ class mxReconstruction {
   void Fill( int idx, float ene);
   void Reset();
   void Make();
-  TClonesArray* GetCoalitions(int arm) {return fCoa[arm];}
+  //std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
   void SetVertex(float x, float y, float z) {fV[0]=x; fV[1]=y; fV[2]=z;}
+  void DumpStats();
 
  private:
   void Parties();
   void Coalitions();
 
-  TClonesArray *fHit[18];
-  TClonesArray *fPty[18];
-  TClonesArray *fCoa[2];
+  std::vector<mxHit*> fHit[18];
+  std::vector<mxParty*> fPty[18];
+  std::vector<mxCoalition*> fCoa[2];
   mxGeometry *fGeo;
   int fNHit[18];
   int fNPty[18];

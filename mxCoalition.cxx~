@@ -53,14 +53,14 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
   return *this;
 }
 //========
-float mxCoalition::Phi() {
+float mxParty::Phi() {
   // <phi>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSphi/fSgn;
 }
 //========
-float mxCoalition::Eta() {
+float mxParty::Eta() {
   // <eta>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;

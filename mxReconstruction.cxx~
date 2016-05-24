@@ -158,11 +158,9 @@ void mxReconstruction::Coalitions() {
         // check for allignments
         for(int inc=lyr-1; inc!=arm*9-1; --inc) {
 	  std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
-	  for(int np=0; np!=fNPty[inc]; ++np) {
-            pty = fPty[inc].at(np);
+	  for(int np=0; np!=fNPty[inc]; ++j) {
+            pty = fPty[inc].at(mp);
 	    if(pty->IsAssigned()) continue;
-	    phi = _phi( pty->X(), pty->Y() );
-	    eta = _eta( pty->X(), pty->Y(), Z[lyr] );
 	    float test = coa->Test( phi, eta );
 	    std::cout << "    ptyno " << np << " | test " << test << std::endl;
             if( test < 3)

@@ -1,12 +1,28 @@
 #include <cstdlib>
+#include <iostream>
+#include <fstream>
 
-#include "mxHit.h"
-#include "mxParty.h"
-#include "mxCoalition.h"
+#include "mxReconstruction.h"
 
 int main() {
-  mxHit *hit = new mxHit();
-  mxParty *pty = new mxParty();
-  mxCoalition *coa = new mxCoalition(0);
+  mxReconstruction *reco = new mxReconstruction();
+
+  std::ifstream input("input.dat");
+  int hits, idx;
+  float sgn;
+  for(;;) {
+    input >> hits;
+    if(!input.good()) break;
+    reco->Reset();
+    // reading event
+    for(int i; i!=hits; ++i) {
+      input >> idx >> sgn;
+      std::cout << idx << " " << sgn << std::endl;;
+      reco->Fill(i,i+10);
+    }
+    reco->Make();
+    reco->DumpStats();
+  }
+  input.close();
   return 0;
 }
