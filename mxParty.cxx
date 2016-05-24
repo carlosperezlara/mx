@@ -60,12 +60,13 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
   // filler
   if(fNHits>127) return;
   fHits[fNHits] = hit;
+  hit->SetAssigned(true);
   float sgn = hit->Signal();
-  fSx = fSx + x*sgn;
-  fSy = fSy + y*sgn;
-  fSxx = fSxx + x*x*sgn;
-  fSyy = fSyy + y*y*sgn;
-  fSxy = fSxy + x*y*sgn;
+  fSx += x*sgn;
+  fSy += y*sgn;
+  fSxx += x*x*sgn;
+  fSyy += y*y*sgn;
+  fSxy += x*y*sgn;
   ++fNHits;
   fSgn += sgn;
 }
@@ -81,7 +82,7 @@ float mxParty::Y() {
   // <y>
   if( fNHits<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
-  return fSx/fSgn;
+  return fSy/fSgn;
 }
 //========
 float mxParty::Test(float nx, float ny) {
