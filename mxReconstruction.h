@@ -20,6 +20,7 @@ class mxReconstruction {
   //std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
   void SetVertex(float x, float y, float z) {fV[0]=x; fV[1]=y; fV[2]=z;}
   void DumpStats();
+  void DumpParties();
 
  private:
   void Parties();

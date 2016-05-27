@@ -92,8 +92,10 @@ float mxParty::Test(float nx, float ny) {
   float cy = Y();
   float varX = Cov(0);
   float varY = Cov(1);
-  if(varX<1e-6) varX = 0.1; // prior
-  if(varY<1e-6) varY = 0.1; // prior
+  //if(varX<1e-6)
+  varX = 0.2*0.2*fNHits*fNHits; // prior
+  //if(varY<1e-6)
+  varY = 0.2*0.2*fNHits*fNHits; // prior
   float dx2 = (nx-cx)/varX*(nx-cx);
   float dy2 = (ny-cy)/varY*(ny-cy);
   return TMath::Sqrt( dx2 + dy2 );
