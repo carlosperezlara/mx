@@ -1,8 +1,6 @@
 #ifndef __mxChipStatus_HH__
 #define __mxChipStatus_HH__
 
-class PHCompositeNode;
-
 class mxChipStatus {
  public:
   mxChipStatus();
@@ -14,7 +12,7 @@ class mxChipStatus {
   int CellID(int);
   void Set(int,int);
   void Print();
-  void Read(PHCompositeNode*);
+  void Read(int mySVXMap[2][8][48]);
   void SetDebug(bool val) {fDebug=val;}
 
  protected:

@@ -1,14 +1,10 @@
 #include "mxChipStatus.h"
-#include "MpcExEventHeader.h"
-#include "PHCompositeNode.h"
-#include "getClass.h"
 
 #include <vector>
 #include <algorithm>
 #include <iostream>
 
 using namespace std;
-using namespace findNode;
 
 mxChipStatus::mxChipStatus() {
   fDebug = false;
@@ -31,23 +27,10 @@ void mxChipStatus::Set(int key, int val) {
   fData[key] = val;;
 }
 
-void mxChipStatus::Read(PHCompositeNode *top_node) {
+void mxChipStatus::Read(int mySVXMap[2][8][48]) {
   fSLock = false;
   fNLock = false;
   for(int k=0; k!=768; ++k) fCID[k] = -1;
-
-  //===================
-  // reading chipmap from header
-  MpcExEventHeader *mMpcExEventHeader = getClass<MpcExEventHeader>(top_node,"MpcExEventHeader");
-  if(!mMpcExEventHeader) return;
-  int mySVXMap[2][8][48]; // svxmap
-  for(unsigned int i=0; i!=mMpcExEventHeader->getCellIDsSize(); ++i) {
-    int arm = mMpcExEventHeader->getCellIDsArm(i);
-    int pkt = mMpcExEventHeader->getCellIDsPkt(i);
-    int svx = mMpcExEventHeader->getCellIDsSVXID(i);
-    mySVXMap[arm][pkt][svx] = mMpcExEventHeader->getCellIDsValue(i);
-  }
-  //===================
 
   //===================
   // obtaining cellIDs
@@ -123,3 +106,4 @@ void mxChipStatus::Read(PHCompositeNode *top_node) {
 }
 
 
+*/

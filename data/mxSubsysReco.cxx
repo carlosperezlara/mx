@@ -146,10 +146,28 @@ bool mxSubsysReco::PassEventCuts(PHCompositeNode* top_node) {
   fEvents->Fill(3);
 
   /////////////////
-  // tag problematic chips
+  // check ChipStatus
   mxChipStatus *myChpStatus = fCal->GetChpS();
-  myChpStatus->Read(top_node);
-  /////////////////
+  int mySVXMap[2][8][48]; // svxmap
+  for(unsigned int i=0; i!=mMpcExEventHeader->getCellIDsSize(); ++i) {
+    int arm = mMpcExEventHeader->getCellIDsArm(i);
+    int pkt = mMpcExEventHeader->getCellIDsPkt(i);
+    int svx = mMpcExEventHeader->getCellIDsSVXID(i);
+    mySVXMap[arm][pkt][svx] = mMpcExEventHeader->getCellIDsValue(i);
+  }
+  myChpStatus->Read(mySVXMap);
+  int nbpchn[64];
+  for(int i=0; i!=64; ++i) nbpchn[i] = 0;
+  for(int idx=0; idx!=768; ++idx)
+    if(myChpStatus->IsBad(idx)) {
+      fQAbadchp->Fill(idx);
+      int chn = idx/12;
+      ++nbpchn[chn];
+    } else {
+      fQAgoodchpcid->Fill( idx, myChpStatus->CellID(idx) );
+    }
+  for(int chn=0; chn!=64; ++chn)
+    fQAbadchpperchn(chn,nbpchn[chn]);
 
   return true;
 }
