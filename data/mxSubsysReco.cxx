@@ -226,7 +226,7 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
   /////////////////
 
   fRec->Make();
-  fRec->DumpStats();
+  //fRec->DumpStats();
   //fRec->DumpParties();
 
   // COINCIDENCE LOGIC

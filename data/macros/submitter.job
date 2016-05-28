@@ -1,0 +1,21 @@
+N = 296
+ID = $(Cluster).$(Process) 
+
+Universe       = vanilla
+Initialdir     = /phenix/mpcex/cperez/mxcode/mx/data/macros/
+
+Executable     = /bin/csh
+Arguments      = dorun.csh 0000454000_0000455000 $(Process)
+
+Notification   = Error
+Log            = log/$(FILE)_$(Cluster).log
+Output         = log/$(FILE)_$(ID).out
+Error          = log/$(FILE)_$(ID).err
+Requirements   = (CPU_Experiment == "phenix") && (MEMORY_LIMIT > 2000000) && (CPU_Speed >= 1)
+
+Priority       = +20
+GetEnv         = True
++Experiment    = "PHENIX"
++Job_Type      = "cas"
+
+Queue $(N)
