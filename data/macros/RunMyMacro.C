@@ -1,13 +1,14 @@
 #include "Run_MXRECO.C"
 
-void RunMyMacro(int nEvents=0,
-		int run=454808,
+void RunMyMacro(int qalevel=1,
+		int nEvents=1000,
+		int run=454947,
 		int seg=0) {
   TString runseg = Form("%010d-%04d",run,seg);
   TString p2p = "/gpfs/mnt/gpfs02/phenix/mpcex/online_production/run16_mpcex_mpcex/run_0000454000_0000455000/";
-  TString if0 = Form("%s/DST_EVE/DST_EVE_MPC-%s.root",p2p.Data(),runseg.Data());
-  TString if1 = Form("%s/DST_MPCEX_MB/DST_MPCEX_MB_run15pp_200GeV_MPCPlus_pro104-%s.root",p2p.Data(),runseg.Data());
-  TString if2 = Form("%s/DST_MPC_MB/DST_MPC_MB_run15pp_200GeV_MPCPlus_pro104-%s.root",p2p.Data(),runseg.Data());
+  TString if0 = Form("%s/DST_EVE/DST_EVE_run16_mpcex_mpcex-%s.root",p2p.Data(),runseg.Data());
+  TString if1 = Form("%s/DST_MPCEX/DST_MPCEX_run16_mpcex_mpcex-%s.root",p2p.Data(),runseg.Data());
+  TString if2 = Form("%s/DST_MPC/DST_MPC_run16_mpcex_mpcex-%s.root",p2p.Data(),runseg.Data());
 
   gSystem->Setenv("ODBCINI","/opt/phenix/etc/odbc.ini.mirror");
   gSystem->Load("libfun4all.so");
@@ -16,7 +17,7 @@ void RunMyMacro(int nEvents=0,
   gSystem->Load("libmpcex_interface.so");
   gSystem->Load("libmpcex_modules.so");
 
-  Run_MXRECO();
+  Run_MXRECO( qalevel, Form("out_%s",runseg) );
 
   Fun4AllServer *se = Fun4AllServer::instance(); 
   Fun4AllInputManager *in0 = new Fun4AllDstInputManager( "MYEVE", "DST", "TOP");
@@ -30,7 +31,7 @@ void RunMyMacro(int nEvents=0,
   se->fileopen( in2->Name(), if2.Data() );
   se->run(nEvents);
   se->End();
-  se->dumpHistos();
+  se->dumpHistos( Form("output_%d_%s.root",qalevel,runseg.Data()) );
   cout << "[ ALL DONE ]" << endl;
   gSystem->Exit(0);
 

@@ -1,5 +1,5 @@
-void Run_MXRECO(const char *out="output.root") {
-  gSystem->Load("libMX.so");
+void Run_MXRECO(int qa=1, const char *out="output.root") {
+  gSystem->Load("libMXphnx.so");
   Fun4AllServer *se = Fun4AllServer::instance(); //this lib was loaded upstream
 
   //recoConsts* rc = recoConsts::instance();
@@ -8,8 +8,8 @@ void Run_MXRECO(const char *out="output.root") {
   //SubsysReco *mpcreco = new MpcReco("MPCRECO");
   //se->registerSubsystem(mpcreco);
 
-  mxSubsysReco *mxReco = new mxsubsysReco("mpcex");
-  mxReco->QA(1);
+  mxSubsysReco *mxReco = new mxSubsysReco("mpcex");
+  mxReco->QA(qa);
   se->registerSubsystem(mxReco);
 }
 

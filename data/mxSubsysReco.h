@@ -19,19 +19,23 @@ class mxSubsysReco: public SubsysReco {
   virtual int InitRun(PHCompositeNode*);
   virtual int process_event(PHCompositeNode*);
   virtual int End(PHCompositeNode *topNode);
-  void QA(int level) {fQA=val;}
+  void QA(int level) {fQA=level;}
   void Debug() {fDebug=true;}
 
  protected:
+  bool PassEventCuts(PHCompositeNode*);
   bool fDebug;
   int fQA;
   mxCalibMaster *fCal;
   mxReconstruction *fRec;
 
-  // ChipCellID ===> ChipHealth // lvl1
+  TH1F *fEvents;
+
+  // EventQA ===> ChipHealth // lvl1
   TH1F *fQAbadchp;
   TH2F *fQAbadchpperchn;
   TH2F *fQAgoodchpcid;
+
   // RawSub ===> HotDead identification // lvl2
   TH2F *fQAadchi;
   TH2F *fQAadclo;

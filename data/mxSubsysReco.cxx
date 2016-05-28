@@ -23,10 +23,10 @@
 #include "TMpcExGeaHitContainer.h"
 #include "TMpcExGeaHit.h"
 
-#include "mxCalibMaster.h"
-#include "mxCalibDAu16.h"
-#include "mxCalibBase.h"
-#include "mxChipStatus.h"
+#include "../calibration/mxCalibMaster.h"
+#include "../calibration/mxCalibDAu16.h"
+#include "../calibration/mxCalibBase.h"
+#include "../calibration/mxChipStatus.h"
 
 #include "mxSubsysReco.h"
 
@@ -63,6 +63,12 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
   printf("mxSubsysReco::Init\n");
   Fun4AllServer *se = Fun4AllServer::instance();
 
+  Int_t bin[3] = {49152,200,200};
+  Double_t lim[3] = {-0.5,-0.5,-0.5};
+  Double_t liM[3] = {49151.5,199.5,199.5};
+  fEvents = new TH1F("mxSubsysReco_EVENTS","mxSubsysReco_EVENTS",10,-0.5,9.5);
+  se->registerHisto(fEvents);
+
   switch(fQA) {
   case(1):
     // frequency of locked chips
@@ -85,11 +91,11 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
     break;
   case(3):
     // hi lo correlation
-    fQAadchilo = new THnSparse("mxSubsysReco_adchilo","mxSubsysReco_adchilo;key;ADChi;ADClo",49152,-0.5,49151.5,200,-0.5,199.5,200,-0.5,199.5);
+    fQAadchilo = new THnSparseF("mxSubsysReco_adchilo","mxSubsysReco_adchilo;key;ADChi;ADClo",3,bin,lim,liM);
     se->registerHisto(fQAadchilo);
     // hi lo ratio
-    fQAadchilor = new THnSparse("mxSubsysReco_adchilor","mxSubsysReco_adchilor;key;ADChi/ADClo",49152,-0.5,49151.5,200,0.10);
-    se->registerHisto(fQAadchilo);
+    fQAadchilor = new TH2F("mxSubsysReco_adchilor","mxSubsysReco_adchilor;key;ADChi/ADClo",49152,-0.5,49151.5,200,0,10);
+    se->registerHisto(fQAadchilor);
     break;
   case(4):
     // hi adc pty
@@ -113,22 +119,43 @@ int mxSubsysReco::InitRun(PHCompositeNode* top_node) {
   return EVENT_OK; 
 }
 //====================================================
-int mxSubsysReco::process_event(PHCompositeNode* top_node) {
+bool mxSubsysReco::PassEventCuts(PHCompositeNode* top_node) {
   MpcExEventHeader *mMpcExEventHeader = getClass<MpcExEventHeader>(top_node,"MpcExEventHeader");
-  if(!mMpcExEventHeader) return ABORTEVENT;
+  if(!mMpcExEventHeader) return false;
+  fEvents->Fill(0);
 
   /////////////////
   // select single-buffered
-  if(mMpcExEventHeader->getStack() != 1) return ABORTEVENT;
+  if(mMpcExEventHeader->getStack() != 1) return false;
+  fEvents->Fill(1);
 
   /////////////////
-  // select appropriate PARtimes
+  // check PARtimes
+  bool badpar = false;
+  int par[16]; // stores partimes; one per packet
+  for(int i=0; i!=16; ++i) par[i] = mMpcExEventHeader->getPARSTTime(i);
+  for(int i=1; i!=8; ++i)  if(par[i]!=par[0]) badpar = true; // all south should have the same
+  if(badpar) return false;
+  for(int i=9; i!=16; ++i) if(par[i]!=par[8]) badpar = true; // all north should have the same
+  if(badpar) return false;
+  fEvents->Fill(2);
+  int corpar = TMath::Abs(par[8]-par[0]);
+  if(corpar>1) return false;
+  if(par[0]>28&&par[0]<48) return false;
+  if(par[8]>28&&par[8]<48) return false;
+  fEvents->Fill(3);
 
   /////////////////
   // tag problematic chips
-  //mxChipStatus *myChpStatus = fCal->GetChpS();
-  //myChpStatus->Read(top_node);
+  mxChipStatus *myChpStatus = fCal->GetChpS();
+  myChpStatus->Read(top_node);
   /////////////////
+
+  return true;
+}
+//====================================================
+int mxSubsysReco::process_event(PHCompositeNode* top_node) {
+  if(!PassEventCuts(top_node)) return ABORTEVENT;
 
   /////////////////
   // reading mpcex data
@@ -141,12 +168,12 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     TMpcExHit *raw_hit = (*itr);
     if(!raw_hit) continue;
     unsigned int key = raw_hit->key();
-    int arm = key/24576;
-    int pkt = (key%24576)/3072;
-    int chipmap = key%3072;
-    int svx = chipmap/64;
-    int idxsvx = arm*8*48 + pkt*48 + svx;
-    int layer = fGeo->LYR(key);
+    //int arm = key/24576;
+    //int pkt = (key%24576)/3072;
+    //int chipmap = key%3072;
+    //int svx = chipmap/64;
+    //int idxsvx = arm*8*48 + pkt*48 + svx;
+    //int layer = fGeo->LYR(key);
 
     // rejection of known detector problems
     // if(myChpStatus->IsArmLock(idxsvx)) continue;
@@ -162,7 +189,12 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     lo_adc -= fCal->GetPLMu()->Get(key); // subtracting its pedestal
     if(fQA==2) fQAadclo->Fill( key, lo_adc );
     //
-    if(fQA==4) fQAadchilo->Fill( key, hi_adc, lo_adc );
+    if(fQA==3) {
+      Double_t filla[3] = { key, hi_adc, lo_adc };
+      fQAadchilo->Fill( filla );
+      if((hi_adc>30)&&(hi_adc<150)&&(lo_adc>10))
+	fQAadchilor->Fill( key, hi_adc/lo_adc );
+    }
     //
   }
   /////////////////
