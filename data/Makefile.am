@@ -5,7 +5,7 @@ INCLUDES = -I$(includedir) -I$(OFFLINE_MAIN)/include -I$(ROOTSYS)/include
 SUBDIRS = 
 
 lib_LTLIBRARIES = \
-  libMXpnhx.la
+  libMXphnx.la
 
 noinst_HEADERS = \
   libMXphnxLinkDef.h

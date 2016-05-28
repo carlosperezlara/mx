@@ -19,8 +19,6 @@ class mxSubsysReco: public SubsysReco {
   virtual int InitRun(PHCompositeNode*);
   virtual int process_event(PHCompositeNode*);
   virtual int End(PHCompositeNode *topNode);
-  virtual int Reset(PHCompositeNode*) {fPub->Reset(); return 0;}
-  virtual int ResetEvent(PHCompositeNode* a) {return Reset(a);}
   void QA(int level) {fQA=val;}
   void Debug() {fDebug=true;}
 
@@ -34,17 +32,14 @@ class mxSubsysReco: public SubsysReco {
   TH1F *fQAbadchp;
   TH2F *fQAbadchpperchn;
   TH2F *fQAgoodchpcid;
-
   // RawSub ===> HotDead identification // lvl2
   TH2F *fQAadchi;
   TH2F *fQAadclo;
-
   // RawSub ===> HighLow calib // lvl3
   THnSparse *fQAadchilo;
   TH2F *fQAadchilor;
-
   // RawSub ===> Landau calibration // lvl4
-  TH2F *fQAadchipty;
+  TH2F *fQAadchipty; // + lvl2
 };
 
 #endif /* __mxSubsysReco_H__ */ 
