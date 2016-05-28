@@ -1,6 +1,7 @@
 //#include <stdlib>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "phMath.h"
 
@@ -9,6 +10,12 @@
 #include "mxParty.h"
 #include "mxCoalition.h"
 #include "mxReconstruction.h"
+
+struct GreaterSignal
+{
+  template<class T>
+  bool operator()(T const &a, T const &b) const { return a->Signal() > b->Signal(); }
+};
 
 //========
 mxReconstruction::mxReconstruction() {
@@ -116,7 +123,9 @@ void mxReconstruction::Fill(int idx, float sgn) {
 //========
 void mxReconstruction::Make() {
   // maker
+  for(int lyr=0; lyr!=18; ++lyr) std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
   Parties();
+  for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
   Coalitions();
 }
 //========

@@ -28,6 +28,9 @@
 #include "../calibration/mxCalibBase.h"
 #include "../calibration/mxChipStatus.h"
 
+#include "../pr/mxReconstruction.h"
+#include "../pr/mxParty.h"
+
 #include "mxSubsysReco.h"
 
 using namespace std;
@@ -46,7 +49,7 @@ mxSubsysReco::mxSubsysReco( const char* name ) :
   fDebug(NULL),
   fQA(0),
   fCal(NULL),
-  fRec(NULL)
+  fRec(new mxReconstruction())
 {
   printf("mcReco::CTOR\n");
 }
@@ -57,6 +60,7 @@ int mxSubsysReco::End(PHCompositeNode *topNode) {
 //====================================================
 mxSubsysReco::~mxSubsysReco() {
   if(fCal) delete fCal;
+  if(fRec) delete fRec;
 }
 //====================================================
 int mxSubsysReco::Init(PHCompositeNode* top_node) {
@@ -88,6 +92,9 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
     // lo raw adc
     fQAadclo = new TH2F("mxSubsysReco_adclo","mxSubsysReco_adclo;key;ADClo",49152,-0.5,49151.5,256,-0.5,255.5);
     se->registerHisto(fQAadclo);
+    // hi adc pty
+    fQAadchipty = new TH2F("mxSubsysReco_adchipty","mxSubsysReco_adchipty;key;ADChi",49152,-0.5,49151.5,236,-0.5,235.5);
+    se->registerHisto(fQAadchipty);
     break;
   case(3):
     // hi lo correlation
@@ -96,11 +103,6 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
     // hi lo ratio
     fQAadchilor = new TH2F("mxSubsysReco_adchilor","mxSubsysReco_adchilor;key;ADChi/ADClo",49152,-0.5,49151.5,200,0,10);
     se->registerHisto(fQAadchilor);
-    break;
-  case(4):
-    // hi adc pty
-    fQAadchipty = new TH2F("mxSubsysReco_adchipty","mxSubsysReco_adchipty;key;ADChi",49152,-0.5,49151.5,236,-0.5,235.5);
-    se->registerHisto(fQAadchi);
     break;
   }
   return EVENT_OK;
@@ -156,24 +158,26 @@ bool mxSubsysReco::PassEventCuts(PHCompositeNode* top_node) {
     mySVXMap[arm][pkt][svx] = mMpcExEventHeader->getCellIDsValue(i);
   }
   myChpStatus->Read(mySVXMap);
-  int nbpchn[64];
-  for(int i=0; i!=64; ++i) nbpchn[i] = 0;
-  for(int idx=0; idx!=768; ++idx)
-    if(myChpStatus->IsBad(idx)) {
-      fQAbadchp->Fill(idx);
-      int chn = idx/12;
-      ++nbpchn[chn];
-    } else {
-      fQAgoodchpcid->Fill( idx, myChpStatus->CellID(idx) );
-    }
-  for(int chn=0; chn!=64; ++chn)
-    fQAbadchpperchn(chn,nbpchn[chn]);
-
+  if(fQA==1) { // quality assurance for chips
+    int nbpchn[64];
+    for(int i=0; i!=64; ++i) nbpchn[i] = 0;
+    for(int idx=0; idx!=768; ++idx)
+      if(myChpStatus->IsBad(idx)) {
+	fQAbadchp->Fill(idx);
+	int chn = idx/12;
+	++nbpchn[chn];
+      } else {
+	fQAgoodchpcid->Fill( idx, myChpStatus->CellID(idx) );
+      }
+    for(int chn=0; chn!=64; ++chn)
+      fQAbadchpperchn->Fill( chn, nbpchn[chn] );
+  }
   return true;
 }
 //====================================================
 int mxSubsysReco::process_event(PHCompositeNode* top_node) {
   if(!PassEventCuts(top_node)) return ABORTEVENT;
+  fRec->Reset();
 
   /////////////////
   // reading mpcex data
@@ -201,12 +205,16 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     //
     int hi_adc = raw_hit->high(); // RAW ADC HIGH
     hi_adc -= fCal->GetPHMu()->Get(key); // subtracting its pedestal
-    if(fQA==2) fQAadchi->Fill( key, hi_adc );
-    //
     int lo_adc = raw_hit->low(); // RAW ADC LOW
     lo_adc -= fCal->GetPLMu()->Get(key); // subtracting its pedestal
-    if(fQA==2) fQAadclo->Fill( key, lo_adc );
+    float ene, minene;
+    ene = hi_adc; // FIXME!
+    minene = TMath::Abs(fCal->GetPHSg()->Get(key))*5;
+    if(ene>minene) fRec->Fill(key,ene);
+
     //
+    if(fQA==2) fQAadchi->Fill( key, hi_adc );
+    if(fQA==2) fQAadclo->Fill( key, lo_adc );
     if(fQA==3) {
       Double_t filla[3] = { key, hi_adc, lo_adc };
       fQAadchilo->Fill( filla );
@@ -217,8 +225,25 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
   }
   /////////////////
 
+  fRec->Make();
+  fRec->DumpStats();
+  //fRec->DumpParties();
+
   // COINCIDENCE LOGIC
-  //if(fQA==3) fQAadchipty->Fill( key, hi_adc );
+  if(fQA==2) {
+    vector<mxParty*> pty;
+    for(int lyr=0; lyr!=18; ++lyr) {
+      if(lyr==8||lyr==17) continue; // reserved for MPC
+      pty = fRec->GetParties( lyr );
+      for(unsigned int j=0; j!=pty.size()/4; ++j) { // loop over number of parties (first quartiles)
+	for(int k=0; k!=pty[j]->N(); ++k) { // loop over number of hits in party
+	  int key = pty[j]->GetHit(k)->Idx();
+	  float sgn = pty[j]->GetHit(k)->Signal();
+	  fQAadchipty->Fill( key, sgn );
+	}
+      }
+    }
+  }
 
   return EVENT_OK;
 }

@@ -17,7 +17,8 @@ class mxReconstruction {
   void Fill( int idx, float ene);
   void Reset();
   void Make();
-  //std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
+  std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
+  std::vector<mxParty*> GetParties(int lyr) {return fPty[lyr];}
   void SetVertex(float x, float y, float z) {fV[0]=x; fV[1]=y; fV[2]=z;}
   void DumpStats();
   void DumpParties();
