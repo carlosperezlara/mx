@@ -1,11 +1,11 @@
-#include "mxChipStatus.h"
-#include "mxChipStatus.cxx"
-#include "mxCalibBase.h"
-#include "mxCalibBase.cxx"
-#include "mxCalibMaster.h"
-#include "mxCalibMaster.cxx"
-#include "mxCalibDAu16.h"
-#include "mxCalibDAu16.cxx"
+#include "../mxChipStatus.h"
+#include "../mxChipStatus.cxx"
+#include "../mxCalibBase.h"
+#include "../mxCalibBase.cxx"
+#include "../mxCalibMaster.h"
+#include "../mxCalibMaster.cxx"
+#include "../mxCalibDAu16.h"
+#include "../mxCalibDAu16.cxx"
 
 void makepedtxt() {
   mxCalibDAu16 *cal = new mxCalibDAu16();
