@@ -11,11 +11,11 @@ noinst_HEADERS = \
   libMXphnxLinkDef.h
 
 include_HEADERS = \
-  ../mxGeometry.h \
-  ../mxHit.h \
-  ../mxParty.h \
-  ../mxCoalition.h \
-  ../mxReconstruction.h \
+  ../data/mxGeometry.h \
+  ../data/mxHit.h \
+  ../data/mxParty.h \
+  ../data/mxCoalition.h \
+  ../data/mxReconstruction.h \
   \
   ../calibration/mxCalibDAu16.h \
   ../calibration/mxCalibMaster.h \
@@ -24,11 +24,11 @@ include_HEADERS = \
   mxSubsysReco.h
 
 libMXphnx_la_SOURCES = \
-  ../mxGeometry.cxx \
-  ../mxHit.cxx \
-  ../mxParty.cxx \
-  ../mxCoalition.cxx \
-  ../mxReconstruction.cxx \
+  ../data/mxGeometry.cxx \
+  ../data/mxHit.cxx \
+  ../data/mxParty.cxx \
+  ../data/mxCoalition.cxx \
+  ../data/mxReconstruction.cxx \
   \
   ../calibration/mxCalibDAu16.cxx \
   ../calibration/mxCalibMaster.cxx \
@@ -47,11 +47,11 @@ libMXphnx_la_LIBADD = \
 
 # Rule for generating CINT dictionaries from class headers.
 MXphnx_Dict.C: \
-  ../mxHit.h \
-  ../mxParty.h \
-  ../mxCoalition.h \
-  ../mxGeometry.h \
-  ../mxReconstruction.h \
+  ../data/mxHit.h \
+  ../data/mxParty.h \
+  ../data/mxCoalition.h \
+  ../data/mxGeometry.h \
+  ../data/mxReconstruction.h \
   \
   ../calibration/mxCalibDAu16.h \
   ../calibration/mxCalibMaster.h \
