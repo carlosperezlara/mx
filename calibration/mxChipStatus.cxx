@@ -104,6 +104,3 @@ void mxChipStatus::Read(int mySVXMap[2][8][48]) {
 
   return;
 }
-
-
-*/
