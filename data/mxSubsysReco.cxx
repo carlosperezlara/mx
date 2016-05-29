@@ -203,9 +203,9 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     // 
     //
     //
-    int hi_adc = raw_hit->high(); // RAW ADC HIGH
+    float hi_adc = raw_hit->high(); // RAW ADC HIGH
     hi_adc -= fCal->GetPHMu()->Get(key); // subtracting its pedestal
-    int lo_adc = raw_hit->low(); // RAW ADC LOW
+    float lo_adc = raw_hit->low(); // RAW ADC LOW
     lo_adc -= fCal->GetPLMu()->Get(key); // subtracting its pedestal
     float ene, minene;
     ene = hi_adc; // FIXME!
