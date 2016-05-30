@@ -21,7 +21,8 @@ include_HEADERS = \
   ../calibration/mxCalibMaster.h \
   ../calibration/mxCalibBase.h \
   ../calibration/mxChipStatus.h \
-  mxSubsysReco.h
+  mxSubsysReco.h \
+  srTest.h
 
 libMXphnx_la_SOURCES = \
   ../pr/mxGeometry.cxx \
@@ -35,6 +36,7 @@ libMXphnx_la_SOURCES = \
   ../calibration/mxCalibBase.cxx \
   ../calibration/mxChipStatus.cxx \
   mxSubsysReco.cxx \
+  srTest.cxx \
   MXphnx_Dict.C
 
 libMXphnx_la_LIBADD = \
@@ -58,6 +60,7 @@ MXphnx_Dict.C: \
   ../calibration/mxCalibBase.h \
   ../calibration/mxChipStatus.h \
   mxSubsysReco.h \
+  srTest.h \
   MXphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 

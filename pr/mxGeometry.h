@@ -46,6 +46,8 @@ class mxGeometry {
   float fW_RY[24];
   
   // ==== PbSc
-
+  float fPbSc_RX[576];
+  float fPbSc_RY[576];
+  float fPbSc_RZ[576];
 };
 #endif /* __mxGeometry_H__ */
