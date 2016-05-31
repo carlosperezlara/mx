@@ -14,6 +14,9 @@ class mxGeometry {
   float W_a0() {return fW_a0;}
   float W_a1() {return fW_a1;}
   float W_a2() {return fW_a2;}
+  float PbSc_a0() {return fPbSc_a0;}
+  float PbSc_a1() {return fPbSc_a1;}
+  float PbSc_a2() {return fPbSc_a2;}
   float W_X(int sidx);
   float W_Y(int sidx);
   float W_Z(int sidx);
@@ -46,6 +49,9 @@ class mxGeometry {
   float fW_RY[24];
   
   // ==== PbSc
+  float fPbSc_a0;
+  float fPbSc_a1;
+  float fPbSc_a2;
   float fPbSc_RX[576];
   float fPbSc_RY[576];
   float fPbSc_RZ[576];

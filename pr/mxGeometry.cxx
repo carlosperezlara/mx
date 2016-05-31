@@ -11,7 +11,10 @@ mxGeometry::mxGeometry() :
   fSi_a2(0.050),
   fW_a0(6.400),
   fW_a1(6.400),
-  fW_a2(0.204)
+  fW_a2(0.204),
+  fPbSc_a0(2.100),
+  fPbSc_a1(2.100),
+  fPbSc_a2(25.00)
 {
   float mx[96] = {
     +3.007, -3.593, -3.593, -10.193, -6.893, -13.493, +9.607, +3.007, +9.607, +16.207, +12.907, +19.507, 
@@ -224,8 +227,8 @@ void mxGeometry::UpdateSiW(int k) {
 //========
 void mxGeometry::UpdatePbSc(int k) {
   fX = fPbSc_RX[k];
-  fY = fPbSc_RX[k];
-  fZ = fPbSc_RX[k];
+  fY = fPbSc_RY[k];
+  fZ = fPbSc_RZ[k];
   int arm = k/288;
   fLyrIdx = arm*9+8;
   fLastIdx = k;
