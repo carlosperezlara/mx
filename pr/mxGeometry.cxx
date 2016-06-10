@@ -188,9 +188,23 @@ float mxGeometry::W_Z(int sidx) {
   return z;
 }
 //========
-void mxGeometry::UpdateSiW(int k) {
-  int arm = k/24576;
+void mxGeometry::UpdateSiW(int key) {
+  int k = key;
   int pkt = (k/3072)%8;
+
+  //====================
+  // fix for fem7 south
+  if((key/3072)==7) {
+    int sensor = (key%3072)/128;
+    if(sensor<6) {
+      k = key + 128*18;
+    } else if(sensor>=18) {
+      k = key - 128*18;
+    }
+  }
+  //====================
+
+  int arm = k/24576;
   int sen = (k%3072)/128;
   int lyr = fSi_LyrNbr[ 2*pkt + (sen/12) ];
   int senlyr = sen%12;

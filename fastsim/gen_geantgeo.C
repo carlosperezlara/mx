@@ -16,27 +16,38 @@ void gen_geantgeo() {
   ofile << Form("detector MPC width=%0.2f height=%0.2f length=%0.2f material=PbWO4 color=0,0,1\n", dx*10, dy*10, dz*10);
   //for(int idx=0; idx!=384; ++idx) {
   //  for(int idx=0+24; idx!=0+48; ++idx) {
-  for(int idx=192+0; idx!=192+192; ++idx) { // all north
+  for(int idx=0; idx!=192+192; ++idx) { // all north
+    //for(int idx=192+0; idx!=192+192; ++idx) { // all north
     float senx = mgeo->W_X(idx);
     float seny = mgeo->W_Y(idx);
     float senz = mgeo->W_Z(idx);
+    if(idx<192) { // 'front' places object displaced by length in the negative side
+      senz -= mgeo->W_a2();
+    }
     ofile << Form("place tungs rename=W%03d z=%0.2f x=%0.2f y=%0.2f front=1\n",idx,senz*10,senx*10,seny*10);
     ofile << Form("place vd rename=VD%03d z=%0.2f x=%0.2f y=%0.2f front=1\n",idx,senz*10-0.2,senx*10,seny*10);
   }
-  for(int idx=288+0; idx!=288+288; ++idx) { // all north
+  for(int idx=0; idx!=288+288; ++idx) { // all north
+    //for(int idx=288+0; idx!=288+288; ++idx) { // all north
     int k = idx+49152;
     float mpcx = mgeo->X(k);
     float mpcy = mgeo->Y(k);
     float mpcz = mgeo->Z(k);
-    if(mpcz<10&&mpcz>-10) continue; //skip holes
+    if(idx<288) { // 'front' places object displaced by length in the negative side
+      mpcz -= mgeo->PbSc_a2();
+    }
+    if(mpcz<50&&mpcz>-50) continue; //skip holes
     ofile << Form("place MPC rename=PbSc%03d z=%0.2f x=%0.2f y=%0.2f front=1\n",k,mpcz*10,mpcx*10,mpcy*10);
   }
-  if(1) {
-    //for(int k=0; k!=24576; ++k) {
+  if(0) {
+    //for(int k=0; k!=49152; ++k) {
     for(int k=24576; k!=49152; ++k) {
       float x = mgeo->X( k );
       float y = mgeo->Y( k );
       float z = mgeo->Z( k );
+      if(k<24576) { // 'front' places object displaced by length in the negative side
+	z -= mgeo->Si_a2();
+      }
       //if(mgeo->LyrIdx(k)!=9+1) continue;
       if((mgeo->LyrIdx(k)%9)%2==0) {
 	ofile << Form("place MPX rename=Si%05d x=%0.2f y=%0.2f z=%0.2f front=1\n", k, x*10, y*10, z*10);

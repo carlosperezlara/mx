@@ -14,7 +14,7 @@ void makebadsigmaped() {
   TH2F *cHi = new TH2F("cHi","PedestalHi;Mean;Sigma", 120,0,60, 20,0.0,10);
   TH2F *cLo = new TH2F("cLo","PedestalLo;Mean;Sigma", 120,0,60, 20,0.0,10);
 
-  ofstream ofile("badSgmPed.txt");
+  ofstream ofile("../badkeys.wrongsigmapedestal.dat");
   for(int k=0; k!=49152; ++k) {
     float muhi = cal->GetPHMu()->Get(k);
     float sghi = cal->GetPHSg()->Get(k);

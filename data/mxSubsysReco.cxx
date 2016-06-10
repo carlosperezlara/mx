@@ -201,7 +201,7 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     // if(myChpStatus->IsArmLock(idxsvx)) continue;
     // if(myChpStatus->IsBad(idxsvx)) continue;
     // 
-    //
+    if( fCal->GetLMPV()->Get(key)<0 ) continue;
     //
     float hi_adc = raw_hit->high(); // RAW ADC HIGH
     hi_adc -= fCal->GetPHMu()->Get(key); // subtracting its pedestal

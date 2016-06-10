@@ -20,7 +20,9 @@ class mxCoalition {
   float Eta();
   float Phi();
   float Cov(int);
+  float Signal() {return fSgn;}
   void Reset();
+  bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
  protected:
   mxParty* fParties[9];

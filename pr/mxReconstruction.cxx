@@ -127,6 +127,7 @@ void mxReconstruction::Make() {
   Parties();
   for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
   Coalitions();
+  for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].end(),GreaterSignal());
 }
 //========
 void mxReconstruction::Parties() {
