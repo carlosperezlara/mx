@@ -11,6 +11,7 @@
 mxCoalition::mxCoalition():
   fNParties(0),
   fSgn(0),
+  fSgnE(1),
   fSphi(0),
   fSeta(0),
   fSphiphi(0),
@@ -28,6 +29,7 @@ mxCoalition::mxCoalition(const mxCoalition &src) {
   // copy ctor
   fNParties = src.fNParties;
   fSgn = src.fSgn;
+  fSgnE = src.fSgnE;
   fSphi = src.fSphi;
   fSeta = src.fSeta;
   fSphiphi = src.fSphiphi;
@@ -42,6 +44,7 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
   if(&src!=this) {
     fNParties = src.fNParties;
     fSgn = src.fSgn;
+    fSgnE = src.fSgnE;
     fSphi = src.fSphi;
     fSeta = src.fSeta;
     fSphiphi = src.fSphiphi;

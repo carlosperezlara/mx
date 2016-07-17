@@ -21,6 +21,7 @@ class mxCoalition {
   float Phi();
   float Cov(int);
   float Signal() {return fSgn;}
+  float Energy() {return fSgn*fSgnE;}
   void Reset();
   bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
@@ -28,6 +29,7 @@ class mxCoalition {
   mxParty* fParties[9];
   int fNParties;
   float fSgn;
+  float fSgnE;
   float fSphi;
   float fSeta;
   float fSphiphi;
