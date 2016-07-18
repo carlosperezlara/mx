@@ -9,6 +9,7 @@
 #include "mxHit.h"
 #include "mxParty.h"
 #include "mxCoalition.h"
+#include "mxUnion.h"
 #include "mxReconstruction.h"
 
 struct GreaterSignal
@@ -27,6 +28,7 @@ mxReconstruction::mxReconstruction() {
   }
   for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
+    fNUni[i] = 0;
   }
   fGeo = new mxGeometry();
   fV[0] = 0.;
@@ -39,8 +41,10 @@ void mxReconstruction::Reset() {
     fNHit[i] = 0;
     fNPty[i] = 0;
   }
-  for(int i=0; i!=2; ++i)
+  for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
+    fNUni[i] = 0;
+  }
   fV[0] = 0.;
   fV[1] = 0.;
   fV[2] = 0.;
@@ -57,6 +61,8 @@ mxReconstruction::~mxReconstruction() {
   for(int i=0; i!=2; ++i) {
     for(int j=0; j!=fNCoa[i]; ++j)
       delete fCoa[i].at(j);
+    for(int j=0; j!=fNUni[i]; ++j)
+      delete fUni[i].at(j);
   }
 }
 //========
@@ -128,6 +134,7 @@ void mxReconstruction::Make() {
   for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
   Coalitions();
   for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].end(),GreaterSignal());
+  Unions();
 }
 //========
 void mxReconstruction::Parties() {
@@ -227,6 +234,28 @@ void mxReconstruction::Coalitions() {
           }
 	  //std::cout << " >update< " << coa->Phi() << " " << coa->Eta() << std::endl;
 	}
+      }
+    }
+    // DONE with arm
+  }
+}
+//========
+void mxReconstruction::Unions() {
+  // forming global unions
+  mxCoalition *coaI, *coaJ;
+  mxUnion *un;
+  for(int arm=0; arm!=2; ++arm) {
+    // call for union formation
+    for(int mi=0; mi!=fNCoa[arm]-1; ++mi) {
+      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      for(int mj=mi+1; mj!=fNCoa[arm]; ++mj) {
+	coaJ = (mxCoalition*) fCoa[arm].at( mj );
+        int nmax = fUni[arm].size();
+        if(fNUni[arm]>nmax-1) {
+          un = new mxUnion();
+          fUni[arm].push_back(un);
+        } else un = fUni[arm].at( fNUni[arm] );
+	un->Make(coaI,coaJ);
       }
     }
     // DONE with arm
