@@ -1,5 +1,5 @@
-#include "../pr/mxGeometry.h"
-#include "../pr/mxGeometry.cxx"
+#include "../mxGeometry.h"
+#include "../mxGeometry.cxx"
 
 void gen_geantgeo() {
   ofstream ofile("mpcex.g4bl");

@@ -30,20 +30,26 @@ class mxSubsysReco: public SubsysReco {
   mxReconstruction *fRec;
 
   TH1F *fEvents;
+  TH2F *fPtySgn;
+  TH2F *fPtySgn1;
 
   // EventQA ===> ChipHealth // lvl1
   TH1F *fQAbadchp;
   TH2F *fQAbadchpperchn;
   TH2F *fQAgoodchpcid;
 
-  // RawSub ===> HotDead identification // lvl2
+  // RawSub ===> HotDead identification  Landau calibration // lvl2
   TH2F *fQAadchi;
   TH2F *fQAadclo;
+  TH2F *fQAadchipty10;
+  TH2F *fQAadchipty20;
   // RawSub ===> HighLow calib // lvl3
   THnSparse *fQAadchilo;
   TH2F *fQAadchilor;
-  // RawSub ===> Landau calibration // lvl4
-  TH2F *fQAadchipty; // + lvl2
+
+  TH2F *fQAadchiNO;
+  TH2F *fQAadcloNO;
+
 };
 
 #endif /* __mxSubsysReco_H__ */ 

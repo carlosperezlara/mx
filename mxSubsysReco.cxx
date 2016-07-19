@@ -72,6 +72,11 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
   Double_t liM[3] = {49151.5,199.5,199.5};
   fEvents = new TH1F("mxSubsysReco_EVENTS","mxSubsysReco_EVENTS",10,-0.5,9.5);
   se->registerHisto(fEvents);
+  fPtySgn = new TH2F("mxSubsysReco_PTYSGN","mxSubsysReco_PTYSGN;Signal;NHits",300,0,1000,200,0,200);
+  se->registerHisto(fPtySgn);
+
+  fPtySgn1 = new TH2F("mxSubsysReco_PTYSGN1","mxSubsysReco_PTYSGN1;Signal;NHits",300,0,1000,200,0,200);
+  se->registerHisto(fPtySgn1);
 
   switch(fQA) {
   case(1):
@@ -93,8 +98,10 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
     fQAadclo = new TH2F("mxSubsysReco_adclo","mxSubsysReco_adclo;key;ADClo",49152,-0.5,49151.5,256,-0.5,255.5);
     se->registerHisto(fQAadclo);
     // hi adc pty
-    fQAadchipty = new TH2F("mxSubsysReco_adchipty","mxSubsysReco_adchipty;key;ADChi",49152,-0.5,49151.5,236,-0.5,235.5);
-    se->registerHisto(fQAadchipty);
+    fQAadchipty10 = new TH2F("mxSubsysReco_adchipty10","mxSubsysReco_adchipty10;key;ADChi",49152,-0.5,49151.5,236,-0.5,235.5);
+    se->registerHisto(fQAadchipty10);
+    fQAadchipty20 = new TH2F("mxSubsysReco_adchipty20","mxSubsysReco_adchipty20;key;ADChi",49152,-0.5,49151.5,236,-0.5,235.5);
+    se->registerHisto(fQAadchipty20);
     break;
   case(3):
     // hi lo correlation
@@ -104,6 +111,13 @@ int mxSubsysReco::Init(PHCompositeNode* top_node) {
     fQAadchilor = new TH2F("mxSubsysReco_adchilor","mxSubsysReco_adchilor;key;ADChi/ADClo",49152,-0.5,49151.5,200,0,10);
     se->registerHisto(fQAadchilor);
     break;
+  case(4):
+    // hi adc
+    fQAadchiNO = new TH2F("mxSubsysReco_adchino","mxSubsysReco_adchi;key;ADChi",49152,-0.5,49151.5,276,-20.5,255.5);
+    se->registerHisto(fQAadchiNO);
+    // lo raw adc
+    fQAadcloNO = new TH2F("mxSubsysReco_adclono","mxSubsysReco_adclo;key;ADClo",49152,-0.5,49151.5,276,-20.5,255.5);
+    se->registerHisto(fQAadcloNO);
   }
   return EVENT_OK;
 }
@@ -201,15 +215,23 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
     // if(myChpStatus->IsArmLock(idxsvx)) continue;
     // if(myChpStatus->IsBad(idxsvx)) continue;
     // 
-    if( fCal->GetLMPV()->Get(key)<0 ) continue;
+    //if( fCal->GetLMPV()->Get(key)<0 ) continue;
     //
     float hi_adc = raw_hit->high(); // RAW ADC HIGH
     hi_adc -= fCal->GetPHMu()->Get(key); // subtracting its pedestal
     float lo_adc = raw_hit->low(); // RAW ADC LOW
     lo_adc -= fCal->GetPLMu()->Get(key); // subtracting its pedestal
-    float ene, minene;
-    ene = hi_adc; // FIXME!
-    minene = TMath::Abs(fCal->GetPHSg()->Get(key))*5;
+
+    if(fQA==4) fQAadchiNO->Fill( key, hi_adc );
+    if(fQA==4) fQAadcloNO->Fill( key, lo_adc );
+    if( fCal->GetLMPV()->Get(key)<0 ) continue;
+
+    float hires = hi_adc;
+    float lores = lo_adc*fCal->GetLHft()->Get(key);
+    float ene;
+    if(hires<mThrhld) ene = hires;
+    else ene = lores;
+    float minene = TMath::Abs(fCal->GetPHSg()->Get(key))*5; // FIXME!
     if(ene>minene) fRec->Fill(key,ene);
 
     //
@@ -226,16 +248,34 @@ int mxSubsysReco::process_event(PHCompositeNode* top_node) {
   /////////////////
 
   fRec->Make();
+
+  // party stats
+  vector<mxParty*> pty;
+  for(int lyr=0; lyr!=18; ++lyr) {
+    if(lyr==8||lyr==17) continue; // reserved for MPC
+    pty = fRec->GetParties( lyr );
+    for(unsigned int j=0; j!=pty.size(); ++j) {
+      int n = pty[j]->N();
+      float sgn = pty[j]->Signal();
+      fPtySgn->Fill(sgn,float(n));
+    }
+  }
+
   //fRec->DumpStats();
   //fRec->DumpParties();
 
   // COINCIDENCE LOGIC
   if(fQA==2) {
-    vector<mxParty*> pty;
     for(int lyr=0; lyr!=18; ++lyr) {
       if(lyr==8||lyr==17) continue; // reserved for MPC
       pty = fRec->GetParties( lyr );
-      for(unsigned int j=0; j!=pty.size()/4; ++j) { // loop over number of parties (first quartiles)
+      //for(unsigned int j=0; j!=pty.size()/10; ++j) { // loop over number of parties (first quartiles)
+      for(unsigned int j=0; j!=pty.size()/5; ++j) { // loop over number of parties (first quartiles)
+	int n = pty[j]->N();
+	if(n<5) continue;
+	float sgn = pty[j]->Signal();
+	if(n>sgn*1.0/30.0) continue;
+	fPtySgn1->Fill(sgn,float(n));
 	for(int k=0; k!=pty[j]->N(); ++k) { // loop over number of hits in party
 	  int key = pty[j]->GetHit(k)->Idx();
 	  float sgn = pty[j]->GetHit(k)->Signal();
