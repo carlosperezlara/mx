@@ -71,14 +71,14 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
   fSgn += sgn;
 }
 //========
-float mxParty::X() {
+float mxParty::GetX() {
   // <x>
   if( fNHits<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSx/fSgn;
 }
 //========
-float mxParty::Y() {
+float mxParty::GetY() {
   // <y>
   if( fNHits<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
@@ -88,10 +88,10 @@ float mxParty::Y() {
 float mxParty::Test(float nx, float ny) {
   // tester
   if( fNHits<1 ) return -1;
-  float cx = X();
-  float cy = Y();
-  float varX = Cov(0);
-  float varY = Cov(1);
+  float cx = GetX();
+  float cy = GetY();
+  float varX = GetCov(0);
+  float varY = GetCov(1);
   //if(varX<1e-6)
   varX = 0.2*0.2*fNHits*fNHits; // prior
   //if(varY<1e-6)
@@ -112,7 +112,7 @@ void mxParty::Reset() {
   fNHits=0;
 }
 //========
-float mxParty::Cov(int dim) {
+float mxParty::GetCov(int dim) {
   // covariance matrix
   if( fNHits<1 ) return -1;
   if( fSgn<1e-6 ) return -1;

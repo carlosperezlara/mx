@@ -16,9 +16,9 @@ class mxParty {
   mxHit* GetHit(int val) {return val<fNHits?fHits[val]:NULL;}
   float Test(float,float);
   int N() {return fNHits;}
-  float X();
-  float Y();
-  float Cov(int);
+  float GetX();
+  float GetY();
+  float GetCov(int);
   float Signal() {return fSgn;}
   void Reset();
   bool IsAssigned() {return fAssigned;}

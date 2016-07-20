@@ -25,8 +25,8 @@ class mxUnion {
 
  protected:
   mxCoalition* fCoalitions[2];
-  float fEta;
   float fPhi;
+  float fEta;
   float fDPhi;
   float fEnergy;
   float fEnergyT;

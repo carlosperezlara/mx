@@ -11,32 +11,35 @@ noinst_HEADERS = \
   MXphnxLinkDef.h
 
 include_HEADERS = \
-  ../pr/mxGeometry.h \
-  ../pr/mxHit.h \
-  ../pr/mxParty.h \
-  ../pr/mxCoalition.h \
-  ../pr/mxReconstruction.h \
+  mxGeometry.h \
+  mxHit.h \
+  mxParty.h \
+  mxCoalition.h \
+  mxUnion.h \
+  mxReconstruction.h \
+  mxQAReconstruction.h \
   \
-  ../calibration/mxCalibDAu16.h \
-  ../calibration/mxCalibMaster.h \
-  ../calibration/mxCalibBase.h \
-  ../calibration/mxChipStatus.h \
-  mxSubsysReco.h \
-  srTest.h
+  calibration/mxCalibDAu16.h \
+  calibration/mxCalibMaster.h \
+  calibration/mxCalibBase.h \
+  calibration/mxChipStatus.h \
+  PHMXData.h \
+  mSubsysReco.h
 
 libMXphnx_la_SOURCES = \
-  ../pr/mxGeometry.cxx \
-  ../pr/mxHit.cxx \
-  ../pr/mxParty.cxx \
-  ../pr/mxCoalition.cxx \
-  ../pr/mxReconstruction.cxx \
+  mxGeometry.cxx \
+  mxHit.cxx \
+  mxParty.cxx \
+  mxCoalition.cxx \
+  mxUnion.cxx \
+  mxReconstruction.cxx \
+  mxQAReconstruction.cxx \
   \
-  ../calibration/mxCalibDAu16.cxx \
-  ../calibration/mxCalibMaster.cxx \
-  ../calibration/mxCalibBase.cxx \
-  ../calibration/mxChipStatus.cxx \
-  mxSubsysReco.cxx \
-  srTest.cxx \
+  calibration/mxCalibDAu16.cxx \
+  calibration/mxCalibMaster.cxx \
+  calibration/mxCalibBase.cxx \
+  calibration/mxChipStatus.cxx \
+  mSubsysReco.cxx \
   MXphnx_Dict.C
 
 libMXphnx_la_LIBADD = \
@@ -49,18 +52,23 @@ libMXphnx_la_LIBADD = \
 
 # Rule for generating CINT dictionaries from class headers.
 MXphnx_Dict.C: \
-  ../pr/mxHit.h \
-  ../pr/mxParty.h \
-  ../pr/mxCoalition.h \
-  ../pr/mxGeometry.h \
-  ../pr/mxReconstruction.h \
+  mxHit.h \
+  mxParty.h \
+  mxCoalition.h \
+  mxGeometry.h \
+  mxReconstruction.h \
+  mxQAReconstruction.h \
   \
-  ../calibration/mxCalibDAu16.h \
-  ../calibration/mxCalibMaster.h \
-  ../calibration/mxCalibBase.h \
-  ../calibration/mxChipStatus.h \
-  mxSubsysReco.h \
-  srTest.h \
+  calibration/mxCalibDAu16.h \
+  calibration/mxCalibMaster.h \
+  calibration/mxCalibBase.h \
+  calibration/mxChipStatus.h \
+  mxHit.h \
+  mxParty.h \
+  mxCoalition.h \
+  mxUnion.h \
+  PHMXData.h \
+  mSubsysReco.h \
   MXphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 

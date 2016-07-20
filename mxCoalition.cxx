@@ -56,14 +56,14 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
   return *this;
 }
 //========
-float mxCoalition::Phi() {
+float mxCoalition::GetPhi() {
   // <phi>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSphi/fSgn;
 }
 //========
-float mxCoalition::Eta() {
+float mxCoalition::GetEta() {
   // <eta>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
@@ -88,10 +88,10 @@ void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta) {
 float mxCoalition::Test(float phi, float eta) {
   // tester
   if(fNParties<1) return -1;
-  float cx = Phi();
-  float cy = Eta();
-  float varX = Cov(0);
-  float varY = Cov(1);
+  float cx = GetPhi();
+  float cy = GetEta();
+  float varX = GetCov(0);
+  float varY = GetCov(1);
   if(varX<1e-6) varX = 0.1; // prior
   if(varY<1e-6) varY = 0.1; // prior
   float dx2 = (phi-cx)/varX*(phi-cx);
@@ -110,7 +110,7 @@ void mxCoalition::Reset() {
   for(int i=0; i!=9; ++i) fParties[i] = NULL;
 }
 //========
-float mxCoalition::Cov(int dim) {
+float mxCoalition::GetCov(int dim) {
   // covariance matrix
   if( TMath::AreEqualAbs(fSgn,0,1e-3) ) return -1;
   float var;

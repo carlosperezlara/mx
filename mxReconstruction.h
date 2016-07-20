@@ -18,12 +18,21 @@ class mxReconstruction {
   void Fill( int idx, float ene);
   void Reset();
   void Make();
-  std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
-  std::vector<mxParty*> GetParties(int lyr) {return fPty[lyr];}
-  std::vector<mxUnion*> GetUnions(int lyr) {return fUni[lyr];}
   void SetVertex(float x, float y, float z) {fV[0]=x; fV[1]=y; fV[2]=z;}
+  std::vector<mxHit*> GetHits(int lyr) {return fHit[lyr];}
+  std::vector<mxParty*> GetParties(int lyr) {return fPty[lyr];}
+  std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
+  std::vector<mxUnion*> GetUnions(int arm) {return fUni[arm];}
   void DumpStats();
   void DumpParties();
+
+  float GetVertexX() {return fV[0];}
+  float GetVertexY() {return fV[1];}
+  float GetVertexZ() {return fV[2];}
+  int GetNHits(int lyr) {return fNHit[lyr];}
+  int GetNParties(int lyr) {return fNPty[lyr];}
+  int GetNCoalitions(int arm) {return fNCoa[arm];}
+  int GetNUnions(int arm) {return fNUni[arm];}
 
  private:
   void Parties();

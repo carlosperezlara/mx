@@ -3,6 +3,8 @@
 
 #include <vector>
 
+class TH1F;
+class TList;
 class mxReconstruction;
 
 class mxQAReconstruction {
@@ -11,13 +13,45 @@ class mxQAReconstruction {
   ~mxQAReconstruction();
 
   void Make(mxReconstruction*);
+  TList* GetList() {return fList;}
 
  private:
-  void FillEvents(mxReconstruction*);
-  void FillHits(mxReconstruction*);
-  void FillParties(mxReconstruction*);
-  void FillCoalitions(mxReconstruction*);
-  void FillUnions(mxReconstruction*);
+  TList *fList;
+
+  TH1F *fHvx;
+  TH1F *fHvy;
+  TH1F *fHvz;
+
+  TH1F *fHhitN[2];
+  TH1F *fHhitE[2];
+  TH1F *fHhitX[2];
+  TH1F *fHhitY[2];
+
+  TH1F *fHptyN[2];
+  TH1F *fHptyE[2];
+  TH1F *fHptyX[2];
+  TH1F *fHptyY[2];
+  TH1F *fHptySX[2];
+  TH1F *fHptySY[2];
+
+  TH1F *fHcoaN[2];
+  TH1F *fHcoaEn[2];
+  TH1F *fHcoaET[2];
+  TH1F *fHcoaEL[2];
+  TH1F *fHcoaPh[2];
+  TH1F *fHcoaEt[2];
+  TH1F *fHcoaSPh[2];
+  TH1F *fHcoaSEt[2];
+
+  TH1F *fHuniN[2];
+  TH1F *fHuniEn[2];
+  TH1F *fHuniET[2];
+  TH1F *fHuniEL[2];
+  TH1F *fHuniDP[2];
+  TH1F *fHuniMa[2];
+  TH1F *fHuniPh[2];
+  TH1F *fHuniEt[2];
+
 };
 
 #endif /* __mxQAReconstruction_H__ */ 

@@ -78,7 +78,7 @@ void mxReconstruction::DumpParties() {
     std::cout << "  Layer " << i << " || Nparties " << n << std::endl;
     for(int j=0; j!=n; ++j) {
       pty = fPty[i].at(j);
-      std::cout << "  ||" << j << "|| x y " << pty->X() << " " << pty->Y() << " || sgn " << pty->Signal() << std::endl;
+      std::cout << "  ||" << j << "|| x y " << pty->GetX() << " " << pty->GetY() << " || sgn " << pty->Signal() << std::endl;
       int m = pty->N();
       for(int k=0; k!=m; ++k) {
 	hit = pty->GetHit(k);
@@ -160,10 +160,10 @@ void mxReconstruction::Parties() {
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = (mxParty*) fPty[lyr].at( mp );
 	float test = pty->Test(x,y);
-	//std::cout << "    pty no " << mp << "||=> " << pty->X() << " " << pty->Y() << " || " << pty->N() << " || stddev " << sqrt(pty->Cov(0)) << " " << sqrt(pty->Cov(1)) << " || test " << test << std::endl;
+	//std::cout << "    pty no " << mp << "||=> " << pty->GetX() << " " << pty->GetY() << " || " << pty->N() << " || stddev " << sqrt(pty->GetCov(0)) << " " << sqrt(pty->GetCov(1)) << " || test " << test << std::endl;
 	if(test<3) {
 	  append = true;
-	  //std::cout << "    >>party update<< before:" << pty->X() << " " << pty->Y();
+	  //std::cout << "    >>party update<< before:" << pty->GetX() << " " << pty->GetY();
 	  break;
 	}
       }
@@ -178,7 +178,7 @@ void mxReconstruction::Parties() {
 	//std::cout << "    >>NEW PARTY<<  ";
       }
       pty->Fill( hit, x, y );
-      //std::cout << " now " << pty->X() << " " << pty->Y() << std::endl;
+      //std::cout << " now " << pty->GetX() << " " << pty->GetY() << std::endl;
     }
   }
 }
@@ -210,12 +210,12 @@ void mxReconstruction::Coalitions() {
           fCoa[arm].push_back(coa);
         } else coa = fCoa[arm].at( fNCoa[arm] );
 	coa->Reset();
-	float phi = _phi( pty->X(), pty->Y() );
-	float eta = _eta( pty->X(), pty->Y(), Z[lyr] );
+	float phi = _phi( pty->GetX(), pty->GetY() );
+	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr] );
 	//std::cout << " seeding pty " << mp << " with " << phi << " " << eta  << std::endl;
 	int coalyr = lyr%9;
         coa->Fill( coalyr, pty, phi, eta );
-	//std::cout << " >>>NEW COALITION<<< " << coa->Phi() << " " << coa->Eta() << std::endl;
+	//std::cout << " >>>NEW COALITION<<< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
         for(int inc=lyr-1; inc!=arm*9-1; --inc) {
@@ -223,8 +223,8 @@ void mxReconstruction::Coalitions() {
 	  for(int np=0; np!=fNPty[inc]; ++np) {
             pty = fPty[inc].at(np);
 	    if(pty->IsAssigned()) continue;
-	    phi = _phi( pty->X(), pty->Y() );
-	    eta = _eta( pty->X(), pty->Y(), Z[lyr] );
+	    phi = _phi( pty->GetX(), pty->GetY() );
+	    eta = _eta( pty->GetX(), pty->GetY(), Z[lyr] );
 	    float test = coa->Test( phi, eta );
 	    //std::cout << "    ptyno " << np << " with " << phi << " " << eta << " || test " << test << std::endl;
             if( test < 3) {
@@ -232,7 +232,7 @@ void mxReconstruction::Coalitions() {
 	      break;
 	    }
           }
-	  //std::cout << " >update< " << coa->Phi() << " " << coa->Eta() << std::endl;
+	  //std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	}
       }
     }
@@ -246,6 +246,7 @@ void mxReconstruction::Unions() {
   mxUnion *un;
   for(int arm=0; arm!=2; ++arm) {
     // call for union formation
+    if(fNCoa[arm]<2) continue;
     for(int mi=0; mi!=fNCoa[arm]-1; ++mi) {
       coaI = (mxCoalition*) fCoa[arm].at( mi );
       for(int mj=mi+1; mj!=fNCoa[arm]; ++mj) {
@@ -256,6 +257,7 @@ void mxReconstruction::Unions() {
           fUni[arm].push_back(un);
         } else un = fUni[arm].at( fNUni[arm] );
 	un->Make(coaI,coaJ);
+        ++fNUni[arm];
       }
     }
     // DONE with arm

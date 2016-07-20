@@ -5,6 +5,7 @@
 #ifndef __mxCoalition_HH__
 #define __mxCoalition_HH__
 
+#include "TMath.h"
 class mxParty;
 
 class mxCoalition {
@@ -17,11 +18,13 @@ class mxCoalition {
   float Test(float,float);
   int N() {return fNParties;}
   mxParty* GetParty(int val) {return val<fNParties?fParties[val]:NULL;}
-  float Eta();
-  float Phi();
-  float Cov(int);
+  float GetEta();
+  float GetPhi();
+  float GetCov(int);
   float Signal() {return fSgn;}
-  float Energy() {return fSgn*fSgnE;}
+  float GetEnergy() {return fSgn*fSgnE;}
+  float GetEnergyT() {return GetEnergy()/TMath::CosH(GetEta());}
+  float GetEnergyL() {return GetEnergy()*TMath::Abs(TMath::TanH(GetEta()));}
   void Reset();
   bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
