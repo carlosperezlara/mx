@@ -6,6 +6,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 
 class PHCompositeNode;
 class mxCalibMaster;
@@ -35,7 +36,9 @@ class mSubsysReco: public SubsysReco {
   TH1F *fHpar[2];
   TH1F *fHsph[2];
   TH2F *fHcid[2];
-
+  TH3F *fHcry;
+  TH1F *fHcrytof;
+  TH1F *fHcryene;
 };
 
 #endif /* __mSubsysReco_H__ */ 

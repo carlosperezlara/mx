@@ -7,6 +7,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 
 #include "getClass.h"
 #include "PHCompositeNode.h"
@@ -20,6 +21,10 @@
 #include "PHGlobal.h"
 #include "VtxOut.h"
 #include "PHPoint.h"
+#include "MpcMap.h"
+
+#include "mpcRawContainer.h"
+#include "mpcRawContent.h"
 #include "MpcExRawHit.h"
 #include "TMpcExHit.h"
 #include "TMpcExHitSet.h"
@@ -61,6 +66,9 @@ mSubsysReco::mSubsysReco( const char* name ) :
     fHsph[i] = NULL;
     fHcid[i] = NULL;
   }
+  fHcry = NULL;
+  fHcrytof = NULL;
+  fHcryene = NULL;
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
@@ -97,6 +105,12 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
     fList->Add(fHsph[i]);
     fList->Add(fHcid[i]);
   }
+  fHcry = new TH3F( "mxDet_Hcry", "mxDet_Hcry", 700,-0.5,699.5, 100,0,50, 100,0,15 );
+  fHcryene = new TH1F( "mxDet_Hcryene", "mxDet_Hcryene", 100, 0, 50 );
+  fHcrytof = new TH1F( "mxDet_Hcrytof", "mxDet_Hcrytof", 100, 0, 15 );
+  fList->Add(fHcry);
+  fList->Add(fHcryene);
+  fList->Add(fHcrytof);
   for(int i=0; i!=fList->GetEntries(); ++i)
     se->registerHisto( ((TH1F*) (fList->At(i))) );
 
@@ -254,6 +268,23 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     if(ene>enecut) fRec->Fill(key,ene);
   }
   /////////////////
+  // reading mpc data
+  mpcRawContainer *mpcraw2 = findNode::getClass<mpcRawContainer>(top_node,"MpcRaw2");
+  if(!mpcraw2) return ABORTEVENT;
+  for (unsigned int i=0; i!=mpcraw2->size(); ++i) {
+    mpcRawContent *raw = mpcraw2->getTower(i);
+    int key = raw->get_ch();
+    float tof = raw->get_sample();//*17.762;
+    //if (key<288) tof = tof - 119.5;
+    //else        tof = tof - 104.5;
+    float gain = 1;//mpccalib->get_adc_gain(key);
+    float energy = raw->get_adc()*gain;
+    fHcrytof->Fill( tof );
+    fHcryene->Fill( energy );
+    fHcry->Fill( key, energy, tof );
+  }
+  /////////////////
+
   fRec->Make();
 
   //for(int gl=0; gl!=18; ++gl)
