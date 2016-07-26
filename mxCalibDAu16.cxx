@@ -1,8 +1,7 @@
 #include "stdlib.h"
 #include <iostream>
 #include "mxCalibDAu16.h"
-#include "mxCalibBase.h"
-#include "mxChipStatus.h"
+#include "mxCalibBaseSiW.h"
 
 mxCalibDAu16::mxCalibDAu16(): mxCalibMaster() {
   std::cout << "mxCalibDAu16 was called" << std::endl;
@@ -40,9 +39,6 @@ mxCalibDAu16::mxCalibDAu16(): mxCalibMaster() {
   {
     for(int k=0; k!=49152; ++k)
       fLHft->Set(k,1); // needs to be determined
-  }
-  //======== CHP
-  {
   }
 }
 

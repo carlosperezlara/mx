@@ -1,16 +1,14 @@
 #include "mxCalibMaster.h"
-#include "mxCalibBase.h"
-#include "mxChipStatus.h"
+#include "mxCalibBaseSiW.h"
 
 mxCalibMaster::mxCalibMaster() :
-  fPHMu( new mxCalibBase() ),
-  fPHSg( new mxCalibBase() ),
-  fPLMu( new mxCalibBase() ),
-  fPLSg( new mxCalibBase() ),
-  fLMPV( new mxCalibBase() ),
-  fLSgm( new mxCalibBase() ),
-  fLHft( new mxCalibBase() ),
-  fChpS( new mxChipStatus() )
+  fPHMu( new mxCalibBaseSiW() ),
+  fPHSg( new mxCalibBaseSiW() ),
+  fPLMu( new mxCalibBaseSiW() ),
+  fPLSg( new mxCalibBaseSiW() ),
+  fLMPV( new mxCalibBaseSiW() ),
+  fLSgm( new mxCalibBaseSiW() ),
+  fLHft( new mxCalibBaseSiW() )
 {
 }
 
@@ -21,8 +19,7 @@ mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
   fPLSg( cpy.fPLSg ),
   fLMPV( cpy.fLMPV ),
   fLSgm( cpy.fLSgm ),
-  fLHft( cpy.fLHft ),
-  fChpS( cpy.fChpS )
+  fLHft( cpy.fLHft )
 {
 }
 
@@ -34,5 +31,4 @@ mxCalibMaster::~mxCalibMaster() {
   delete fLMPV;
   delete fLSgm;
   delete fLHft;
-  delete fChpS;
 }

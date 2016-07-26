@@ -37,8 +37,10 @@ class mSubsysReco: public SubsysReco {
   TH1F *fHsph[2];
   TH2F *fHcid[2];
   TH3F *fHcry;
-  TH1F *fHcrytof;
-  TH1F *fHcryene;
+  TH1F *fHcrytofS;
+  TH1F *fHcryeneS;
+  TH1F *fHcrytofN;
+  TH1F *fHcryeneN;
 };
 
 #endif /* __mSubsysReco_H__ */ 

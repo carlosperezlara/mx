@@ -30,9 +30,9 @@
 #include "TMpcExHitSet.h"
 #include "MpcExEventHeader.h"
 
-#include "calibration/mxCalibMaster.h"
-#include "calibration/mxCalibDAu16.h"
-#include "calibration/mxCalibBase.h"
+#include "mxCalibMaster.h"
+#include "mxCalibDAu16.h"
+#include "mxCalibBaseSiW.h"
 
 #include "mxReconstruction.h"
 #include "mxQAReconstruction.h"
@@ -67,8 +67,10 @@ mSubsysReco::mSubsysReco( const char* name ) :
     fHcid[i] = NULL;
   }
   fHcry = NULL;
-  fHcrytof = NULL;
-  fHcryene = NULL;
+  fHcrytofS = NULL;
+  fHcryeneS = NULL;
+  fHcrytofN = NULL;
+  fHcryeneN = NULL;
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
@@ -105,12 +107,16 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
     fList->Add(fHsph[i]);
     fList->Add(fHcid[i]);
   }
-  fHcry = new TH3F( "mxDet_Hcry", "mxDet_Hcry", 700,-0.5,699.5, 100,0,50, 100,0,15 );
-  fHcryene = new TH1F( "mxDet_Hcryene", "mxDet_Hcryene", 100, 0, 50 );
-  fHcrytof = new TH1F( "mxDet_Hcrytof", "mxDet_Hcrytof", 100, 0, 15 );
+  fHcry = new TH3F( "mxDet_Hcry", "mxDet_Hcry", 576,-0.5,575.5, 100,0,50, 100,0,15 );
+  fHcryeneS = new TH1F( "mxDet_HcryeneS", "mxDet_HcryeneS", 202, -1, 100 );
+  fHcrytofS = new TH1F( "mxDet_HcrytofS", "mxDet_HcrytofS", 100, 0, 20 );
+  fHcryeneN = new TH1F( "mxDet_HcryeneN", "mxDet_HcryeneN", 202, -1, 100 );
+  fHcrytofN = new TH1F( "mxDet_HcrytofN", "mxDet_HcrytofN", 100, 0, 20 );
   fList->Add(fHcry);
-  fList->Add(fHcryene);
-  fList->Add(fHcrytof);
+  fList->Add(fHcryeneS);
+  fList->Add(fHcrytofS);
+  fList->Add(fHcryeneN);
+  fList->Add(fHcrytofN);
   for(int i=0; i!=fList->GetEntries(); ++i)
     se->registerHisto( ((TH1F*) (fList->At(i))) );
 
@@ -274,14 +280,17 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   for (unsigned int i=0; i!=mpcraw2->size(); ++i) {
     mpcRawContent *raw = mpcraw2->getTower(i);
     int key = raw->get_ch();
-    float tof = raw->get_sample();//*17.762;
-    //if (key<288) tof = tof - 119.5;
-    //else        tof = tof - 104.5;
-    float gain = 1;//mpccalib->get_adc_gain(key);
-    float energy = raw->get_adc()*gain;
-    fHcrytof->Fill( tof );
-    fHcryene->Fill( energy );
-    fHcry->Fill( key, energy, tof );
+    float tof = raw->get_sample();
+    float ene = raw->get_adc();
+    //fRec->Fill(49152+key,ene);
+    if(key<288) {
+      fHcrytofS->Fill( tof );
+      fHcryeneS->Fill( ene );
+    } else {
+      fHcrytofN->Fill( tof );
+      fHcryeneN->Fill( ene );
+    }
+    fHcry->Fill( key, ene, tof );
   }
   /////////////////
 

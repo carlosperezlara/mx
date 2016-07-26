@@ -1,13 +1,17 @@
 # mx
 
-Data structure:
+MPA Data Structure and Algorithms:
 > mxHit => mxParty => mxCoalition => mxUnion
-
-Algorithms:
-> Reconstruction
+> Reconstruction (QAReconstruction)
 
 Geometry base:
 > mxGeometry
 
-Calibrations:
-> calibration/
+Data Calibration:
+> mxCalibMaster ==> mxCalibBaseSiW, mxCalibBasePWO4
+
+Data Adquisition:
+> mSubSysReco
+   > event + detector QA
+   > pedestal check for MX
+   > signal check for MX

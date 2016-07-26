@@ -19,10 +19,9 @@ include_HEADERS = \
   mxReconstruction.h \
   mxQAReconstruction.h \
   \
-  calibration/mxCalibDAu16.h \
-  calibration/mxCalibMaster.h \
-  calibration/mxCalibBase.h \
-  calibration/mxChipStatus.h \
+  mxCalibDAu16.h \
+  mxCalibMaster.h \
+  mxCalibBaseSiW.h \
   PHMXData.h \
   mSubsysReco.h
 
@@ -35,10 +34,9 @@ libMXphnx_la_SOURCES = \
   mxReconstruction.cxx \
   mxQAReconstruction.cxx \
   \
-  calibration/mxCalibDAu16.cxx \
-  calibration/mxCalibMaster.cxx \
-  calibration/mxCalibBase.cxx \
-  calibration/mxChipStatus.cxx \
+  mxCalibDAu16.cxx \
+  mxCalibMaster.cxx \
+  mxCalibBaseSiW.cxx \
   mSubsysReco.cxx \
   MXphnx_Dict.C
 
@@ -52,21 +50,17 @@ libMXphnx_la_LIBADD = \
 
 # Rule for generating CINT dictionaries from class headers.
 MXphnx_Dict.C: \
-  mxHit.h \
-  mxParty.h \
-  mxCoalition.h \
   mxGeometry.h \
-  mxReconstruction.h \
-  mxQAReconstruction.h \
-  \
-  calibration/mxCalibDAu16.h \
-  calibration/mxCalibMaster.h \
-  calibration/mxCalibBase.h \
-  calibration/mxChipStatus.h \
   mxHit.h \
   mxParty.h \
   mxCoalition.h \
   mxUnion.h \
+  mxReconstruction.h \
+  mxQAReconstruction.h \
+  \
+  mxCalibDAu16.h \
+  mxCalibMaster.h \
+  mxCalibBaseSiW.h \
   PHMXData.h \
   mSubsysReco.h \
   MXphnxLinkDef.h

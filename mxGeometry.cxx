@@ -166,7 +166,7 @@ float mxGeometry::Reference(int k, int r) {
 //========
 void mxGeometry::UpdateVars(int k) {
   // first 49152 correspond to key for SiW
-  // next NNNN correspond to chn for PbSc
+  // next 576 correspond to chn for PbSc
   if(k<49152) UpdateSiW(k);
   else UpdatePbSc(k-49152);
 }
