@@ -188,6 +188,28 @@ float mxGeometry::W_Z(int sidx) {
   return z;
 }
 //========
+int mxGeometry::Adjacent_Si_0(int idx) {
+  int adj = idx;
+  int mpd = idx%128;
+  if( mpd>3 ) {
+    adj -= 4;
+  } else {
+    adj *= -1;
+  }
+  return adj;
+}
+//========
+int mxGeometry::Adjacent_Si_1(int idx) {
+  int adj = idx;
+  int mpd = idx%128;
+  if( mpd<124 ) {
+    adj += 4;
+  } else {
+    adj *= -1;
+  }
+  return adj;
+}
+//========
 void mxGeometry::UpdateSiW(int key) {
   int k = key;
   int pkt = (k/3072)%8;
@@ -219,18 +241,18 @@ void mxGeometry::UpdateSiW(int key) {
   int ref = arm*48 + typ*24 + senlyr;
   float x = fSi_RX[ref];
   float y = fSi_RY[ref];
-  float nx = fSi_RX[ref]/ (typ==0?fSi_a0:fSi_a1);
-  float ny = fSi_RY[ref]/ (typ==0?fSi_a1:fSi_a0);
+  //float nx = fSi_RX[ref]/ (typ==0?fSi_a0:fSi_a1);
+  //float ny = fSi_RY[ref]/ (typ==0?fSi_a1:fSi_a0);
   if(typ==0) {
     x -= sgnAR*sgnTB*((k%128)/4)*(fSi_a0+0.008);
     y += sgnTB*fSi_DLY[k%4]*(fSi_a1+0.008);
-    nx -= sgnAR*sgnTB*((k%128)/4);
-    ny += sgnTB*fSi_DLY[k%4];
+    //nx -= sgnAR*sgnTB*((k%128)/4);
+    //ny += sgnTB*fSi_DLY[k%4];
   } else {
     y -= sgnTB*((k%128)/4)*(fSi_a0+0.008);
     x -= sgnAR*sgnTB*fSi_DLY[k%4]*(fSi_a1+0.008);
-    ny -= sgnTB*((k%128)/4);
-    nx -= sgnAR*sgnTB*fSi_DLY[k%4];
+    //ny -= sgnTB*((k%128)/4);
+    //nx -= sgnAR*sgnTB*fSi_DLY[k%4];
   }
   fX = x;
   fY = y;
