@@ -14,9 +14,9 @@ class mxGeometry {
   float W_a0() {return fW_a0;}
   float W_a1() {return fW_a1;}
   float W_a2() {return fW_a2;}
-  float PbSc_a0() {return fPbSc_a0;}
-  float PbSc_a1() {return fPbSc_a1;}
-  float PbSc_a2() {return fPbSc_a2;}
+  float PWO4_a0() {return fPWO4_a0;}
+  float PWO4_a1() {return fPWO4_a1;}
+  float PWO4_a2() {return fPWO4_a2;}
   float W_X(int sidx);
   float W_Y(int sidx);
   float W_Z(int sidx);
@@ -25,7 +25,7 @@ class mxGeometry {
   float Reference(int,int);
   void UpdateVars(int);
   void UpdateSiW(int);
-  void UpdatePbSc(int);
+  void UpdatePWO4(int);
 
   int fLastIdx;
   int fLyrIdx;
@@ -48,12 +48,12 @@ class mxGeometry {
   float fW_RX[24];
   float fW_RY[24];
   
-  // ==== PbSc
-  float fPbSc_a0;
-  float fPbSc_a1;
-  float fPbSc_a2;
-  float fPbSc_RX[576];
-  float fPbSc_RY[576];
-  float fPbSc_RZ[576];
+  // ==== PWO4
+  float fPWO4_a0;
+  float fPWO4_a1;
+  float fPWO4_a2;
+  float fPWO4_RX[576];
+  float fPWO4_RY[576];
+  float fPWO4_RZ[576];
 };
 #endif /* __mxGeometry_H__ */
