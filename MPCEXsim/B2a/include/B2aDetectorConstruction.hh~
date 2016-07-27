@@ -64,6 +64,8 @@ class B2aDetectorConstruction : public G4VUserDetectorConstruction
   void SetMaxStep (G4double );
     void SetCheckOverlaps(G4bool );
 
+  bool IsMinis(){return ftoggleMinipad;};
+  
   private:
     // methods
     void DefineMaterials();
@@ -76,6 +78,7 @@ class B2aDetectorConstruction : public G4VUserDetectorConstruction
   //    G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
   G4LogicalVolume**  fLogicChambersil;    // pointer to the logical Chamber       
   G4LogicalVolume**  fLogicCrystal;       // pointer to the logical MPC Crystal
+  G4OpticalSurface** fCrystalWrap;        // Wrap for Crystals
   G4LogicalVolume**  fLogicMinipads;       // pointer to the logical Minipads
   
     G4Material*        fTargetMaterial;  // pointer to the target  material
@@ -87,7 +90,7 @@ class B2aDetectorConstruction : public G4VUserDetectorConstruction
 
     static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
                                          // magnetic field messenger
-    
+  G4bool  ftoggleMinipad;
     G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps 
 };
 

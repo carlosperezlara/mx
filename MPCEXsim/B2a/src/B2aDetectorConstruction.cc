@@ -41,9 +41,12 @@
 #include "G4PVPlacement.hh"
 #include "G4GlobalMagFieldMessenger.hh"
 #include "G4AutoDelete.hh"
+#include "G4LogicalBorderSurface.hh"
+#include "G4OpticalSurface.hh"
 
 #include "G4GeometryTolerance.hh"
 #include "G4GeometryManager.hh"
+
 
 #include "G4UserLimits.hh"
 
@@ -61,9 +64,9 @@ G4GlobalMagFieldMessenger* B2aDetectorConstruction::fMagFieldMessenger = 0;
 B2aDetectorConstruction::B2aDetectorConstruction()
 :G4VUserDetectorConstruction(), 
  fNbOfChambers(0),
- fLogicTarget(NULL), fLogicChambersil(NULL), fLogicCrystal(NULL), fLogicMinipads(NULL),
+ fLogicTarget(NULL), fLogicChambersil(NULL), fLogicCrystal(NULL), fCrystalWrap(NULL), fLogicMinipads(NULL),
  fTargetMaterial(NULL), fLayerMaterial(NULL), fMPCMaterial(NULL), 
- fStepLimit(NULL), ftoggleMinipad(false),
+ fStepLimit(NULL), ftoggleMinipad(true),
  fCheckOverlaps(false)
 {
   fMessenger = new B2aDetectorMessenger(this);
@@ -72,6 +75,7 @@ B2aDetectorConstruction::B2aDetectorConstruction()
   fLogicTarget = new G4LogicalVolume*[fNbOfChambers];
   fLogicChambersil = new G4LogicalVolume*[fNbOfChambers];
   fLogicCrystal = new G4LogicalVolume*[188*2];
+  fCrystalWrap = new G4OpticalSurface*[188*2];
   fLogicMinipads = new G4LogicalVolume*[49152];
 }
 
@@ -82,6 +86,7 @@ B2aDetectorConstruction::~B2aDetectorConstruction()
   delete [] fLogicTarget;
   delete [] fLogicChambersil;
   delete [] fLogicCrystal;
+  delete [] fCrystalWrap;
   delete [] fLogicMinipads;
   delete fStepLimit;
   delete fMessenger;
@@ -412,8 +417,8 @@ G4VPhysicalVolume* B2aDetectorConstruction::DefineVolumes()
 
 	    fLogicCrystal[mid]->SetVisAttributes(mpcVisAtt);
 
-
-
+	    fCrystalWrap[mid] = new G4OpticalSurface("CrystalWrap");
+	    
 	    //  G4double rmax =  rmaxFirst + copyNo * rmaxIncr;
 
 	    //  G4Tubs* chamberS
@@ -424,7 +429,7 @@ G4VPhysicalVolume* B2aDetectorConstruction::DefineVolumes()
 
 	    // fLogicChamber[copyNo]->SetVisAttributes(chamberVisAtt);
 
-	    new G4PVPlacement(0,                            // no rotation
+	    G4VPhysicalVolume* crys = new G4PVPlacement(0,                            // no rotation
 			      G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm), // at (x,y,z)
 			      fLogicCrystal[mid],        // its logical volume
 			      "Crystal_PV",                 // its name
@@ -432,7 +437,23 @@ G4VPhysicalVolume* B2aDetectorConstruction::DefineVolumes()
 			      false,                        // no boolean operations
 			      mid,                       // copy number
 			      fCheckOverlaps);              // checking overlaps
+	    
+	    new G4LogicalBorderSurface("CrystalWrap",crys,worldPV,fCrystalWrap[mid]);
+	    fCrystalWrap[mid]->SetType(dielectric_LUT);
+	    fCrystalWrap[mid]->SetModel(LUT);
+	    fCrystalWrap[mid]->SetFinish(polishedtyvekair);
 
+	    const G4int NUM = 2;
+	    
+	    G4double pp[NUM] = {2.0*eV, 3.5*eV};
+	    G4double reflectivity[NUM] = {0.97,0.97};
+	    G4double efficiency[NUM] = {0.0,0.0};
+	    
+	    G4MaterialPropertiesTable* CrystWrapProperty = new G4MaterialPropertiesTable();
+
+	    CrystWrapProperty->AddProperty("REFLECTIVITY",pp,reflectivity,NUM);
+	    CrystWrapProperty->AddProperty("EFFICIENCY",pp,efficiency,NUM);
+	    fCrystalWrap[mid]->SetMaterialPropertiesTable(CrystWrapProperty);
   }
   
   
@@ -468,17 +489,17 @@ G4VPhysicalVolume* B2aDetectorConstruction::DefineVolumes()
   //
   // Sets a max step length in the tracker region, with G4StepLimiter
 
-  G4double maxStep = 0.5*chamberWidth;
+  G4double maxStep = 0.5*dz;
   fStepLimit = new G4UserLimits(maxStep);
   trackerLV->SetUserLimits(fStepLimit);
  
   /// Set additional contraints on the track, with G4UserSpecialCuts
   ///
-  /// G4double maxLength = 2*trackerLength, maxTime = 0.1*ns, minEkin = 10*MeV;
-  /// trackerLV->SetUserLimits(new G4UserLimits(maxStep,
-  ///                                           maxLength,
-  ///                                           maxTime,
-  ///                                           minEkin));
+  G4double maxLength = 260.0*cm, maxTime = 100*ns, minEkin = 6*MeV;
+  trackerLV->SetUserLimits(new G4UserLimits(maxStep,
+					    maxLength,
+					    maxTime,
+					    minEkin));
 
   // Always return the physical world
 
@@ -503,7 +524,7 @@ void B2aDetectorConstruction::ConstructSDandField()
   // Setting aTrackerSD to all logical volumes with the same name 
   // of "Chamber_LV".
   //  SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
-  SetSensitiveDetector("Chambersil_LV", aTrackerSD, true);
+  if (!ftoggleMinipad){SetSensitiveDetector("Chambersil_LV", aTrackerSD, true);}
   SetSensitiveDetector("Crystal_LV", ampcSD, true);
   if (ftoggleMinipad){
     SetSensitiveDetector("Minipad_LV",aminipadSD, true);

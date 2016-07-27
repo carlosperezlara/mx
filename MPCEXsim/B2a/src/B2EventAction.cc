@@ -32,6 +32,7 @@
 #include "B2TrackerHit.hh"
 #include "Analysis.hh"
 #include "B2RunAction.hh"
+#include "B2aDetectorConstruction.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -50,7 +51,8 @@
 B2EventAction::B2EventAction()
   : G4UserEventAction(),
     fMPCEXHCID(-1),
-    fMPCHCID(-1)
+    fMPCHCID(-1),
+    fMINIHCID(-1)
 {
   // set printing per each event
   G4RunManager::GetRunManager()->SetPrintProgress(1);
@@ -67,8 +69,11 @@ void B2EventAction::BeginOfEventAction(const G4Event*)
 {
   if (fMPCEXHCID==-1) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    fMPCEXHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");
+    B2aDetectorConstruction det;
+    // G4cout << det.IsMinis() << G4endl;
+    if (!det.IsMinis()){std::cout << "I didn't want to enter this loop" << std::endl;fMPCEXHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");}
     fMPCHCID  = sdManager->GetCollectionID("MPCSD/MPCHitsCollection");
+    if (det.IsMinis()){fMINIHCID = sdManager->GetCollectionID("MinipadSD/MinipadHitsCollection");}
   }
   
   
@@ -117,10 +122,18 @@ void B2EventAction::EndOfEventAction(const G4Event* event)
       G4Exception("EventAction::EndOfEventAction()","Code001", JustWarning, msg);
       return;
     }           
+  
+  B2aDetectorConstruction det;
+  B2TrackerHitsCollection* mpcexHC;
   // Get hits collections 
-  B2TrackerHitsCollection* mpcexHC = static_cast<B2TrackerHitsCollection*>(hce->GetHC(fMPCEXHCID));
-  B2TrackerHitsCollection* mpcHC = static_cast<B2TrackerHitsCollection*>(hce->GetHC(fMPCHCID));
-
+  if (!det.IsMinis()){mpcexHC = static_cast<B2TrackerHitsCollection*>(hce->GetHC(fMPCEXHCID));
+  }
+  else{mpcexHC = static_cast<B2TrackerHitsCollection*>(hce->GetHC(fMINIHCID));
+  }
+  
+    B2TrackerHitsCollection* mpcHC = static_cast<B2TrackerHitsCollection*>(hce->GetHC(fMPCHCID));
+ 
+  
   if (!mpcexHC){
     G4ExceptionDescription msg;
     msg << "Some of hits collections of this event not found.\n";
@@ -133,48 +146,58 @@ void B2EventAction::EndOfEventAction(const G4Event* event)
 
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
-  G4int n_hit = mpcHC->entries();
+  G4int n_mpchit = mpcHC->entries();
   //analysisManager->FillH1(0, n_hit);
   
-  G4cout << "mpchit: " <<n_hit << G4endl;
-  analysisManager->FillNtupleIColumn(1,n_hit);
+  G4cout << "mpchit: " <<n_mpchit << G4endl;
+  analysisManager->FillNtupleIColumn(1,n_mpchit);
 
-  n_hit = mpcexHC->entries();
-  G4cout << "mpcexhit: " <<n_hit << G4endl;
-  analysisManager->FillNtupleIColumn(0,n_hit);
+  G4int  n_mpcexhit = mpcexHC->entries();
+  G4cout << "mpcexhit: " <<n_mpcexhit << G4endl;
+  analysisManager->FillNtupleIColumn(0,n_mpcexhit);
   G4int totalMPCEXHit = 0;
   G4double totalMPCEXE = 0.;
+  G4int totalMPCHit = 0;
+  G4double totalMPCE = 0.;
   //  B2RunAction* runaction = new B2RunAction();
   G4int count = 0;
   //std::vector<G4double> ene;
   //std::vector<G4int> mini;
-  for (G4int i=0; i<n_hit; i++){
+  for (G4int i=0; i<n_mpcexhit; i++){
     B2TrackerHit* hit = (*mpcexHC)[i];
     G4double eDep = hit->GetEdep();
     G4int minnum = hit->GetChamberNb();
     if (eDep>0.){
-      //       analysisManager->FillNtupleIColumn(4, i);
-      // analysisManager->FillNtupleDColumn(5, eDep);
-      //fEnergies.push_back(eDep);
-      //fMinipads.push_back(i);
-      //runaction->SetMinipads(i);
-      //runaction->SetEnergies(eDep);
       // std::cout << eDep << std::endl;
       minipads.push_back(minnum);
-      energies.push_back(eDep);
+      minienergies.push_back(eDep);
       if (i%50 == 0 ){      std::cout << i<< std::endl;}
-      //analysisManager->FillNtupleIColumn(4,i);
-      //analysisManager->FillNtupleDColumn(5,eDep);
       totalMPCEXHit++;
       totalMPCEXE += eDep;
+      count ++;
+    }
+  }
+  for (G4int i=0; i<n_mpchit; i++){
+    B2TrackerHit* mpchit = (*mpcHC)[i];
+    G4double mpceDep = mpchit->GetEdep();
+    G4int crystalnum = mpchit->GetChamberNb();
+    if (mpceDep>0.){
+      // std::cout << eDep << std::endl;
+      crystals.push_back(crystalnum);
+      mpcenergies.push_back(mpceDep);
+      if (i%50 == 0 ){      std::cout << i<< std::endl;}
+      totalMPCHit++;
+      totalMPCE += mpceDep;
       count ++;
     }
   }
   // analysisManager->FillNtupleIColumn(4,mini);
   // analysisManager->FillNtupleDColumn(5,ene);
   analysisManager->FillNtupleDColumn(2, totalMPCEXE);
+  analysisManager->FillNtupleDColumn(3, totalMPCE);
   std::cout << "Going to add Rows" << std::endl;
   analysisManager->AddNtupleRow();
+  std::cout <<"I added Rows" << std::endl;
   //  runaction->PrintVector();
 }  
 

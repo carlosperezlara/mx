@@ -40,6 +40,7 @@ class G4LogicalVolume;
 class G4Material;
 class G4UserLimits;
 class G4GlobalMagFieldMessenger;
+class G4OpticalSurface;
 
 class B2aDetectorMessenger;
 
@@ -64,6 +65,8 @@ class B2aDetectorConstruction : public G4VUserDetectorConstruction
   void SetMaxStep (G4double );
     void SetCheckOverlaps(G4bool );
 
+  bool IsMinis(){return ftoggleMinipad;};
+  
   private:
     // methods
     void DefineMaterials();
@@ -76,6 +79,7 @@ class B2aDetectorConstruction : public G4VUserDetectorConstruction
   //    G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
   G4LogicalVolume**  fLogicChambersil;    // pointer to the logical Chamber       
   G4LogicalVolume**  fLogicCrystal;       // pointer to the logical MPC Crystal
+  G4OpticalSurface** fCrystalWrap;        // Wrap for Crystals
   G4LogicalVolume**  fLogicMinipads;       // pointer to the logical Minipads
   
     G4Material*        fTargetMaterial;  // pointer to the target  material

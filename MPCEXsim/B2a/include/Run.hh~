@@ -30,7 +30,7 @@ public:
   //G4double GetShowerShape() const { return shower_shape; }
 private:
   G4double si_ene;
-  G4double mpc_ene;
+  //  G4double had_ene;
   // G4double shower_shape;
   G4int SIHCID;
   G4int MPCHCID;

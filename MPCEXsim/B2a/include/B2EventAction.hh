@@ -47,16 +47,22 @@ public:
     virtual void  BeginOfEventAction(const G4Event* );
     virtual void    EndOfEventAction(const G4Event* );
   std::vector<G4int>& GetMinipads() { return minipads; }
-  std::vector<G4double>& GetEnergies() { return energies; }
+  std::vector<G4double>& GetMiniEnergies() { return minienergies; }
+  std::vector<G4int>& GetCrystals() { return crystals; }
+  std::vector<G4double>& GetMPCEnergies() { return mpcenergies; }
   void ClearVectors(){minipads.clear();
-    energies.clear();};
+    minienergies.clear();
+    crystals.clear();
+    mpcenergies.clear();};
 private:
   G4int fMPCEXHCID;
   G4int fMPCHCID;
-
+  G4int fMINIHCID;
+  
   std::vector<G4int> minipads;
-
-  std::vector<G4double> energies;
+  std::vector<G4double> minienergies;
+  std::vector<G4int> crystals;
+  std::vector<G4double> mpcenergies;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

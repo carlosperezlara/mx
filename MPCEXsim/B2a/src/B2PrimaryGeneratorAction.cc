@@ -53,21 +53,22 @@ B2PrimaryGeneratorAction::B2PrimaryGeneratorAction()
   // default particle kinematic
 
   G4ParticleDefinition* particleDefinition 
-    = G4ParticleTable::GetParticleTable()->FindParticle("pi0");//"proton");
-
-  /*  G4double angle = (G4UniformRand()-0.5)*sigmaAngle;
+    = G4ParticleTable::GetParticleTable()->FindParticle("gamma");//pi0");//"proton");
+  /*
+  G4double angle = (G4UniformRand()-0.5)*sigmaAngle;
   G4double pp =
     momentum+(G4UniformRand()-0.5)*sigmaMomentum;
   G4double mass = particleDefinition->GetPDGMass();
   G4double Ekin = sqrt(pp*pp+mass*mass)-mass;
   fparticleGun->SetParticleEnergy(Ekin);
   */
-  G4double angle = pi/2.0;
+  //G4double angle = pi/2.0;
   fParticleGun->SetParticleDefinition(particleDefinition);
   //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(std::cos(angle),std::sin(angle),0.));
 
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,0.0,1.0));//std::cos(pi/2.0),std::sin(pi/2.0)));
-  fParticleGun->SetParticleEnergy(3.0*GeV);
+  //  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,std::sin(pi/45.0),std::cos(pi/45.0)));
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,-1*std::sin(pi/45.0),std::cos(pi/45.0)));
+  fParticleGun->SetParticleEnergy(15*GeV);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

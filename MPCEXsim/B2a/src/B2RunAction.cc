@@ -108,7 +108,10 @@ void B2RunAction::BeginOfRunAction(const G4Run* /*run*/)
   analysisManager->CreateNtupleDColumn("MPCEnergy"); // column Id = 3
  
   analysisManager->CreateNtupleIColumn("MPCEXHitminipads",eventAction->GetMinipads()); // column Id = 4
-  analysisManager->CreateNtupleDColumn("MPCEXEnergysens",eventAction->GetEnergies()); // column \Id = 5
+  analysisManager->CreateNtupleDColumn("MPCEXEnergysens",eventAction->GetMiniEnergies()); // column \Id = 5
+  analysisManager->CreateNtupleIColumn("MPCHitcrystals",eventAction->GetCrystals()); // column Id = 6
+  analysisManager->CreateNtupleDColumn("MPCEnergysens",eventAction->GetMPCEnergies()); // column \Id = 7
+  
   analysisManager->FinishNtuple();
    
   // Open an output file
@@ -122,6 +125,7 @@ void B2RunAction::BeginOfRunAction(const G4Run* /*run*/)
 
 void B2RunAction::EndOfRunAction(const G4Run* run)
 {
+  std::cout << "Entered EndofRunAction" << std::endl;
   const Run* myrun = dynamic_cast<const Run*>(run);
   if ( myrun )
     {
@@ -155,8 +159,10 @@ void B2RunAction::EndOfRunAction(const G4Run* run)
 
   // save histograms & ntuple
   //
+  std::cout << "I'm about to write" << std::endl;
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->Write();
+  std::cout << "I'm about to close the file" << std::endl;
   analysisManager->CloseFile();
 
   

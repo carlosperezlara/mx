@@ -30,14 +30,15 @@
 //#include "HadCalorimeterHit.hh"
 //#include "EmCalorimeterHit.hh"
 #include "B2TrackerHit.hh"
+#include "B2aDetectorConstruction.hh"
 
 Run::Run() :
   G4Run(),
   si_ene(0),
-  //had_ene(0),
+  mpc_ene(0),
   //shower_shape(0),
-  SIHCID(-1)
-  //HCHCID(-1)
+  SIHCID(-1),
+  MPCHCID(-1)
 { }
 
 
@@ -53,11 +54,13 @@ void Run::RecordEvent(const G4Event* evt)
 {
   //Forward call to base class
   G4Run::RecordEvent(evt);
+  B2aDetectorConstruction det;
 
-  if ( SIHCID == -1) {// || HCHCID == -1) {
+  if ( SIHCID == -1|| MPCHCID == -1) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    SIHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");//EMcalorimeter/EMcalorimeterColl");
-    //    HCHCID = sdManager->GetCollectionID("HadCalorimeter/HadCalorimeterColl");
+    if (!det.IsMinis()){SIHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");}//EMcalorimeter/EMcalorimeterColl");
+    if (det.IsMinis()){SIHCID = sdManager->GetCollectionID("MinipadSD/MinipadHitsCollection");}
+    MPCHCID = sdManager->GetCollectionID("MPCSD/MPCHitsCollection");
   }
   G4HCofThisEvent* hce = evt->GetHCofThisEvent();
   if (!hce) {
@@ -68,11 +71,13 @@ void Run::RecordEvent(const G4Event* evt)
     return;
 
   }
-      const B2TrackerHitsCollection* siHC =
-	static_cast<const B2TrackerHitsCollection*>(hce->GetHC(SIHCID));
-      //          const HadCalorimeterHitsCollection* hadHC =
+  const B2TrackerHitsCollection* siHC =
+    static_cast<const B2TrackerHitsCollection*>(hce->GetHC(SIHCID));
+  const B2TrackerHitsCollection* mpcHC =
+    static_cast<const B2TrackerHitsCollection*>(hce->GetHC(MPCHCID));
+  //          const HadCalorimeterHitsCollection* hadHC =
       //    static_cast<const HadCalorimeterHitsCollection*>(hce->GetHC(HCHCID));
-      if ( !siHC )// || !hadHC )
+      if ( !siHC || !mpcHC )
 	    {
 	      G4ExceptionDescription msg;
 	      msg << "Some of hits collections of this event not found.\n";
@@ -81,19 +86,21 @@ void Run::RecordEvent(const G4Event* evt)
 	      return;
 
 	    }
-	  G4double si = 0;
+	  G4double si = 0.;
+	  G4double mpc = 0.;
+	  
 	  // G4double had = 0;
 	  for (size_t i=0;i<siHC->GetSize();i++)
 	    {
 	      B2TrackerHit* hit = (*siHC)[i];
 	      si += hit->GetEdep();
 	    }
-	  /*	  for (size_t i=0;i<hadHC->GetSize();i++)
+	  for (size_t i=0;i<mpcHC->GetSize();i++)
 	    {
-	      HadCalorimeterHit* hit = (*hadHC)[i];
-	      had += hit->GetEdep();
-	      }*/
-	  // had_ene += had;
+	      B2TrackerHit* hit = (*mpcHC)[i];
+	      mpc += hit->GetEdep();
+	    }
+	  mpc_ene += mpc;
 	  si_ene += si;
 	  // if ( had+em > 0 )
 	  //  shower_shape += ( em/(had+em) );

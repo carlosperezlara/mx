@@ -94,6 +94,7 @@ void B2RunAction::BeginOfRunAction(const G4Run* /*run*/)
   const B2EventAction* constEventAction = static_cast<const B2EventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
   B2EventAction* eventAction = const_cast<B2EventAction*>(constEventAction);
 
+  eventAction->ClearVectors();
   //  minipads.clear();
   // energies.clear();
 
@@ -105,8 +106,12 @@ void B2RunAction::BeginOfRunAction(const G4Run* /*run*/)
   analysisManager->CreateNtupleIColumn("MPCHits");  // column Id = 1
   analysisManager->CreateNtupleDColumn("MPCEXEnergy"); // column Id = 2
   analysisManager->CreateNtupleDColumn("MPCEnergy"); // column Id = 3
+ 
   analysisManager->CreateNtupleIColumn("MPCEXHitminipads",eventAction->GetMinipads()); // column Id = 4
-  analysisManager->CreateNtupleDColumn("MPCEXEnergysens",eventAction->GetEnergies()); // column \Id = 5
+  analysisManager->CreateNtupleDColumn("MPCEXEnergysens",eventAction->GetMiniEnergies()); // column \Id = 5
+  analysisManager->CreateNtupleIColumn("MPCHitcrystals",eventAction->GetCrystals()); // column Id = 6
+  analysisManager->CreateNtupleDColumn("MPCEnergysens",eventAction->GetMPCEnergies()); // column \Id = 7
+  
   analysisManager->FinishNtuple();
    
   // Open an output file
