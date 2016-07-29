@@ -1,46 +1,29 @@
 #include "TH2D.h"
 #include "TCanvas.h"
+#include "TLatex.h"
 
 #include <map>
 #include <fstream>
 
-class AeroView {
- public:
-  void AeroView();
-  void InitGeo();
-  void Fill(const int key, const double adc);
-  void SetLogZ() {fLogz=true;}
-  void SetZRange(double val,double val2) {fMinz=val;fMaxz=val2;fRangez=true;}
-  TH2D* GetLayer(int arm, int lay) { return fLayer[arm][lay]; }
-  void PrintKeys(int arm, int lay);
-  TCanvas *Draw();
- protected:
-  TH2D *fLayer[2][8];
-  int fA[49152];
-  int fL[49152];
-  double fX[49152];
-  double fY[49152];
-  bool fLogz;
-  bool fRangez;
-  double fMinz;
-  double fMaxz;
-};
+#include "AeroView.h"
 
-void AeroView::AeroView() {
+AeroView::AeroView() {
   const double rg = 20;
   const int nx = 250;
   const int ny = 26;
   for(int arm=0; arm!=2; ++arm)
     for(int lyr=0; lyr!=8; ++lyr)
       if(lyr%2) {
-	fLayer[arm][lyr] = new TH2D( Form("ARM%dLYR%d",arm,lyr), Form("ARM%d  LYR%d",arm,lyr), ny, -rg, +rg, nx, -rg, +rg );
+	fLayer[arm][lyr] = new TH2D( Form("DisplayARM%dLYR%d",arm,lyr), Form("ARM%d  LYR%d",arm,lyr), ny, -rg, +rg, nx, -rg, +rg );
       } else {
-	fLayer[arm][lyr] = new TH2D( Form("ARM%dLYR%d",arm,lyr), Form("ARM%d  LYR%d",arm,lyr), nx, -rg, +rg, ny, -rg, +rg );
+	fLayer[arm][lyr] = new TH2D( Form("DisplayARM%dLYR%d",arm,lyr), Form("ARM%d  LYR%d",arm,lyr), nx, -rg, +rg, ny, -rg, +rg );
       }
   InitGeo();
   return;
 }
-
+AeroView::~AeroView() {
+  // dtor
+}
 void AeroView::InitGeo() {
   ifstream inf;
   inf.open("map.txt");
@@ -94,4 +77,3 @@ float AeroView::GetX(int key) {
 float AeroView::GetY(int key) {
   return fY[key];
 }
-
