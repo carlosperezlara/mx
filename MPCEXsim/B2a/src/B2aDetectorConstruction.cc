@@ -54,7 +54,8 @@
 #include "G4Colour.hh"
 
 #include "G4SystemOfUnits.hh"
-#include "/Users/stacykarthas/mx/pr/mxGeometry.cxx"
+#include "/Users/stacykarthas/mx/mxGeometry.h"
+#include "/Users/stacykarthas/mx/mxGeometry.cxx"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
@@ -406,7 +407,7 @@ G4VPhysicalVolume* B2aDetectorConstruction::DefineVolumes()
     G4double mpcy = mgeo->Y(k);
 
     if (mpcz < 10 && mpcz>-10) continue; //skip holes
-    dx = mgeo->PbSc_a0(); dy = mgeo->PbSc_a1(); dz = mgeo->PbSc_a2();
+    dx = mgeo->PWO4_a0(); dy = mgeo->PWO4_a1(); dz = mgeo->PWO4_a2();
 
     if (mpcz < 0 ) mpcz = mpcz - dz/2;
     if (mpcz > 0 ) mpcz = mpcz + dz/2;

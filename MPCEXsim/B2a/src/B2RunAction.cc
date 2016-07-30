@@ -95,6 +95,7 @@ void B2RunAction::BeginOfRunAction(const G4Run* /*run*/)
   B2EventAction* eventAction = const_cast<B2EventAction*>(constEventAction);
 
   eventAction->ClearVectors();
+  //  constEventAction->ClearVectors();
   //  minipads.clear();
   // energies.clear();
 
@@ -164,8 +165,12 @@ void B2RunAction::EndOfRunAction(const G4Run* run)
   analysisManager->Write();
   std::cout << "I'm about to close the file" << std::endl;
   analysisManager->CloseFile();
+  /*
+  const B2EventAction* constEventAction = static_cast<const B2EventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
+  B2EventAction* eventAction = const_cast<B2EventAction*>(constEventAction);
 
-  
+  eventAction->ClearVectors();
+  */
 }
 /*
 void B2RunAction::PrintVector()

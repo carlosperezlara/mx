@@ -69,10 +69,11 @@ int main()
   //read all entries and fill the histograms
   Long64_t nentries = t1->GetEntries();
   for (Long64_t i=0;i<nentries;i++) {
+  //  int i = 7;
     Reco->Reset();
     Long64_t tentry = t1->LoadTree(i);
 
-    bmmxhits->GetEntry(tentry);
+    std::cout <<    bmmxhits->GetEntry(tentry) << std::endl;
     bmmxen->GetEntry(tentry);
     bcmhits->GetEntry(tentry);
     bcmen->GetEntry(tentry);
@@ -83,22 +84,33 @@ int main()
     //sums variables
     double totalminienergy = 0;
     double totalmpcenergy = 0;
-    
+    double energyarray[49152+288*2] = {0};
+    //    double mpcarray[49152] = 0;
     for (UInt_t j = 0; j < mmxhits->size(); ++j){
       minihits->Fill(mmxhits->at(j));
       minien->Fill(mmxhits->at(j), mmxen->at(j));
       totalminienergy +=mmxen->at(j);
       display->Fill(mmxhits->at(j),mmxen->at(j)); //Fill display hits
-      Reco->Fill(mmxhits->at(j),mmxen->at(j));
+      //Reco->Fill(mmxhits->at(j),mmxen->at(j));
+      energyarray[mmxhits->at(j)] = mmxen->at(j);
     }
     for (UInt_t k = 0; k < cmhits->size(); ++k){
       mpcen->Fill(cmhits->at(k),cmen->at(k));
       mpchits->Fill(cmhits->at(k));
       totalmpcenergy +=cmen->at(k);
       mpcdisplay->Fill(geo->X(49152+cmhits->at(k)),geo->Y(49152+cmhits->at(k)),cmen->at(k));
-      Reco->Fill(cmhits->at(k)+49152,cmen->at(k));
+      //  Reco->Fill(cmhits->at(k)+49152,cmen->at(k));
+      energyarray[49152+cmhits->at(k)] = cmen->at(k);
     }
+    for (int m = 0; m < 49152;m++){//+288*2; m++){
+      if (energyarray[m] != 0.0) {
+	Reco->Fill(m, energyarray[m]);
+      }
+    }
+   
     Reco->Make();
+    Reco->DumpParties();
+    Reco->DumpStats();
     QAReco->Make(Reco);
     std::cout << "MPCEX ENERGY " << mpcexenergy << " | MPCEX TOTAL ENERGY " << totalminienergy << std::endl;
     std::cout << "MPC ENERGY " << mpcenergy << " |MPC TOTAL ENERGY " << totalmpcenergy << std::endl; 
@@ -128,7 +140,7 @@ int main()
   for(int l=0; l!=8; ++l) {
     main->cd( l+1 );
     al[1][l] = display->GetLayer(1,l);
-    al[1][l]->Draw("colz");
+    al[1][l]->DrawCopy("colz");
   }
 
   main->SaveAs("MPCEXDisplay.eps");

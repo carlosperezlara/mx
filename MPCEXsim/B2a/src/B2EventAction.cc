@@ -67,6 +67,7 @@ B2EventAction::~B2EventAction()
 
 void B2EventAction::BeginOfEventAction(const G4Event*)
 {
+  ClearVectors();
   if (fMPCEXHCID==-1) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     B2aDetectorConstruction det;
