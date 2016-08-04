@@ -30,7 +30,7 @@ int main()
   
   //note that we use "new" to create the TFile and TTree objects !
   //because we want to keep these objects alive when we leave this function.
-  TFile *f = new TFile("/Users/stacykarthas/Geant4/geant4.10.02.p01/examples/basic/MPCEXsim-build/MPCEXfile.root");
+  TFile *f = new TFile("/Users/stacykarthas/Geant4/geant4.10.02.p01/examples/basic/MPCEXsim-build/MPCEXfile100GeV.root");
   TTree *t1 = (TTree*)f->Get("MPCEXfile");
 
   Int_t mxhits, mhits;
@@ -142,14 +142,22 @@ int main()
     std::cout << "ENERGY " << mpcexenergy + mpcenergy << " |TOTAL ENERGY " << totalminienergy + totalmpcenergy << std::endl;
 
     //Draw detector Display
-    MPCEXD->cd(1); aero[9]->Draw("colz");
+    /*    MPCEXD->cd(1); aero[9]->Draw("colz");
     MPCEXD->cd(2); aero[10]->Draw("colz");
     MPCEXD->cd(3); aero[11]->Draw("colz");
     MPCEXD->cd(4); aero[12]->Draw("colz");
     MPCEXD->cd(5); aero[13]->Draw("colz");
     MPCEXD->cd(6); aero[14]->Draw("colz");
     MPCEXD->cd(7); aero[15]->Draw("colz");
-    MPCEXD->cd(8); aero[16]->Draw("colz");
+    MPCEXD->cd(8); aero[16]->Draw("colz");*/
+    MPCEXD->cd(1); aero[0]->Draw("colz");
+    MPCEXD->cd(2); aero[1]->Draw("colz");
+    MPCEXD->cd(3); aero[2]->Draw("colz");
+    MPCEXD->cd(4); aero[3]->Draw("colz");
+    MPCEXD->cd(5); aero[4]->Draw("colz");
+    MPCEXD->cd(6); aero[5]->Draw("colz");
+    MPCEXD->cd(7); aero[6]->Draw("colz");
+    MPCEXD->cd(8); aero[7]->Draw("colz");
     MPCEXD->cd(9); gPad->SetLogz(); mpcdisplay->Draw("colz");
     std::cout << "HERE" << std::endl;
     MPCEXD->SaveAs("MPCEXDisplay.pdf","pdf");
