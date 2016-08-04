@@ -68,7 +68,19 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
 {
   
   //inform the runManager to save random number seed
-  G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+  G4RunManager::GetRunManager()->SetRandomNumberStoreDir("random/");
+
+  if(1) {
+    long seeds[2];
+    time_t systime = time(NULL);
+    seeds[0] = (long) systime;
+    seeds[1] = (long) (systime*G4UniformRand());
+    G4Random::setTheSeeds(seeds);
+    G4Random::showEngineStatus();
+  } else {
+    G4Random::showEngineStatus();
+  }
 
   // Get analysis manager
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
@@ -108,6 +120,8 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
 void RunAction::EndOfRunAction(const G4Run* run)
 {
   std::cout << "Entered EndofRunAction" << std::endl;
+  G4Random::showEngineStatus();
+
   const Run* myrun = dynamic_cast<const Run*>(run);
   if ( myrun )
     {
