@@ -6,7 +6,7 @@ clean:
 standalone: standalone.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o standalone
 
-simqa: simqa.cc AeroView.o
+simqa: simqa.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o simqa
 
 display: display.cc
@@ -35,7 +35,4 @@ mxQAReconstruction.o: mxQAReconstruction.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^
 
 mxGeometry.o: mxGeometry.cxx
-	`root-config --cxx` `root-config --cflags --libs` -c $^
-
-AeroView.o: AeroView.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^

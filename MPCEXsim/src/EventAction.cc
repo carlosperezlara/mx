@@ -34,6 +34,8 @@
 #include "RunAction.hh"
 #include "DetectorConstruction.hh"
 
+#include "Randomize.hh"
+#include "time.h"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"

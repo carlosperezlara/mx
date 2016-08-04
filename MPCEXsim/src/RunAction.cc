@@ -37,6 +37,8 @@
 #include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
+#include "time.h"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -94,8 +96,11 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
   // Open an output file
   // The default file name is set in RunAction::RunAction(),
   // it can be overwritten in a macro
-  analysisManager->OpenFile();
-  
+  analysisManager->OpenFile();/*
+  //choose the Random engine
+  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
+  G4long seed = time(NULL);
+  CLHEP::HepRandom::setTheSeed(seed);*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -9,7 +9,6 @@
 #include "TTree.h"
 #include "TCanvas.h"
 #include "TH2.h"
-#include "AeroView.h"
 #include "mxGeometry.h"
 #include "mxReconstruction.h"
 #include "mxQAReconstruction.h"
@@ -82,10 +81,13 @@ int main()
   for (Long64_t i=0;i<nentries;i++) {
     std::cout <<"|*|*|*|*|*|*| Event: " << i << std::endl;
 
+    //    MPCEXD->Clear();
     //Reset Histograms
-    for(int i=0; i!=8; ++i) {
-      aero[i]->Reset();
-      aero[9+i]->Reset();
+    for(int n=0; n!=8; ++n) {
+      aero[n]->Reset();
+      aero[9+n]->Reset();
+      //      MPCEXD->cd(n);
+      //      MPCEXD->Clear();
     }
     mpcdisplay->Reset();
     Reco->Reset();
@@ -149,10 +151,14 @@ int main()
     MPCEXD->cd(7); aero[15]->Draw("colz");
     MPCEXD->cd(8); aero[16]->Draw("colz");
     MPCEXD->cd(9); gPad->SetLogz(); mpcdisplay->Draw("colz");
+    std::cout << "HERE" << std::endl;
     MPCEXD->SaveAs("MPCEXDisplay.pdf","pdf");
+    std::cout << "HERE" << std::endl;
+    MPCEXD->Clear();
   }
+  std::cout << "HERE" << std::endl;
   MPCEXD->SaveAs("MPCEXDisplay.pdf]","pdf");
-  
+  std::cout << "HERE" << std::endl;
   //Draw Energy Histograms
   TCanvas *minicanvas = new TCanvas();
   minien->Draw("same");
@@ -161,7 +167,7 @@ int main()
   mpcen->Draw();
   mpccanvas->SaveAs("MpcCanvas.eps");
 
-
+  std::cout << "HERE" << std::endl;
   /*  TH2F *mpcdisplay2 = new TH2F("mpcdisp2","MPC Crystal Displays;X;Y",61,-30,30,61,-30,30);
   for (int jj = 0; jj<575; jj++){
   if (geo->Z(49152+jj)>1){

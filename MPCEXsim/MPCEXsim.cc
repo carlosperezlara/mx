@@ -42,6 +42,7 @@
 #include "G4StepLimiterPhysics.hh"
 
 #include "Randomize.hh"
+#include "time.h"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -59,6 +60,10 @@ int main(int argc,char** argv)
 
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
+
+  //set random seed with system time
+  G4long seed = time(NULL);
+  CLHEP::HepRandom::setTheSeed(seed);
 
   // Construct the default run manager
   //
