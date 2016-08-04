@@ -35,6 +35,7 @@
 #include "G4Box.hh"
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
+#include "G4GeneralParticleSource.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
@@ -48,10 +49,12 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction()
 {
   G4int nofParticles = 1;
-  fParticleGun = new G4ParticleGun(nofParticles);
-
+  //  fParticleGun = new G4ParticleGun(nofParticles);
+  fParticleGun = new G4GeneralParticleSource();
+  fParticleGun->SetNumberOfParticles(nofParticles);
+  
   // default particle kinematic
-
+  /*
   G4ParticleDefinition* particleDefinition 
     = G4ParticleTable::GetParticleTable()->FindParticle("gamma");//"proton");
   
@@ -62,7 +65,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   G4double theta = 2.0*std::atan(std::exp(-eta));
   
   std::cout << "eta = " << eta << " theta = " << theta << " Ekin = " << Ekin<< " phi = "<< phi << std::endl; 
-  
+*/
+  //fGPS->GetParticleEnergy()->;
   /*
   G4double pz = Ekin*(std::exp(eta)-1)/(std::exp(eta)+1);
   G4double mass = particleDefinition->GetPDGMass();
@@ -86,12 +90,13 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fparticleGun->SetParticleEnergy(Ekin);
   */
   //G4double angle = pi/2.0;
-  fParticleGun->SetParticleDefinition(particleDefinition);
+  //fParticleGun->SetParticleDefinition(particleDefinition);
 
   //  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,std::sin(pi/4.0),std::cos(pi/4.0)));
   //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.0,-1*std::sin(pi/45.0),std::cos(pi/45.0)));
-  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(std::sin(phi)*std::sin(theta),std::cos(phi)*std::sin(theta),std::cos(theta)));
-  fParticleGun->SetParticleEnergy(Ekin*GeV);
+  //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(std::sin(phi)*std::sin(theta),std::cos(phi)*std::sin(theta),std::cos(theta)));
+  //fParticleGun->SetParticleEnergy(Ekin*GeV);
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -110,7 +115,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // In order to avoid dependence of PrimaryGeneratorAction
   // on DetectorConstruction class we get world volume
   // from G4LogicalVolumeStore.
-
+  /*
   G4double worldZHalfLength = 0;
   G4LogicalVolume* worldLV
     = G4LogicalVolumeStore::GetInstance()->GetVolume("World");
@@ -124,7 +129,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   }
 
   fParticleGun->SetParticlePosition(G4ThreeVector(0., 0., 0.));//-worldZHalfLength));
-
+  */
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 

@@ -81,7 +81,8 @@ int main()
   for (Long64_t i=0;i<nentries;i++) {
     std::cout <<"|*|*|*|*|*|*| Event: " << i << std::endl;
 
-    //    MPCEXD->Clear();
+    MPCEXD->Clear();
+    MPCEXD->Divide(3,3);
     //Reset Histograms
     for(int n=0; n!=8; ++n) {
       aero[n]->Reset();
@@ -162,7 +163,7 @@ int main()
     std::cout << "HERE" << std::endl;
     MPCEXD->SaveAs("MPCEXDisplay.pdf","pdf");
     std::cout << "HERE" << std::endl;
-    MPCEXD->Clear();
+    //    MPCEXD->Clear();
   }
   std::cout << "HERE" << std::endl;
   MPCEXD->SaveAs("MPCEXDisplay.pdf]","pdf");
