@@ -1,0 +1,8 @@
+# Macro file for MPCEXsim
+# 
+# To be run preferably in batch, without graphics:
+# % MPCEXsim[a,b] run2.mac
+#
+#/run/numberOfWorkers 4
+/run/initialize
+/run/beamOn 1

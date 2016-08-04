@@ -1,19 +1,24 @@
 # $Id: GNUmakefile 68058 2013-03-13 14:47:43Z gcosmo $
-# -----------------------------------------------------------------
+# --------------------------------------------------------------
+# GNUmakefile for MPCEXsim module.  Stacy Karthas, 08/02/16.
+# --------------------------------------------------------------
 
-SUBDIR =  B2a B2b
+name := MPCEXsim
+G4TARGET := $(name)
+G4EXLIB := true
 
-.PHONY: bin clean clean_bin debug
+ifndef G4INSTALL
+  G4INSTALL = ../../../..
+endif
 
-bin:
-	@for dir in $(SUBDIR); do (cd $$dir && $(MAKE) bin); done;:
- 
-clean:
-	@for dir in $(SUBDIR); do (cd $$dir && $(MAKE) clean); done;:
- 
-clean_bin:
-	@for dir in $(SUBDIR); do (cd $$dir && $(MAKE) clean_bin); done;:
- 
-debug:
-	@for dir in $(SUBDIR); do (cd $$dir && $(MAKE) debug); done;:
- 
+.PHONY: all
+all: lib bin
+
+include $(G4INSTALL)/config/architecture.gmk
+
+include $(G4INSTALL)/config/binmake.gmk
+
+visclean:
+	rm -f g4*.prim g4*.eps g4*.wrl
+	rm -f .DAWN_*
+
