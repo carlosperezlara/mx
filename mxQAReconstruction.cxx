@@ -6,6 +6,7 @@
 #include "TMath.h"
 #include "TList.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TString.h"
 
 #include "mxReconstruction.h"
@@ -32,22 +33,28 @@ mxQAReconstruction::mxQAReconstruction() {
   for(int arm=0; arm!=2; ++arm) {
     for(int lyr=0; lyr!=8; ++lyr) {
       fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",lyr), 100,0,800);
-      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",lyr), 100,0,1);
+      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",lyr), 100,0,3);
       fList->Add( fHhitN[arm][lyr] );
       fList->Add( fHhitE[arm][lyr] );
 
       fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",lyr), 100,0,150);
       fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",lyr), 100,0,3);
+      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyEN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyEN;GEV;HITS",arm==0?"S":"N",lyr), 100,0,3, 60,-0.5,59.5);
       fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",lyr), 100,-20,+20);
       fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",lyr), 100,-20,+20);
       fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",lyr), 100,0,2);
       fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",lyr), 100,0,2);
+      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyESX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyESX;GEV;CM^2",arm==0?"S":"N",lyr), 100,0,100, 100,0,50);
+      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyESY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyESY;GEV;CM^2",arm==0?"S":"N",lyr), 100,0,100, 100,0,50);
       fList->Add( fHptyN[arm][lyr] );
       fList->Add( fHptyE[arm][lyr] );
+      fList->Add( fHptyEN[arm][lyr] );
       fList->Add( fHptyX[arm][lyr] );
       fList->Add( fHptyY[arm][lyr] );
       fList->Add( fHptySX[arm][lyr] );
       fList->Add( fHptySY[arm][lyr] );
+      fList->Add( fHptyESX[arm][lyr] );
+      fList->Add( fHptyESY[arm][lyr] );
     }
     fHhitN[arm][8] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",8), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",8), 220,-0.5,219.5);
     fHhitE[arm][8] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",8), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",8), 500,0,100);
@@ -56,16 +63,24 @@ mxQAReconstruction::mxQAReconstruction() {
 
     fHptyN[arm][8] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",8), 25,-0.5,24.5);
     fHptyE[arm][8] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",8), 500,0,100);
+    fHptyEN[arm][8] = new TH2F( Form("mxReco_%s%d_ptyEN",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyEN;GEV;HITS",arm==0?"S":"N",8), 100,0,100, 60,-0.5,59.5);
     fHptyX[arm][8] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",8), 100,-20,+20);
     fHptyY[arm][8] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",8), 100,-20,+20);
     fHptySX[arm][8] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",8), 100,0,50);
     fHptySY[arm][8] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",8), 100,0,50);
+    fHptyESX[arm][8] = new TH2F( Form("mxReco_%s%d_ptyESX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyESX;GEV;CM^2",arm==0?"S":"N",8), 100,0,100, 100,0,50);
+    fHptyESY[arm][8] = new TH2F( Form("mxReco_%s%d_ptyESY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyESY;GEV;CM^2",arm==0?"S":"N",8), 100,0,100, 100,0,50);
     fList->Add( fHptyN[arm][8] );
     fList->Add( fHptyE[arm][8] );
+    fList->Add( fHptyEN[arm][8] );
+    fList->Add( fHptyEN[arm][8] );
     fList->Add( fHptyX[arm][8] );
     fList->Add( fHptyY[arm][8] );
     fList->Add( fHptySX[arm][8] );
     fList->Add( fHptySY[arm][8] );
+    fList->Add( fHptyESX[arm][8] );
+    fList->Add( fHptyESY[arm][8] );
+
 
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;COALITIONS",arm==0?"S":"N"), 100,0,500);
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;GEV",arm==0?"S":"N"), 100,0,3);
@@ -147,11 +162,13 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       std::vector<mxParty*> pty = r->GetParties(glyr);
       for(int k=0; k!=r->GetNParties(glyr); ++k) {
 	fHptyE[arm][lyr]->Fill( pty[k]->Signal() );
+	fHptyEN[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->N() );
 	fHptyX[arm][lyr]->Fill( pty[k]->GetX() );
 	fHptyY[arm][lyr]->Fill( pty[k]->GetY() );
 	fHptySX[arm][lyr]->Fill( pty[k]->GetCov(0) );
 	fHptySY[arm][lyr]->Fill( pty[k]->GetCov(1) );
-      }
+	fHptyESX[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->GetCov(0) );
+	fHptyESY[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->GetCov(1) );      }
       //==>HIT
       fHhitN[arm][lyr]->Fill( r->GetNHits(glyr) );
       std::vector<mxHit*> hit = r->GetHits(glyr);

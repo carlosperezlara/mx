@@ -4,6 +4,7 @@
 #include <vector>
 
 class TH1F;
+class TH2F;
 class TList;
 class mxReconstruction;
 
@@ -29,10 +30,13 @@ class mxQAReconstruction {
 
   TH1F *fHptyN[2][9];
   TH1F *fHptyE[2][9];
+  TH2F *fHptyEN[2][9];
   TH1F *fHptyX[2][9];
   TH1F *fHptyY[2][9];
   TH1F *fHptySX[2][9];
   TH1F *fHptySY[2][9];
+  TH2F *fHptyESX[2][9];
+  TH2F *fHptyESY[2][9];
 
   TH1F *fHcoaN[2];
   TH1F *fHcoaEn[2];
