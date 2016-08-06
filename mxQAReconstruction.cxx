@@ -30,23 +30,25 @@ mxQAReconstruction::mxQAReconstruction() {
   fList->Add( fHvz );
 
   for(int arm=0; arm!=2; ++arm) {
-    fHhitN[arm] = new TH1F( Form("mxReco_%s_hitN",arm==0?"S":"N"), Form("mxReco_%s_hitN;HITS",arm==0?"S":"N"), 100,0,800);
-    fHhitE[arm] = new TH1F( Form("mxReco_%s_hitE",arm==0?"S":"N"), Form("mxReco_%s_hitE;GEV",arm==0?"S":"N"), 100,0,1);
-    fList->Add( fHhitN[arm] );
-    fList->Add( fHhitE[arm] );
+    for(int lyr=0; lyr!=9; ++lyr) {
+      fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",lyr), 100,0,800);
+      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",lyr), 100,0,1);
+      fList->Add( fHhitN[arm][lyr] );
+      fList->Add( fHhitE[arm][lyr] );
 
-    fHptyN[arm] = new TH1F( Form("mxReco_%s_ptyN",arm==0?"S":"N"), Form("mxReco_%s_ptyN;PARTIES",arm==0?"S":"N"), 100,0,150);
-    fHptyE[arm] = new TH1F( Form("mxReco_%s_ptyE",arm==0?"S":"N"), Form("mxReco_%s_ptyE;GEV",arm==0?"S":"N"), 100,0,3);
-    fHptyX[arm] = new TH1F( Form("mxReco_%s_ptyX",arm==0?"S":"N"), Form("mxReco_%s_ptyX;CM",arm==0?"S":"N"), 100,-20,+20);
-    fHptyY[arm] = new TH1F( Form("mxReco_%s_ptyY",arm==0?"S":"N"), Form("mxReco_%s_ptyY;CM",arm==0?"S":"N"), 100,-20,+20);
-    fHptySX[arm] = new TH1F( Form("mxReco_%s_ptySX",arm==0?"S":"N"), Form("mxReco_%s_ptySX;CM^2",arm==0?"S":"N"), 100,0,2);
-    fHptySY[arm] = new TH1F( Form("mxReco_%s_ptySY",arm==0?"S":"N"), Form("mxReco_%s_ptySY;CM^2",arm==0?"S":"N"), 100,0,2);
-    fList->Add( fHptyN[arm] );
-    fList->Add( fHptyE[arm] );
-    fList->Add( fHptyX[arm] );
-    fList->Add( fHptyY[arm] );
-    fList->Add( fHptySX[arm] );
-    fList->Add( fHptySY[arm] );
+      fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",lyr), 100,0,150);
+      fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",lyr), 100,0,3);
+      fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",lyr), 100,-20,+20);
+      fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",lyr), 100,-20,+20);
+      fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",lyr), 100,0,2);
+      fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",lyr), 100,0,2);
+      fList->Add( fHptyN[arm][lyr] );
+      fList->Add( fHptyE[arm][lyr] );
+      fList->Add( fHptyX[arm][lyr] );
+      fList->Add( fHptyY[arm][lyr] );
+      fList->Add( fHptySX[arm][lyr] );
+      fList->Add( fHptySY[arm][lyr] );
+    }
 
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;COALITIONS",arm==0?"S":"N"), 100,0,500);
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;GEV",arm==0?"S":"N"), 100,0,3);
@@ -124,20 +126,20 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
     for(int lyr=0; lyr!=9; ++lyr) {
       int glyr = arm*9 + lyr;
       //==>PTY
-      fHptyN[arm]->Fill( r->GetNParties(glyr) );
+      fHptyN[arm][lyr]->Fill( r->GetNParties(glyr) );
       std::vector<mxParty*> pty = r->GetParties(glyr);
       for(int k=0; k!=r->GetNParties(glyr); ++k) {
-	fHptyE[arm]->Fill( pty[k]->Signal() );
-	fHptyX[arm]->Fill( pty[k]->GetX() );
-	fHptyY[arm]->Fill( pty[k]->GetY() );
-	fHptySX[arm]->Fill( pty[k]->GetCov(0) );
-	fHptySY[arm]->Fill( pty[k]->GetCov(1) );
+	fHptyE[arm][lyr]->Fill( pty[k]->Signal() );
+	fHptyX[arm][lyr]->Fill( pty[k]->GetX() );
+	fHptyY[arm][lyr]->Fill( pty[k]->GetY() );
+	fHptySX[arm][lyr]->Fill( pty[k]->GetCov(0) );
+	fHptySY[arm][lyr]->Fill( pty[k]->GetCov(1) );
       }
       //==>HIT
-      fHhitN[arm]->Fill( r->GetNHits(glyr) );
+      fHhitN[arm][lyr]->Fill( r->GetNHits(glyr) );
       std::vector<mxHit*> hit = r->GetHits(glyr);
       for(int k=0; k!=r->GetNHits(glyr); ++k) {
-	fHhitE[arm]->Fill( hit[k]->Signal() );
+	fHhitE[arm][lyr]->Fill( hit[k]->Signal() );
       }
 
     }

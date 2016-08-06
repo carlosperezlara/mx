@@ -22,17 +22,17 @@ class mxQAReconstruction {
   TH1F *fHvy;
   TH1F *fHvz;
 
-  TH1F *fHhitN[2];
-  TH1F *fHhitE[2];
-  TH1F *fHhitX[2];
-  TH1F *fHhitY[2];
+  TH1F *fHhitN[2][9];
+  TH1F *fHhitE[2][9];
+  TH1F *fHhitX[2][9];
+  TH1F *fHhitY[2][9];
 
-  TH1F *fHptyN[2];
-  TH1F *fHptyE[2];
-  TH1F *fHptyX[2];
-  TH1F *fHptyY[2];
-  TH1F *fHptySX[2];
-  TH1F *fHptySY[2];
+  TH1F *fHptyN[2][9];
+  TH1F *fHptyE[2][9];
+  TH1F *fHptyX[2][9];
+  TH1F *fHptyY[2][9];
+  TH1F *fHptySX[2][9];
+  TH1F *fHptySY[2][9];
 
   TH1F *fHcoaN[2];
   TH1F *fHcoaEn[2];
