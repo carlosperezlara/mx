@@ -30,7 +30,7 @@ mxQAReconstruction::mxQAReconstruction() {
   fList->Add( fHvz );
 
   for(int arm=0; arm!=2; ++arm) {
-    for(int lyr=0; lyr!=9; ++lyr) {
+    for(int lyr=0; lyr!=8; ++lyr) {
       fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",lyr), 100,0,800);
       fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",lyr), 100,0,1);
       fList->Add( fHhitN[arm][lyr] );
@@ -49,6 +49,23 @@ mxQAReconstruction::mxQAReconstruction() {
       fList->Add( fHptySX[arm][lyr] );
       fList->Add( fHptySY[arm][lyr] );
     }
+    fHhitN[arm][8] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",8), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",8), 220,-0.5,219.5);
+    fHhitE[arm][8] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",8), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",8), 500,0,100);
+    fList->Add( fHhitN[arm][8] );
+    fList->Add( fHhitE[arm][8] );
+
+    fHptyN[arm][8] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",8), 25,-0.5,24.5);
+    fHptyE[arm][8] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",8), 500,0,100);
+    fHptyX[arm][8] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",8), 100,-20,+20);
+    fHptyY[arm][8] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",8), 100,-20,+20);
+    fHptySX[arm][8] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",8), 100,0,50);
+    fHptySY[arm][8] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",8), 100,0,50);
+    fList->Add( fHptyN[arm][8] );
+    fList->Add( fHptyE[arm][8] );
+    fList->Add( fHptyX[arm][8] );
+    fList->Add( fHptyY[arm][8] );
+    fList->Add( fHptySX[arm][8] );
+    fList->Add( fHptySY[arm][8] );
 
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;COALITIONS",arm==0?"S":"N"), 100,0,500);
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;GEV",arm==0?"S":"N"), 100,0,3);
