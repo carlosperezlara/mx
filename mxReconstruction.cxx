@@ -131,10 +131,10 @@ void mxReconstruction::Make() {
   // maker
   for(int lyr=0; lyr!=18; ++lyr) std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
   Parties();
-  for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
-  Coalitions();
-  for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].end(),GreaterSignal());
-  Unions();
+  //for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
+  //Coalitions();
+  //for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].end(),GreaterSignal());
+  //Unions();
 }
 //========
 void mxReconstruction::Parties() {
@@ -149,6 +149,12 @@ void mxReconstruction::Parties() {
     //}
     // building
     //if(lyr!=12) continue;
+    float dx = 0.2;
+    float dy = 0.2;
+    if(lyr==8||lyr==17) {
+      dx = 2.5;
+      dy = 2.5;
+    }
     for(int mh=0; mh!=fNHit[lyr]; ++mh) {
       hit = (mxHit*) fHit[lyr].at( mh );
       //if(hit->IsAssigned()) continue;
@@ -159,8 +165,10 @@ void mxReconstruction::Parties() {
       //std::cout << "  hit no " << mh << " in " << x << " " << y << std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = (mxParty*) fPty[lyr].at( mp );
-	float test = pty->Test(x,y);
-	//std::cout << "    pty no " << mp << "||=> " << pty->GetX() << " " << pty->GetY() << " || " << pty->N() << " || stddev " << sqrt(pty->GetCov(0)) << " " << sqrt(pty->GetCov(1)) << " || test " << test << std::endl;
+	float test = pty->Test(x,y,dx,dy);
+	//std::cout << "    pty no " << mp << "||=> " << pty->GetX() << " " << pty->GetY();
+	//std::cout << " || " << pty->N() << " || stddev " << sqrt(pty->GetCov(0));
+	//std::cout << " " << sqrt(pty->GetCov(1)) << " || test " << test << std::endl;
 	if(test<3) {
 	  append = true;
 	  //std::cout << "    >>party update<< before:" << pty->GetX() << " " << pty->GetY();
@@ -185,8 +193,8 @@ void mxReconstruction::Parties() {
 //========
 void mxReconstruction::Coalitions() {
   // forming global coalitions
-  float Z[18] = {-203.982, -204.636, -205.29, -205.944, -206.598, -207.252, -207.906, -208.560, -500,
-                 +203.982, +204.636, +205.29, +205.944, +206.598, +207.252, +207.906, +208.560, +500};
+  float Z[18] = {-203.982, -204.636, -205.29, -205.944, -206.598, -207.252, -207.906, -208.560, -220.9,
+                 +203.982, +204.636, +205.29, +205.944, +206.598, +207.252, +207.906, +208.560, +220.9};
 
   mxParty *pty;
   mxCoalition *coa;

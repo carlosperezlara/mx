@@ -57,7 +57,9 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fCal(NULL),
   fRec(NULL),
   fQA(NULL),
-  fList(NULL)
+  fList(NULL),
+  fCheckMpcRaw2(true),
+  fCheckMpcExRawHit(true)
 {
   printf("mcReco::CTOR\n");
   for(int i=0; i!=2; ++i) {
@@ -65,6 +67,8 @@ mSubsysReco::mSubsysReco( const char* name ) :
     fHpar[i] = NULL;
     fHsph[i] = NULL;
     fHcid[i] = NULL;
+    fHadc[i] = NULL;
+    fHlhf[i] = NULL;
   }
   fHcry = NULL;
   fHcrytofS = NULL;
@@ -97,26 +101,35 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
 
   fList = new TList();
   fList->SetOwner();
-  for(int i=0; i!=2; ++i) {
-    fHstk[i] = new TH1F( Form("mxDet_Hstk%d",i), Form("mxDet_Hstk%d",i),  6,-0.5,5.5);
-    fHpar[i] = new TH1F( Form("mxDet_Hpar%d",i), Form("mxDet_Hpar%d",i),120,-0.5,120-0.5);
-    fHsph[i] = new TH1F( Form("mxDet_Hsph%d",i), Form("mxDet_Hsph%d",i),120,-0.5,520-0.5);
-    fHcid[i] = new TH2F( Form("mxDet_Hcid%d",i), Form("mxDet_Hcid%d",i), 16,-0.5,15.5,47,-0.5,46.5);
-    fList->Add(fHstk[i]);
-    fList->Add(fHpar[i]);
-    fList->Add(fHsph[i]);
-    fList->Add(fHcid[i]);
+  if(fCheckMpcExRawHit) {
+    for(int i=0; i!=2; ++i) {
+      fHstk[i] = new TH1F( Form("mxDet_Hstk%d",i), Form("mxDet_Hstk%d",i),  6,-0.5,5.5);
+      fHpar[i] = new TH1F( Form("mxDet_Hpar%d",i), Form("mxDet_Hpar%d",i),120,-0.5,120-0.5);
+      fHsph[i] = new TH1F( Form("mxDet_Hsph%d",i), Form("mxDet_Hsph%d",i),120,-0.5,520-0.5);
+      fHcid[i] = new TH2F( Form("mxDet_Hcid%d",i), Form("mxDet_Hcid%d",i), 16,-0.5,15.5,47,-0.5,46.5);
+      fHadc[i] = new TH2F( Form("mxDet_Hadc%d",i), Form("mxDet_Hadc%d",i),49152,-0.5,49151.5,100,-20.5,79.5 );
+      fHlhf[i] = new TH2F( Form("mxDet_Hlhf%d",i), Form("mxDet_Hlhf%d",i),49152,-0.5,49151.5,50,0.0,0.5 );
+      fList->Add(fHstk[i]);
+      fList->Add(fHpar[i]);
+      fList->Add(fHsph[i]);
+      fList->Add(fHcid[i]);
+      fList->Add(fHadc[i]);
+      fList->Add(fHlhf[i]);
+    }
   }
-  fHcry = new TH3F( "mxDet_Hcry", "mxDet_Hcry", 576,-0.5,575.5, 100,0,50, 100,0,15 );
-  fHcryeneS = new TH1F( "mxDet_HcryeneS", "mxDet_HcryeneS", 202, -1, 100 );
-  fHcrytofS = new TH1F( "mxDet_HcrytofS", "mxDet_HcrytofS", 100, 0, 20 );
-  fHcryeneN = new TH1F( "mxDet_HcryeneN", "mxDet_HcryeneN", 202, -1, 100 );
-  fHcrytofN = new TH1F( "mxDet_HcrytofN", "mxDet_HcrytofN", 100, 0, 20 );
-  fList->Add(fHcry);
-  fList->Add(fHcryeneS);
-  fList->Add(fHcrytofS);
-  fList->Add(fHcryeneN);
-  fList->Add(fHcrytofN);
+  if(fCheckMpcRaw2) {
+    fHcry = new TH3F( "mxDet_Hcry", "mxDet_Hcry", 576,-0.5,575.5, 100,0,50, 100,0,15 );
+    fHcryeneS = new TH1F( "mxDet_HcryeneS", "mxDet_HcryeneS", 202, -1, 100 );
+    fHcrytofS = new TH1F( "mxDet_HcrytofS", "mxDet_HcrytofS", 100, 0, 20 );
+    fHcryeneN = new TH1F( "mxDet_HcryeneN", "mxDet_HcryeneN", 202, -1, 100 );
+    fHcrytofN = new TH1F( "mxDet_HcrytofN", "mxDet_HcrytofN", 100, 0, 20 );
+    fList->Add(fHcry);
+    fList->Add(fHcryeneS);
+    fList->Add(fHcrytofS);
+    fList->Add(fHcryeneN);
+    fList->Add(fHcrytofN);
+  }
+
   for(int i=0; i!=fList->GetEntries(); ++i)
     se->registerHisto( ((TH1F*) (fList->At(i))) );
 
@@ -235,9 +248,15 @@ bool mSubsysReco::PassEventCuts(PHCompositeNode* top_node) {
 }
 //====================================================
 int mSubsysReco::process_event(PHCompositeNode* top_node) {
-  FillHistos(0,top_node);
+  //std::cout << "mSubsysReco::process_event" << std::endl;
+  static int nev = 0;
+  if(nev%1000==0) {
+    std::cout << Form("mSubsysReco::process_event %d events", nev) << std::endl;
+  }
+  nev++;
+  if(fCheckMpcExRawHit) FillHistos(0,top_node);
   if(!PassEventCuts(top_node)) return ABORTEVENT;
-  FillHistos(1,top_node);
+  if(fCheckMpcExRawHit) FillHistos(1,top_node);
 
   fRec->Reset();
 
@@ -268,6 +287,11 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     float lo_adc = raw_hit->low()  - fCal->GetPLMu()->Get(key);
     float hires = hi_adc * fCal->GetLMPV()->Get(key)*0.14/20.;
     float lores = lo_adc * fCal->GetLHft()->Get(key) * fCal->GetLMPV()->Get(key)*0.14/20.;
+    if(fCheckMpcExRawHit) {
+      fHadc[0]->Fill(key,hi_adc);
+      if(hi_adc>40 && hi_adc<150)
+	fHlhf[0]->Fill(key,lo_adc/hi_adc);
+    }
 
     float ene = hires; // 0.5*(hires+lores); // hires<mThrhld?hires:lores;
     float enecut = TMath::Abs(fCal->GetPHSg()->Get(key))*5 *0.14/20 ; // fCal->GetLMPV()->Get(key) - 1*fCal->GetLSgm()->Get(key);
@@ -282,15 +306,17 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     int key = raw->get_ch();
     float tof = raw->get_sample();
     float ene = raw->get_adc();
-    //fRec->Fill(49152+key,ene);
-    if(key<288) {
-      fHcrytofS->Fill( tof );
-      fHcryeneS->Fill( ene );
-    } else {
-      fHcrytofN->Fill( tof );
-      fHcryeneN->Fill( ene );
+    fRec->Fill(49152+key,ene);
+    if(fCheckMpcRaw2) {
+      if(key<288) {
+	fHcrytofS->Fill( tof );
+	fHcryeneS->Fill( ene );
+      } else {
+	fHcrytofN->Fill( tof );
+	fHcryeneN->Fill( ene );
+      }
+      fHcry->Fill( key, ene, tof );
     }
-    fHcry->Fill( key, ene, tof );
   }
   /////////////////
 

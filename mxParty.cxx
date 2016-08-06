@@ -85,17 +85,15 @@ float mxParty::GetY() {
   return fSy/fSgn;
 }
 //========
-float mxParty::Test(float nx, float ny) {
+float mxParty::Test(float nx, float ny, float dx, float dy) {
   // tester
   if( fNHits<1 ) return -1;
   float cx = GetX();
   float cy = GetY();
   float varX = GetCov(0);
   float varY = GetCov(1);
-  //if(varX<1e-6)
-  varX = 0.2*0.2*fNHits*fNHits; // prior
-  //if(varY<1e-6)
-  varY = 0.2*0.2*fNHits*fNHits; // prior
+  if(varX<dx) varX = dx*dx; // prior
+  if(varY<dy) varY = dy*dy; // prior
   float dx2 = (nx-cx)/varX*(nx-cx);
   float dy2 = (ny-cy)/varY*(ny-cy);
   return TMath::Sqrt( dx2 + dy2 );

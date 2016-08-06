@@ -14,7 +14,7 @@ class mxParty {
   virtual ~mxParty();
   void Fill(mxHit *hit,float,float);
   mxHit* GetHit(int val) {return val<fNHits?fHits[val]:NULL;}
-  float Test(float,float);
+  float Test(float,float,float dx=0.2,float dy=0.2);
   int N() {return fNHits;}
   float GetX();
   float GetY();

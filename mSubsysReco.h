@@ -32,10 +32,16 @@ class mSubsysReco: public SubsysReco {
   mxQAReconstruction *fQA;
 
   TList *fList;
+  bool fCheckMpcRaw2;
+  bool fCheckMpcExRawHit;
+
   TH1F *fHstk[2];
   TH1F *fHpar[2];
   TH1F *fHsph[2];
   TH2F *fHcid[2];
+  TH2F *fHadc[2];
+  TH2F *fHlhf[2];
+
   TH3F *fHcry;
   TH1F *fHcrytofS;
   TH1F *fHcryeneS;
