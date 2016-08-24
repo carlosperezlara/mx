@@ -75,8 +75,8 @@ DetectorConstruction::DetectorConstruction()
   fNbOfChambers = 192*2;
   fLogicTarget = new G4LogicalVolume*[fNbOfChambers];
   fLogicChambersil = new G4LogicalVolume*[fNbOfChambers];
-  fLogicCrystal = new G4LogicalVolume*[188*2];
-  fCrystalWrap = new G4OpticalSurface*[188*2];
+  fLogicCrystal = new G4LogicalVolume*[288*2];
+  fCrystalWrap = new G4OpticalSurface*[288*2];
   fLogicMinipads = new G4LogicalVolume*[49152];
 }
 
@@ -193,7 +193,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
                  fCheckOverlaps); // checking overlaps
   
   // Tracker
- 
+  /* 
   G4ThreeVector positionTracker = G4ThreeVector(0,0,0);
 
   G4Box* trackerS
@@ -208,7 +208,56 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
                     false,           // no boolean operations
                     0,               // copy number
                     fCheckOverlaps); // checking overlaps 
+  */
+  
+  G4ThreeVector positionEXS = G4ThreeVector(0,0,-205*cm);//mgeo->W_Z(96)*cm);
+  G4Box* EXSS = new G4Box("mpcexs",dx*6.0*cm,dy*6.0*cm,dz*24.0*cm);
+  G4LogicalVolume* EXSLV = new G4LogicalVolume(EXSS, air, "MpcexS",0,0,0);
+  new G4PVPlacement(0,
+		    positionEXS,
+		    EXSLV,
+		    "MpcexS",
+		    worldLV,
+		    false,
+		    0,
+		    0);
 
+  G4ThreeVector positionEXN = G4ThreeVector(0,0,205*cm);//mgeo->W_Z(288)*cm);
+  G4Box* EXNS = new G4Box("mpcexn",dx*6.0*cm,dy*6.0*cm,dz*24.0*cm);
+  G4LogicalVolume* EXNLV = new G4LogicalVolume(EXNS, air, "MpcexN",0,0,0);
+  new G4PVPlacement(0,
+		    positionEXN,
+		    EXNLV,
+		    "MpcexN",
+		    worldLV,
+		    false,
+		    0,
+		    0);
+
+  G4ThreeVector positionMPCS = G4ThreeVector(0,0,(-220-mgeo->PWO4_a2()*0.5)*cm);//(mgeo->Z(49152+50)-mgeo->PWO4_a2()*0.5)*cm);
+  G4Box* MPCS = new G4Box("mpcs",dx*6.0*cm,dy*6.0*cm,mgeo->PWO4_a2()*0.5*cm+1*cm);
+  G4LogicalVolume* MPCSLV = new G4LogicalVolume(MPCS, air, "MpcS",0,0,0);
+  new G4PVPlacement(0,
+		    positionMPCS,
+		    MPCSLV,
+		    "MpcS",
+		    worldLV,
+		    false,
+		    0,
+		    0);
+
+  G4ThreeVector positionMPCN = G4ThreeVector(0,0,(220+mgeo->PWO4_a2()*0.5)*cm);//(mgeo->Z(49152+310)+mgeo->PWO4_a2()*0.5)*cm);
+  G4Box* MPCN = new G4Box("mpcn",dx*6.0*cm,dy*6.0*cm,mgeo->PWO4_a2()*0.5*cm+1*cm);
+  G4LogicalVolume* MPCNLV = new G4LogicalVolume(MPCN, air, "MpcN",0,0,0);
+  new G4PVPlacement(0,
+		    positionMPCN,
+		    MPCNLV,
+		    "MpcN",
+		    worldLV,
+		    false,
+		    0,
+		    0);
+  
   // Visualization attributes
 
   G4VisAttributes* boxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
@@ -219,8 +268,11 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
   
   worldLV      ->SetVisAttributes(boxVisAtt);
   //  fLogicTarget ->SetVisAttributes(boxVisAtt);
-  trackerLV    ->SetVisAttributes(boxVisAtt);
-
+  // trackerLV    ->SetVisAttributes(boxVisAtt);
+  EXNLV        ->SetVisAttributes(boxVisAtt);
+  EXSLV        ->SetVisAttributes(boxVisAtt);
+  MPCNLV       ->SetVisAttributes(siliconVisAtt);
+  MPCSLV       ->SetVisAttributes(siliconVisAtt);
   // Tracker segments
 
   G4cout << "There are " << fNbOfChambers << " chambers in the tracker region. "
@@ -264,19 +316,32 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
       new G4LogicalVolume(Sensor,fTargetMaterial,"Target_LV",0,0,0);
 
     fLogicTarget[copyNo]->SetVisAttributes(chamberVisAtt);
-
-    new G4PVPlacement(0,                            // no rotation
-		      G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm), // at (x,y,z)
-		      fLogicTarget[copyNo],        // its logical volume
-		      "Target_PV",                 // its name
-		      trackerLV,                    // its mother  volume
-		      false,                        // no boolean operations
-		      copyNo,                       // copy number
-		      fCheckOverlaps);              // checking overlaps 
-    
+    if (Zposition < 0){
+      new G4PVPlacement(0,                            // no rotation
+			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm+205*cm), // at (x,y,z)
+			fLogicTarget[copyNo],        // its logical volume
+			"Target_PV",                 // its name
+			// trackerLV,                    // its mother  volume
+			EXSLV,
+			false,                        // no boolean operations
+			copyNo,                       // copy number
+			fCheckOverlaps);              // checking overlaps 
+    }
+    else{
+      new G4PVPlacement(0,                            // no rotation
+			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm-205*cm), // at (x,y,z)
+			fLogicTarget[copyNo],        // its logical volume
+			"Target_PV",                 // its name
+			// trackerLV,                    // its mother  volume
+			EXNLV,
+			false,                        // no boolean operations
+			copyNo,                       // copy number
+			fCheckOverlaps);              // checking overlaps
+      
+    }
   }
   //If we want micromodules, not minipads
-  if (ftoggleMinipad == false){
+  /*  if (ftoggleMinipad == false){
 
     for (G4int copyNo=0; copyNo < fNbOfChambers; copyNo++) {//Silicon
 
@@ -312,7 +377,7 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 			fCheckOverlaps);              // checking overlaps
       
     }
-  }
+    }*/
   //If we want minipad separation
   if (ftoggleMinipad == true){
 
@@ -334,15 +399,29 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 	new G4LogicalVolume(Minipad,fLayerMaterial,"Minipad_LV",0,0,0);
       
       fLogicMinipads[copyNo]->SetVisAttributes(minipadVisAtt);
-
-      new G4PVPlacement(0,                            // no rotation
-			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm), // at (x,y,z)
-			fLogicMinipads[copyNo],        // its logical volume
-			"Minipad_PV",                 // its name
-			trackerLV,                    // its mother  volume
-			false,                        // no boolean operations
-			copyNo,                       // copy number
-			false);              // checking overlaps 
+      if (Zposition < 0){
+	new G4PVPlacement(0,                            // no rotation
+			  G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm+205*cm), // at (x,y,z)
+			  fLogicMinipads[copyNo],        // its logical volume
+			  "Minipad_PV",                 // its name
+			  //trackerLV,                    // its mother  volume
+			  EXSLV,
+			  false,                        // no boolean operations
+			  copyNo,                       // copy number
+			  false);              // checking overlaps 
+      }
+      else{
+	new G4PVPlacement(0,                            // no rotation
+			  G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm-205*cm), // at (x,y,z)
+			  fLogicMinipads[copyNo],        // its logical volume
+			  "Minipad_PV",                 // its name
+			  //trackerLV,                    // its mother  volume
+			  EXNLV,
+			  false,                        // no boolean operations
+			  copyNo,                       // copy number
+			  false);              // checking overlaps
+      }
+      
     }
   }
 
@@ -368,15 +447,29 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
     fLogicCrystal[mid]->SetVisAttributes(mpcVisAtt);
     
     fCrystalWrap[mid] = new G4OpticalSurface("CrystalWrap");
-    
-    G4VPhysicalVolume* crys = new G4PVPlacement(0,                            // no rotation
-						G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm), // at (x,y,z)
-						fLogicCrystal[mid],        // its logical volume
-						"Crystal_PV",                 // its name
-						trackerLV,                    // its mother  volume
-						false,                        // no boolean operations
-						mid,                       // copy number
-						fCheckOverlaps);              // checking overlaps
+    G4VPhysicalVolume* crys;
+    if (mpcz<0){
+      crys = new G4PVPlacement(0,                            // no rotation
+			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm+220*cm+mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
+			       fLogicCrystal[mid],        // its logical volume
+			       "Crystal_PV",                 // its name
+			       //trackerLV,                    // its mother  volume
+			       MPCSLV,
+			       false,                        // no boolean operations
+			       mid,                       // copy number
+			       fCheckOverlaps);              // checking overlaps
+    }
+    else{
+      crys = new G4PVPlacement(0,                            // no rotation
+			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm-220*cm-mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
+			       fLogicCrystal[mid],        // its logical volume
+			       "Crystal_PV",                 // its name
+			       //trackerLV,                    // its mother  volume
+			       MPCNLV,
+			       false,                        // no boolean operations
+			       mid,                       // copy number
+			       fCheckOverlaps);              // checking overlaps
+    }
     
     new G4LogicalBorderSurface("CrystalWrap",crys,worldPV,fCrystalWrap[mid]);
     fCrystalWrap[mid]->SetType(dielectric_LUT);
@@ -406,14 +499,49 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
   G4double maxStep = 0.5*dz;
   fStepLimit = new G4UserLimits(maxStep);
-  trackerLV->SetUserLimits(fStepLimit);
+  //trackerLV->SetUserLimits(fStepLimit);
  
   /// Set additional contraints on the track, with G4UserSpecialCuts
-  G4double maxLength = 260.0*cm, maxTime = 100*ns, minEkin = 6*MeV;
-  trackerLV->SetUserLimits(new G4UserLimits(maxStep,
+  G4double maxLength = 260.0*cm, maxTime = 100*ns;
+  /* trackerLV->SetUserLimits(new G4UserLimits(maxStep,
 					    maxLength,
 					    maxTime,
-					    minEkin));
+					    minEkin));*/
+  /*
+  for (int n = 0; n < 49152; n++){
+    fLogicMinipads[n]->SetUserLimits(new G4UserLimits(0.5*mgeo->Si_a2(),
+						      0.5*mgeo->Si_a2(),
+						      maxTime,
+						      0.5*MeV ));}*/
+ 
+  /*  G4double mxcut = 1.5*MeV, mpccut = 100*MeV;
+  EXSLV->SetUserLimits(new G4UserLimits(20*(mgeo->Si_a2())*cm,                                     
+					maxLength,
+					maxTime,
+					mxcut));
+  EXNLV->SetUserLimits(new G4UserLimits(20*(mgeo->Si_a2())*cm,
+					//25*(mgeo->Si_a2())*cm,
+					maxLength,
+					maxTime,
+					mxcut));
+  MPCSLV->SetUserLimits(new G4UserLimits(0.5*(mgeo->PWO4_a2())*cm,
+					 // 0.5*(mgeo->PWO4_a2())*cm,
+					 maxLength,
+					 maxTime,
+					 mpccut));
+  MPCNLV->SetUserLimits(new G4UserLimits(0.5*(mgeo->PWO4_a2())*cm,
+					 //0.5*(mgeo->PWO4_a2())*cm,
+					 maxLength,
+					 maxTime,
+					 mpccut));*/
+  
+  /*								 
+  for (int q = 0; q < 288*2; q++){
+    fLogicCrystal[q]->SetUserLimits(new G4UserLimits(0.5*mgeo->PWO4_a2(),
+						     0.5*mgeo->PWO4_a2(),
+						     maxTime,
+						     6*MeV));}
+  */
   
   // Always return the physical world
   

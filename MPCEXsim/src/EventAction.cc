@@ -169,17 +169,19 @@ void EventAction::EndOfEventAction(const G4Event* event)
     G4int minnum = hit->GetChamberNb();
     if (eDep>0.){
       miniarray[minnum] += eDep;
-      if (i%50 == 0 ){std::cout << i<< std::endl;}
-      totalMPCEXHit++;
-      totalMPCEXE += eDep;
+      // if (i%50 == 0 ){std::cout << i<< std::endl;}
+      //      totalMPCEXHit++;
+      //  totalMPCEXE += eDep;
       count ++;
     }
   }
 
   for (G4int j = 0; j<49152; j++){
-    if (miniarray[j] > 0.0){
+    if (miniarray[j] > 1.5){//0.0){
       minipads.push_back(j);
       minienergies.push_back(miniarray[j]);
+      totalMPCEXHit++;
+      totalMPCEXE += miniarray[j];
     }      
   }
 
@@ -188,19 +190,21 @@ void EventAction::EndOfEventAction(const G4Event* event)
     TrackerHit* mpchit = (*mpcHC)[i];
     G4double mpceDep = mpchit->GetEdep();
     G4int crystalnum = mpchit->GetChamberNb();
-    if (mpceDep>0.){
+    if (mpceDep>0.0){
       mpcarray[crystalnum] += mpceDep;
-      if (i%50 == 0 ){      std::cout << i<< std::endl;}
-      totalMPCHit++;
-      totalMPCE += mpceDep;
+      //      if (i%50 == 0 ){      std::cout << i<< std::endl;}
+      // totalMPCHit++;
+      //totalMPCE += mpceDep;
       count ++;
     }
   }
 
   for (G4int j = 0; j<288*2; j++){
-    if (mpcarray[j] > 0.0){
-      crystals.push_back(j);
-      mpcenergies.push_back(mpcarray[j]);
+    if (mpcarray[j] > 100.0){//0.0){
+       crystals.push_back(j);
+       mpcenergies.push_back(mpcarray[j]);
+       totalMPCHit++;
+       totalMPCE += mpcarray[j];
     }
   }
   
