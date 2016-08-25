@@ -40,10 +40,26 @@ void mxReconstruction::Reset() {
   for(int i=0; i!=18; ++i) {
     fNHit[i] = 0;
     fNPty[i] = 0;
+    for(int j=0; j!=int(fHit[i].size()); ++j){
+      delete fHit[i].at(j);
+    }
+    for(int j=0; j!=int(fPty[i].size()); ++j){
+      delete fPty[i].at(j);
+    }
+    fHit[i].clear();
+    fPty[i].clear();
   }
   for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
     fNUni[i] = 0;
+    for(int j=0; j!=int(fCoa[i].size()); ++j){
+      delete fCoa[i].at(j);
+    }
+    for(int j=0; j!=int(fUni[i].size()); ++j){
+      delete fUni[i].at(j);
+      }
+    fCoa[i].clear();
+    fUni[i].clear();
   }
   fV[0] = 0.;
   fV[1] = 0.;
@@ -53,8 +69,10 @@ void mxReconstruction::Reset() {
 mxReconstruction::~mxReconstruction() {
   // dtor
   for(int i=0; i!=18; ++i) {
-    for(int j=0; j!=fNHit[i]; ++j)
+    for(int j=0; j!=fNHit[i]; ++j){
+
       delete fHit[i].at(j);
+    }
     for(int j=0; j!=fNPty[i]; ++j)
       delete fPty[i].at(j);
   }
@@ -76,15 +94,21 @@ void mxReconstruction::DumpParties() {
     int n = fNPty[i];
     nn += n;
     std::cout << "  Layer " << i << " || Nparties " << n << std::endl;
+
+    int nhit = fNHit[i];
+    // std::cout << nhit << std::endl; 
+    //std::cout << hit->Idx() <<" " << hit->Signal() << std::endl; 
+    
+
     for(int j=0; j!=n; ++j) {
       pty = fPty[i].at(j);
-      std::cout << "  ||" << j << "|| x y " << pty->GetX() << " " << pty->GetY() << " || sgn " << pty->Signal() << std::endl;
+      std::cout << "  ||" << j << "|| x y "  <<pty->GetX() << " " << pty->GetY() << " || sgn " << pty->Signal() << std::endl;
       int m = pty->N();
       for(int k=0; k!=m; ++k) {
 	hit = pty->GetHit(k);
 	float x = fGeo->X(hit->Idx());
 	float y = fGeo->Y(hit->Idx());
-	std::cout << "       ||" << k << "|| x y " << x << " " << y << " || sgn " << hit->Signal() << std::endl;
+	std::cout << "       ||" << k << "|| key x y " << hit->Idx() <<" "<< x << " " << y << " || sgn " << hit->Signal() << std::endl;
       }
     }
   }
@@ -121,18 +145,24 @@ void mxReconstruction::Fill(int idx, float sgn) {
   mxHit *hit;
   if(fNHit[lyridx]>nmax-1) {
     hit = new mxHit();
+    //hit->Fill( idx, sgn );
     fHit[lyridx].push_back( hit );
   } else hit = fHit[lyridx].at( fNHit[lyridx] );
-  hit->Fill( idx, sgn );
+    hit->Fill( idx, sgn );
   fNHit[lyridx]++;
+  //std::cout << hit->Idx() << " " << hit->Signal()<<std::endl;
 }
 //========
 void mxReconstruction::Make() {
   // maker
-  for(int lyr=0; lyr!=18; ++lyr) std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
+  for(int lyr=0; lyr!=18; ++lyr) {std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
+    /* for (int i = 0; i < fHit[lyr].size(); ++i) {
+      std::cout << fHit[lyr].at(i)->Idx() << " " << fHit[lyr].at(i)->Signal() << std::endl;
+      }*/
+  }
   Parties();
-  //for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
-  //Coalitions();
+  for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
+  Coalitions();
   //for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].end(),GreaterSignal());
   //Unions();
 }
@@ -143,10 +173,11 @@ void mxReconstruction::Parties() {
   mxParty *pty;
   for(int lyr=0; lyr!=18; ++lyr) {
     // seeding
-    //for(int mh=0; mh!=fNHit[lyr]; ++mh) {
-    //  hit = (mxHit*) fHit[lyr]->At( mh );
-    //  hit->SetAssigned( false );
-    //}
+    for(int mh=0; mh!=fNHit[lyr]; ++mh) {
+      hit = (mxHit*) fHit[lyr].at( mh );
+      hit->SetAssigned( false );
+      //  std::cout << hit->Idx() << " " << hit->Signal()<<std::endl;      
+    }
     // building
     //if(lyr!=12) continue;
     float dx = 0.2;
@@ -157,12 +188,12 @@ void mxReconstruction::Parties() {
     }
     for(int mh=0; mh!=fNHit[lyr]; ++mh) {
       hit = (mxHit*) fHit[lyr].at( mh );
-      //if(hit->IsAssigned()) continue;
+      if(hit->IsAssigned()) continue;
       int idx = hit->Idx();
       float x = fGeo->X( idx );
       float y = fGeo->Y( idx );
       bool append = false;
-      //std::cout << "  hit no " << mh << " in " << x << " " << y << std::endl;
+      //std::cout << "  hit no " << mh << " in " << x << " " << y << " " << hit->Signal()<< std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = (mxParty*) fPty[lyr].at( mp );
 	float test = pty->Test(x,y,dx,dy);
@@ -186,7 +217,7 @@ void mxReconstruction::Parties() {
 	//std::cout << "    >>NEW PARTY<<  ";
       }
       pty->Fill( hit, x, y );
-      //std::cout << " now " << pty->GetX() << " " << pty->GetY() << std::endl;
+      //std::cout << " now " << pty->GetX() << " " << pty->GetY() <<" " <<pty->Signal() <<std::endl;
     }
   }
 }

@@ -60,6 +60,8 @@ class mxQAReconstruction {
   TH1F *fHpcEn[2];
   TH1D *fHpcLyr[2];
   TH1F *fHpcEffic[2];
+  TH2F *fHpcEn3D[2];
+  TH1D *fHpcCoaLyr[2];
 };
 
 #endif /* __mxQAReconstruction_H__ */ 

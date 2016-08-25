@@ -122,10 +122,13 @@ mxQAReconstruction::mxQAReconstruction() {
     fHpcEn[arm] = new TH1F( Form("mxReco_%s_pcEn",arm==0?"S":"N"), Form("mxReco_%s_pcEn;MeV",arm==0?"S":"N"), 100, 0, 1e5);
     fHpcLyr [arm] = new TH1D( Form("mxReco_%s_pcLyr",arm==0?"S":"N"), Form("mxReco_%s_pcLyr;Layer",arm==0?"S":"N"), 10, 0, 10);
     fHpcEffic[arm] = new TH1F( Form("mxRecopcEff_%s",arm==0?"S":"N"), Form("mxRecopcEff_%s;At Least Layers;Efficiency",arm==0?"S":"N"),10,0,10);
-
+    fHpcEn3D[arm] = new TH2F( Form("mxRecopcEn3D_%s",arm==0?"S":"N"), Form("mxRecopcEn3D_%s;Layers;Energy",arm==0?"S":"N"),10,0,10,100,0,5e4);
+    fHpcCoaLyr[arm] = new TH1D( Form("mxRecopcCoaLyr_%s",arm==0?"S":"N"), Form("mxRecopcCoaLyr_%s;Layer",arm==0?"S":"N"),10,0,10);
     fList->Add( fHpcEn[arm] );
     fList->Add( fHpcLyr[arm] );
     fList->Add( fHpcEffic[arm] );
+    fList->Add( fHpcEn3D[arm] );				
+    fList->Add( fHpcCoaLyr[arm] );
   }
 }
 //========
@@ -166,7 +169,10 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       fHcoaSEt[arm]->Fill( coa[k]->GetCov(1) );
       int layhit = 0;
       for(int lyr=0;lyr!=9; ++lyr){
-	if (coa[k]->IsHitLayer(lyr))layhit++;
+	if (coa[k]->IsHitLayer(lyr)){
+	  layhit++;
+	  if (coa[k]->GetEnergy()>5e3)fHpcCoaLyr[arm]->Fill(lyr);
+	}
       }
       fHcoaLpC[arm]->Fill(layhit);
       int pclayhit = 0;
@@ -175,7 +181,8 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       }
       if (coa[k]->IsHitLayer(8)){
 	if (pclayhit>5){fHpcEn[arm]->Fill( coa[k]->GetEnergy());}
-	fHpcLyr[arm]->Fill(pclayhit);
+	/*if (coa[k]->GetEnergy()>5e3)*/fHpcLyr[arm]->Fill(pclayhit);
+	fHpcEn3D[arm]->Fill(pclayhit,coa[k]->GetEnergy());
 	while(pclayhit>0){
 	  fHpcEffic[arm]->Fill(pclayhit,0.01);
 	  pclayhit--;
