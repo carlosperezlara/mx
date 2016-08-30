@@ -54,8 +54,8 @@
 #include "G4Colour.hh"
 
 #include "G4SystemOfUnits.hh"
-#include "/Users/stacykarthas/mx/mxGeometry.h"
-#include "/Users/stacykarthas/mx/mxGeometry.cxx"
+#include "../../mxGeometry.h"
+#include "../../mxGeometry.cxx"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
