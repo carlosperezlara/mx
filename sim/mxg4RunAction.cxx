@@ -1,37 +1,4 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id: RunAction.cc 75214 2013-10-29 16:04:42Z gcosmo $
-//
-/// \file RunAction.cc
-/// \brief Implementation of the RunAction class
-
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "Analysis.hh"
-#include "Run.hh"
+// origin: S.Karthas (Aug 2016) 
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -40,33 +7,25 @@
 #include "Randomize.hh"
 #include "time.h"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "mxg4RunAction.h"
+#include "mxg4EventAction.h"
+#include "mxg4Analysis.h"
+#include "mxg4Run.h"
 
-RunAction::RunAction()
-  : G4UserRunAction()
-{
-  
+mxg4RunAction::mxg4RunAction()
+  : G4UserRunAction() {
   // set printing event number per each 100 events
   G4RunManager::GetRunManager()->SetPrintProgress(1000);     
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
   analysisManager->SetVerboseLevel(4);
   G4cout << "Using " << analysisManager->GetType() << G4endl;
-
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-RunAction::~RunAction()
-{
+mxg4RunAction::~mxg4RunAction() {
   delete G4AnalysisManager::Instance();
-  
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::BeginOfRunAction(const G4Run* /*run*/)
-{
-  
+void mxg4RunAction::BeginOfRunAction(const G4Run* /*run*/) {
   //inform the runManager to save random number seed
   G4RunManager::GetRunManager()->SetRandomNumberStore(true);
   G4RunManager::GetRunManager()->SetRandomNumberStoreDir("random/");
@@ -85,8 +44,8 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
   // Get analysis manager
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
-  const EventAction* constEventAction = static_cast<const EventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
-  EventAction* eventAction = const_cast<EventAction*>(constEventAction);
+  const mxg4EventAction* constEventAction = static_cast<const mxg4EventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
+  mxg4EventAction* eventAction = const_cast<mxg4EventAction*>(constEventAction);
 
   eventAction->ClearVectors();
   
@@ -115,14 +74,11 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
   CLHEP::HepRandom::setTheSeed(seed);*/
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::EndOfRunAction(const G4Run* run)
-{
+void mxg4RunAction::EndOfRunAction(const G4Run* run) {
   std::cout << "Entered EndofRunAction" << std::endl;
   G4Random::showEngineStatus();
 
-  const Run* myrun = dynamic_cast<const Run*>(run);
+  const mxg4Run* myrun = dynamic_cast<const mxg4Run*>(run);
   if ( myrun )
     {
       G4int nEvets = myrun->GetNumberOfEvent();
@@ -152,8 +108,7 @@ void RunAction::EndOfRunAction(const G4Run* run)
   analysisManager->CloseFile();
 }
 
-G4Run* RunAction::GenerateRun() {
-  return new Run;
+G4Run* mxg4RunAction::GenerateRun() {
+  return new mxg4Run;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

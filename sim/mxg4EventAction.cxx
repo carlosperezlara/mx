@@ -1,38 +1,4 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id: EventAction.cc 75214 2013-10-29 16:04:42Z gcosmo $
-//
-/// \file EventAction.cc
-/// \brief Implementation of the EventAction class
-
-#include "EventAction.hh"
-#include "TrackerHit.hh"
-#include "Analysis.hh"
-#include "RunAction.hh"
-#include "DetectorConstruction.hh"
+// origin: S.Karthas (Aug 2016) 
 
 #include "Randomize.hh"
 #include "time.h"
@@ -48,43 +14,40 @@
 #include "G4ios.hh"
 #include <vector>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "mxg4EventAction.h"
+#include "mxg4TrackerHit.h"
+#include "mxg4Analysis.h"
+#include "mxg4RunAction.h"
+#include "mxg4DetectorConstruction.h"
 
-EventAction::EventAction()
+mxg4EventAction::mxg4EventAction()
   : G4UserEventAction(),
     fMPCEXHCID(-1),
     fMPCHCID(-1),
-    fMINIHCID(-1)
-{
-  // set printing per each event
+    fMINIHCID(-1) {
   G4RunManager::GetRunManager()->SetPrintProgress(1);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+mxg4EventAction::~mxg4EventAction() {
+}
 
-EventAction::~EventAction()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void EventAction::BeginOfEventAction(const G4Event*)
-{
+void mxg4EventAction::BeginOfEventAction(const G4Event*) {
   ClearVectors();
   if (fMPCEXHCID==-1) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-    DetectorConstruction det;
-    if (!det.IsMinis()){std::cout << "I didn't want to enter this loop" << std::endl;fMPCEXHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");}
+    mxg4DetectorConstruction det;
+    if (!det.IsMinis()) {
+      std::cout << "I didn't want to enter this loop" << std::endl;
+      fMPCEXHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");
+    }
     fMPCHCID  = sdManager->GetCollectionID("MPCSD/MPCHitsCollection");
-    if (det.IsMinis()){fMINIHCID = sdManager->GetCollectionID("MinipadSD/MinipadHitsCollection");}
+    if (det.IsMinis()) {
+      fMINIHCID = sdManager->GetCollectionID("MinipadSD/MinipadHitsCollection");
+    }
   }
-  
-  
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void EventAction::EndOfEventAction(const G4Event* event)
-{
+void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   // get number of stored trajectories
 
   /*  G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
@@ -124,7 +87,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
       return;
     }           
   
-  DetectorConstruction det;
+  mxg4DetectorConstruction det;
   TrackerHitsCollection* mpcexHC;
   // Get hits collections 
   if (!det.IsMinis()){mpcexHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMPCEXHCID));
@@ -164,7 +127,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
   G4double miniarray[49152] = {0.0};
 
   for (G4int i=0; i<n_mpcexhit; i++){
-    TrackerHit* hit = (*mpcexHC)[i];
+    mxg4TrackerHit* hit = (*mpcexHC)[i];
     G4double eDep = hit->GetEdep();
     G4int minnum = hit->GetChamberNb();
     if (eDep>0.){
@@ -187,7 +150,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
   G4double mpcarray[288*2] = {0.0};
   for (G4int i=0; i<n_mpchit; i++){
-    TrackerHit* mpchit = (*mpcHC)[i];
+    mxg4TrackerHit* mpchit = (*mpcHC)[i];
     G4double mpceDep = mpchit->GetEdep();
     G4int crystalnum = mpchit->GetChamberNb();
     if (mpceDep>0.0){
@@ -213,5 +176,3 @@ void EventAction::EndOfEventAction(const G4Event* event)
   analysisManager->AddNtupleRow();
   //  runaction->PrintVector();
 }  
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -1,36 +1,4 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-// $Id: DetectorConstruction.cc 87359 2014-12-01 16:04:27Z gcosmo $
-//
-/// \file DetectorConstruction.cc
-/// \brief Implementation of the DetectorConstruction class
- 
-#include "DetectorConstruction.hh"
-#include "DetectorMessenger.hh"
-#include "TrackerSD.hh"
+// origin: S.Karthas (Aug 2016)
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -47,30 +15,39 @@
 #include "G4GeometryTolerance.hh"
 #include "G4GeometryManager.hh"
 
-
 #include "G4UserLimits.hh"
 
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
 
 #include "G4SystemOfUnits.hh"
-#include "../../mxGeometry.h"
-#include "../../mxGeometry.cxx"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
- 
+#include "mxg4DetectorConstruction.h"
+#include "mxg4DetectorMessenger.h"
+#include "mxg4TrackerSD.h"
+
+#include "../mxGeometry.h"
+#include "../mxGeometry.cxx"
+
 G4ThreadLocal 
-G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
+G4GlobalMagFieldMessenger* mxg4DetectorConstruction::fMagFieldMessenger = 0;
 
-DetectorConstruction::DetectorConstruction()
+mxg4DetectorConstruction::mxg4DetectorConstruction()
 :G4VUserDetectorConstruction(), 
  fNbOfChambers(0),
- fLogicTarget(NULL), fLogicChambersil(NULL), fLogicCrystal(NULL), fCrystalWrap(NULL), fLogicMinipads(NULL),
- fTargetMaterial(NULL), fLayerMaterial(NULL), fMPCMaterial(NULL), 
- fStepLimit(NULL), ftoggleMinipad(true),
+ fLogicTarget(NULL),
+ fLogicChambersil(NULL),
+ fLogicCrystal(NULL),
+ fCrystalWrap(NULL),
+ fLogicMinipads(NULL),
+ fTargetMaterial(NULL),
+ fLayerMaterial(NULL),
+ fMPCMaterial(NULL),
+ fStepLimit(NULL),
+ ftoggleMinipad(true),
  fCheckOverlaps(false)
 {
-  fMessenger = new DetectorMessenger(this);
+  fMessenger = new mxg4DetectorMessenger(this);
 
   fNbOfChambers = 192*2;
   fLogicTarget = new G4LogicalVolume*[fNbOfChambers];
@@ -80,9 +57,7 @@ DetectorConstruction::DetectorConstruction()
   fLogicMinipads = new G4LogicalVolume*[49152];
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
- 
-DetectorConstruction::~DetectorConstruction()
+mxg4DetectorConstruction::~mxg4DetectorConstruction()
 {
   delete [] fLogicTarget;
   delete [] fLogicChambersil;
@@ -93,70 +68,36 @@ DetectorConstruction::~DetectorConstruction()
   delete fMessenger;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
- 
-G4VPhysicalVolume* DetectorConstruction::Construct()
+G4VPhysicalVolume* mxg4DetectorConstruction::Construct()
 {
-  // Define materials
   DefineMaterials();
-
-  // Define volumes
   return DefineVolumes();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::DefineMaterials()
+void mxg4DetectorConstruction::DefineMaterials()
 {
-  // Material definition 
-
   G4NistManager* nistManager = G4NistManager::Instance();
-
-  // Air defined using NIST Manager
   nistManager->FindOrBuildMaterial("G4_AIR");
-  
-  // Tungsten defined using NIST Manager
   fTargetMaterial  = nistManager->FindOrBuildMaterial("G4_W");
-
-  // Silicon defined using NIST Manager
   fLayerMaterial = nistManager->FindOrBuildMaterial("G4_Si");
-
-  // PbWO4 defined using NIST Manager
   fMPCMaterial = nistManager->FindOrBuildMaterial("G4_PbWO4");
-  
-  // Print materials
   G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
-{
+G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   G4Material* air  = G4Material::GetMaterial("G4_AIR");
 
-  // Sizes of the principal geometrical components (solids)
-  
   G4double chamberSpacing = 80*cm; // from chamber center to center!
-
   G4double chamberWidth = 20.0*cm; // width of the chambers
   G4double targetLength =  5.0*cm; // full length of Target
   
-  //  G4double trackerLength = (fNbOfChambers+1)*chamberSpacing;
-
   G4double trackerLength = 230.0*cm;
-  //  G4double worldLength = 1.2 * (2*targetLength + trackerLength);
-
   
   G4double worldLength = 1.2*(trackerLength);
-  
   G4double targetRadius  = 0.5*targetLength;   // Radius of Target
   targetLength = 0.5*targetLength;             // Half length of the Target  
   G4double trackerSize   = 0.5*trackerLength;  // Half length of the Tracker
   
-  // Definitions of Solids, Logical Volumes, Physical Volumes
-
-  // To select MPCEX and MPC geometry
-
   mxGeometry *mgeo = new mxGeometry();
 
   float dx, dy, dz;
@@ -550,19 +491,18 @@ G4VPhysicalVolume* DetectorConstruction::DefineVolumes()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
-void DetectorConstruction::ConstructSDandField()
-{
+void mxg4DetectorConstruction::ConstructSDandField() {
   // Sensitive detectors
 
   G4String trackerChamberSDname = "MPCEXsim/TrackerChamberSD";
-  TrackerSD* aTrackerSD = new TrackerSD(trackerChamberSDname,
+  mxg4TrackerSD* aTrackerSD = new mxg4TrackerSD(trackerChamberSDname,
                                             "TrackerHitsCollection");
   G4String mpcSDname = "MPCEXsim/MPCSD";
-  TrackerSD* ampcSD = new TrackerSD(mpcSDname,
+  mxg4TrackerSD* ampcSD = new mxg4TrackerSD(mpcSDname,
 					    "MPCHitsCollection");
 
   G4String minipadSDname = "MPCEXsim/MinipadSD";
-  TrackerSD* aminipadSD = new TrackerSD(minipadSDname,"MinipadHitsCollection");
+  mxg4TrackerSD* aminipadSD = new mxg4TrackerSD(minipadSDname,"MinipadHitsCollection");
   // Setting aTrackerSD to all logical volumes with the same name 
   // of "Chamber_LV".
   //  SetSensitiveDetector("Chamber_LV", aTrackerSD, true);
@@ -587,7 +527,7 @@ void DetectorConstruction::ConstructSDandField()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
-void DetectorConstruction::SetTargetMaterial(G4String materialName)
+void mxg4DetectorConstruction::SetTargetMaterial(G4String materialName)
 {
   G4NistManager* nistManager = G4NistManager::Instance();
 
@@ -615,7 +555,7 @@ void DetectorConstruction::SetTargetMaterial(G4String materialName)
  
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::SetChamberMaterial(G4String materialName)
+void mxg4DetectorConstruction::SetChamberMaterial(G4String materialName)
 {
   G4NistManager* nistManager = G4NistManager::Instance();
 
@@ -644,7 +584,7 @@ void DetectorConstruction::SetChamberMaterial(G4String materialName)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::SetMinipadMaterial(G4String materialName)
+void mxg4DetectorConstruction::SetMinipadMaterial(G4String materialName)
 {
   G4NistManager* nistManager = G4NistManager::Instance();
   
@@ -669,45 +609,28 @@ void DetectorConstruction::SetMinipadMaterial(G4String materialName)
     }
   }
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::SetMpcMaterial(G4String materialName)
-{
+void mxg4DetectorConstruction::SetMpcMaterial(G4String materialName) {
   G4NistManager* nistManager = G4NistManager::Instance();
-
-  G4Material* pttoMaterial =
-    nistManager->FindOrBuildMaterial(materialName);
-  
-  if (fTargetMaterial != pttoMaterial) {
-    if ( pttoMaterial ) {
-      fTargetMaterial = pttoMaterial;
-      for (G4int copyNo=0; copyNo<288*2; copyNo++) {
-	
-	if (fLogicCrystal[copyNo]) fLogicCrystal[copyNo]->SetMaterial(fMPCMaterial);
-      }
-      G4cout
-	<< G4endl
-	<< "----> The mpc is made of " << materialName << G4endl;
-    } else {
-      G4cout
-	<< G4endl
-	<< "-->  WARNING from SetTargetMaterial : "
-	<< materialName << " not found" << G4endl;
+  G4Material* pttoMaterial = nistManager->FindOrBuildMaterial(materialName);
+  if(!pttoMaterial) {
+    G4cout << G4endl << "-->  WARNING from SetTargetMaterial : " << materialName << " not found" << G4endl;
+    return;
+  }
+  if(fTargetMaterial != pttoMaterial) {
+    fTargetMaterial = pttoMaterial;
+    for(G4int copyNo=0; copyNo<288*2; copyNo++) {
+      if(fLogicCrystal[copyNo])
+	fLogicCrystal[copyNo]->SetMaterial(fMPCMaterial);
     }
+    G4cout << G4endl << "----> The mpc is made of " << materialName << G4endl;
   }
 }
 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetMaxStep(G4double maxStep)
-{
+void mxg4DetectorConstruction::SetMaxStep(G4double maxStep) {
   if ((fStepLimit)&&(maxStep>0.)) fStepLimit->SetMaxAllowedStep(maxStep);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetCheckOverlaps(G4bool checkOverlaps)
-{
+void mxg4DetectorConstruction::SetCheckOverlaps(G4bool checkOverlaps) {
   fCheckOverlaps = checkOverlaps;
-}  
+}
