@@ -48,57 +48,23 @@ void mxg4EventAction::BeginOfEventAction(const G4Event*) {
 }
 
 void mxg4EventAction::EndOfEventAction(const G4Event* event) {
-  // get number of stored trajectories
-
-  /*  G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
-  G4int n_trajectories = 0;
-  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
-  */
-  // periodic printing
-
-  /*
-  G4int eventID = event->GetEventID();
-  if ( eventID < 100 || eventID % 100 == 0) {
-    G4cout << ">>> Event: " << eventID  << G4endl;
-    if ( trajectoryContainer ) {
-      G4cout << "    " << n_trajectories
-             << " trajectories stored in this event." << G4endl;
-    }
-    G4VHitsCollection* hc = event->GetHCofThisEvent()->GetHC(0);
-    G4cout << "    "  
-           << hc->GetSize() << " hits stored in this event" << G4endl;
+  G4HCofThisEvent* hce = event->GetHCofThisEvent();
+  if(!hce) {
+    G4ExceptionDescription msg;
+    msg << "No hits collection of this event found.\n";
+    G4Exception("EventAction::EndOfEventAction()","Code001", JustWarning, msg);
+    return;
   }
-  G4HCofThisEvent* hce = event->GetHCofThisEvent();
-  if (!hce)
-    {
-      G4ExceptionDescription msg;
-      msg << "No hits collection of this event found.\n";
-      G4Exception("EventAction::EndOfEventAction()","Code001", JustWarning, msg);
-      return;
-    } 
-  */
- 
-  G4HCofThisEvent* hce = event->GetHCofThisEvent();
-  if (!hce)
-    {
-      G4ExceptionDescription msg;
-      msg << "No hits collection of this event found.\n";
-      G4Exception("EventAction::EndOfEventAction()","Code001", JustWarning, msg);
-      return;
-    }           
-  
   mxg4DetectorConstruction det;
   TrackerHitsCollection* mpcexHC;
   // Get hits collections 
-  if (!det.IsMinis()){mpcexHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMPCEXHCID));
+  if(!det.IsMinis()) {
+    mpcexHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMPCEXHCID));
+  } else {
+    mpcexHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMINIHCID));
   }
-  else{mpcexHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMINIHCID));
-  }
-  
-    TrackerHitsCollection* mpcHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMPCHCID));
- 
-  
-  if (!mpcexHC){
+  TrackerHitsCollection* mpcHC = static_cast<TrackerHitsCollection*>(hce->GetHC(fMPCHCID));
+  if(!mpcexHC) {
     G4ExceptionDescription msg;
     msg << "Some of hits collections of this event not found.\n";
     G4Exception("EventAction::EndOfEventAction()",
@@ -106,8 +72,8 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
     return;
   }
 
+  //============================
   // Fill Histograms and ntuples
-
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
   G4int n_mpchit = mpcHC->entries();
@@ -126,11 +92,11 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   G4int count = 0;
   G4double miniarray[49152] = {0.0};
 
-  for (G4int i=0; i<n_mpcexhit; i++){
+  for(G4int i=0; i<n_mpcexhit; i++) {
     mxg4TrackerHit* hit = (*mpcexHC)[i];
     G4double eDep = hit->GetEdep();
     G4int minnum = hit->GetChamberNb();
-    if (eDep>0.){
+    if(eDep>0.) {
       miniarray[minnum] += eDep;
       // if (i%50 == 0 ){std::cout << i<< std::endl;}
       //      totalMPCEXHit++;
@@ -138,22 +104,20 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
       count ++;
     }
   }
-
-  for (G4int j = 0; j<49152; j++){
-    if (miniarray[j] > 1.5){//0.0){
+  for(G4int j = 0; j<49152; j++) {
+    if(miniarray[j] > 1.5) {//0.0){
       minipads.push_back(j);
       minienergies.push_back(miniarray[j]);
       totalMPCEXHit++;
       totalMPCEXE += miniarray[j];
     }      
   }
-
   G4double mpcarray[288*2] = {0.0};
-  for (G4int i=0; i<n_mpchit; i++){
+  for(G4int i=0; i<n_mpchit; i++) {
     mxg4TrackerHit* mpchit = (*mpcHC)[i];
     G4double mpceDep = mpchit->GetEdep();
     G4int crystalnum = mpchit->GetChamberNb();
-    if (mpceDep>0.0){
+    if(mpceDep>0.0) {
       mpcarray[crystalnum] += mpceDep;
       //      if (i%50 == 0 ){      std::cout << i<< std::endl;}
       // totalMPCHit++;
@@ -161,16 +125,14 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
       count ++;
     }
   }
-
-  for (G4int j = 0; j<288*2; j++){
-    if (mpcarray[j] > 100.0){//0.0){
+  for(G4int j = 0; j<288*2; j++) {
+    if(mpcarray[j] > 100.0) {//0.0){
        crystals.push_back(j);
        mpcenergies.push_back(mpcarray[j]);
        totalMPCHit++;
        totalMPCE += mpcarray[j];
     }
   }
-  
   analysisManager->FillNtupleDColumn(2, totalMPCEXE);
   analysisManager->FillNtupleDColumn(3, totalMPCE);
   analysisManager->AddNtupleRow();

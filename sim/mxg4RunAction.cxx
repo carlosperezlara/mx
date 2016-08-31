@@ -79,25 +79,21 @@ void mxg4RunAction::EndOfRunAction(const G4Run* run) {
   G4Random::showEngineStatus();
 
   const mxg4Run* myrun = dynamic_cast<const mxg4Run*>(run);
-  if ( myrun )
-    {
-      G4int nEvets = myrun->GetNumberOfEvent();
-      if ( nEvets < 1 )
-	{
-	  G4ExceptionDescription msg;
-	  msg << "Run consists of 0 events";
-	  G4Exception("RunAction::EndOfRunAction()",
-		      "Code001", JustWarning, msg);
-	  nEvets=1;
-	}
-      G4double si_ene = myrun->GetSiEnergy();
-      G4cout<<"Run["<<myrun->GetRunID()<<"] With: "<<nEvets<<"Events\n"
-	    <<" <Si_em>="<<G4BestUnit(si_ene/nEvets,"Energy")<<G4endl;//<<"\n"
-    } else {
+  if( myrun ) {
+    G4int nEvets = myrun->GetNumberOfEvent();
+    if( nEvets < 1 ) {
+      G4ExceptionDescription msg;
+      msg << "Run consists of 0 events";
+      G4Exception("RunAction::EndOfRunAction()","Code001", JustWarning, msg);
+      nEvets=1;
+    }
+    G4double si_ene = myrun->GetSiEnergy();
+    G4cout<<"Run["<<myrun->GetRunID()<<"] With: "<<nEvets<<"Events\n"
+	  <<" <Si_em>="<<G4BestUnit(si_ene/nEvets,"Energy")<<G4endl;//<<"\n"
+  } else {
     G4ExceptionDescription msg;
     msg << "Run is not of correct type, skypping analysis via RunAction";
-    G4Exception("RunAction::EndOfRunAction()",
-		"Code001", JustWarning, msg);
+    G4Exception("RunAction::EndOfRunAction()","Code001", JustWarning, msg);
   }
 
   // Write and close output file

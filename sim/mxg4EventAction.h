@@ -20,7 +20,8 @@ public:
   std::vector<G4double>& GetMiniEnergies() { return minienergies; }
   std::vector<G4int>& GetCrystals() { return crystals; }
   std::vector<G4double>& GetMPCEnergies() { return mpcenergies; }
-  void ClearVectors(){minipads.clear();
+  void ClearVectors(){
+    minipads.clear();
     minienergies.clear();
     crystals.clear();
     mpcenergies.clear();
