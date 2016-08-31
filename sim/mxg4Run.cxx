@@ -65,7 +65,7 @@ void mxg4Run::RecordEvent(const G4Event* evt) {
   si_ene += si;
 }
 
-void mxg4Run::Merge(const G4Run* aRun) {
+void mxg4Run::Merge(const G4Run*) {
   /* const Run* localRun = static_cast<const Run*>(aRun);
   em_ene += localRun->GetEmEnergy();
   had_ene += localRun->GetHadEnergy();

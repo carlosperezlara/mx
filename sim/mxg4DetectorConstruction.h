@@ -25,10 +25,6 @@ public:
   virtual G4VPhysicalVolume* Construct();
   virtual void ConstructSDandField();
   
-  void SetTargetMaterial(G4String);
-  void SetChamberMaterial(G4String);
-  void SetMinipadMaterial(G4String);
-  void SetMpcMaterial(G4String);
   void SetMaxStep(G4double);
   void SetCheckOverlaps(G4bool);
   bool IsMinis() {return ftoggleMinipad;}
@@ -43,9 +39,6 @@ private:
   G4LogicalVolume **fLV_PWO4;
   G4OpticalSurface **fOS_PWO4wrap;
   G4LogicalVolume **fLV_EXSi;
-  G4Material *fMaterial_W;
-  G4Material *fMaterial_Si;
-  G4Material *fMaterial_PWO4;
   G4UserLimits *fStepLimit;
   mxg4DetectorMessenger*  fMessenger;
 

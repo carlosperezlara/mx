@@ -11,23 +11,17 @@ class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithADoubleAndUnit;
 
-class mxg4DetectorMessenger: public G4UImessenger
-{
-  public:
-    mxg4DetectorMessenger(mxg4DetectorConstruction* );
-    virtual ~mxg4DetectorMessenger();
+class mxg4DetectorMessenger: public G4UImessenger {
+ public:
+  mxg4DetectorMessenger(mxg4DetectorConstruction*);
+  virtual ~mxg4DetectorMessenger();
+  virtual void SetNewValue(G4UIcommand*, G4String);
     
-    virtual void SetNewValue(G4UIcommand*, G4String);
-    
-  private:
-    mxg4DetectorConstruction*  fDetectorConstruction;
-    G4UIdirectory*           fMXDirectory;
-    G4UIdirectory*           fDetDirectory;
-    G4UIcmdWithAString*      fTargMatCmd;
-    G4UIcmdWithAString*      fChamMatCmd;
-    G4UIcmdWithAString*      fMpcMatCmd;
-    G4UIcmdWithAString*      fMiniMatCmd;
-    G4UIcmdWithADoubleAndUnit* fStepMaxCmd;
+ private:
+  mxg4DetectorConstruction *fDetectorConstruction;
+  G4UIdirectory *fMXDirectory;
+  G4UIdirectory *fDetDirectory;
+  G4UIcmdWithADoubleAndUnit *fStepMaxCmd;
 };
 
 #endif
