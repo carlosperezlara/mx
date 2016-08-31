@@ -14,14 +14,9 @@
 #include "mxg4DetectorConstruction.h"
 #include "mxg4ActionInitialization.h"
 
-int main(int argc,char** argv)
-{
-
-  // Detect interactive mode (if no arguments) and define UI session
+int main(int argc,char** argv) {
   G4UIExecutive* ui = 0;
-  if ( argc == 1 ) {
-    ui = new G4UIExecutive(argc, argv);
-  }
+  if( argc==1 ) ui = new G4UIExecutive(argc, argv);
 
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
@@ -35,7 +30,6 @@ int main(int argc,char** argv)
 
   // Set mandatory initialization classes
   runManager->SetUserInitialization(new mxg4DetectorConstruction());
-
   G4VModularPhysicsList* physicsList = new FTFP_BERT;
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
@@ -51,7 +45,7 @@ int main(int argc,char** argv)
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   // Process macro or start UI session
-  if ( !ui ) { 
+  if( !ui ) { 
     // batch mode
     G4String command = "/control/execute ";
     G4String fileName = argv[1];
@@ -59,9 +53,7 @@ int main(int argc,char** argv)
   } else {
     // interactive mode
     UImanager->ApplyCommand("/control/execute init_vis.mac");
-    if (ui->IsGUI()) {
-      UImanager->ApplyCommand("/control/execute gui.mac");
-    }
+    if( ui->IsGUI() ) UImanager->ApplyCommand("/control/execute gui.mac");
     ui->SessionStart();
     delete ui;
   }

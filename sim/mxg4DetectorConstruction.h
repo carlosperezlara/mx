@@ -25,34 +25,33 @@ public:
   virtual G4VPhysicalVolume* Construct();
   virtual void ConstructSDandField();
   
-  void SetTargetMaterial (G4String );
-  void SetChamberMaterial(G4String );
-  void SetMinipadMaterial(G4String );
-  void SetMpcMaterial(G4String );
-  void SetMaxStep (G4double );
-  void SetCheckOverlaps(G4bool );
-  bool IsMinis(){return ftoggleMinipad;};
-  
+  void SetTargetMaterial(G4String);
+  void SetChamberMaterial(G4String);
+  void SetMinipadMaterial(G4String);
+  void SetMpcMaterial(G4String);
+  void SetMaxStep(G4double);
+  void SetCheckOverlaps(G4bool);
+  bool IsMinis() {return ftoggleMinipad;}
+
 private:
   void DefineMaterials();
-  G4VPhysicalVolume* DefineVolumes();
-  
-  G4int fNbOfChambers;
-  G4LogicalVolume**   fLogicTarget;     // pointer to the logical Target
-  G4LogicalVolume**  fLogicChambersil;  // pointer to the logical Chamber       
-  G4LogicalVolume**  fLogicCrystal;     // pointer to the logical MPC Crystal
-  G4OpticalSurface** fCrystalWrap;      // Wrap for Crystals
-  G4LogicalVolume**  fLogicMinipads;    // pointer to the logical Minipads
-  G4Material*   fTargetMaterial;   // pointer to the target  material
-  G4Material*   fLayerMaterial;    // pointer to the chamber material
-  G4Material*   fMPCMaterial;      // pointer to the MPC material
-  G4UserLimits* fStepLimit;        // pointer to user step limits
-  
-  mxg4DetectorMessenger*  fMessenger;   // messenger
-  
+  G4VPhysicalVolume *DefineVolumes();
+
+  G4int fNbOfEXSensors;
+  G4LogicalVolume **fLV_EXW;
+  G4LogicalVolume **fLV_EXSiSen;
+  G4LogicalVolume **fLV_PWO4;
+  G4OpticalSurface **fOS_PWO4wrap;
+  G4LogicalVolume **fLV_EXSi;
+  G4Material *fMaterial_W;
+  G4Material *fMaterial_Si;
+  G4Material *fMaterial_PWO4;
+  G4UserLimits *fStepLimit;
+  mxg4DetectorMessenger*  fMessenger;
+
   static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
-  G4bool  ftoggleMinipad;
-  G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps 
+  G4bool ftoggleMinipad;
+  G4bool fCheckOverlaps;
 };
 
 #endif

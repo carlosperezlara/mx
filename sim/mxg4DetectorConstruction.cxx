@@ -34,36 +34,36 @@ G4GlobalMagFieldMessenger* mxg4DetectorConstruction::fMagFieldMessenger = 0;
 
 mxg4DetectorConstruction::mxg4DetectorConstruction()
 :G4VUserDetectorConstruction(), 
- fNbOfChambers(0),
- fLogicTarget(NULL),
- fLogicChambersil(NULL),
- fLogicCrystal(NULL),
- fCrystalWrap(NULL),
- fLogicMinipads(NULL),
- fTargetMaterial(NULL),
- fLayerMaterial(NULL),
- fMPCMaterial(NULL),
+ fNbOfEXSensors(0),
+ fLV_EXW(NULL),
+ fLV_EXSiSen(NULL),
+ fLV_PWO4(NULL),
+ fOS_PWO4wrap(NULL),
+ fLV_EXSi(NULL),
+ fMaterial_W(NULL),
+ fMaterial_Si(NULL),
+ fMaterial_PWO4(NULL),
  fStepLimit(NULL),
  ftoggleMinipad(true),
  fCheckOverlaps(false)
 {
   fMessenger = new mxg4DetectorMessenger(this);
 
-  fNbOfChambers = 192*2;
-  fLogicTarget = new G4LogicalVolume*[fNbOfChambers];
-  fLogicChambersil = new G4LogicalVolume*[fNbOfChambers];
-  fLogicCrystal = new G4LogicalVolume*[288*2];
-  fCrystalWrap = new G4OpticalSurface*[288*2];
-  fLogicMinipads = new G4LogicalVolume*[49152];
+  fNbOfEXSensors = 2*8*24; // arms x layers x sensorsPerLayer
+  fLV_EXW = new G4LogicalVolume*[fNbOfEXSensors];
+  fLV_EXSiSen = new G4LogicalVolume*[fNbOfEXSensors];
+  fLV_PWO4 = new G4LogicalVolume*[288*2];
+  fOS_PWO4wrap = new G4OpticalSurface*[288*2];
+  fLV_EXSi = new G4LogicalVolume*[49152];
 }
 
 mxg4DetectorConstruction::~mxg4DetectorConstruction()
 {
-  delete [] fLogicTarget;
-  delete [] fLogicChambersil;
-  delete [] fLogicCrystal;
-  delete [] fCrystalWrap;
-  delete [] fLogicMinipads;
+  delete [] fLV_EXW;
+  delete [] fLV_EXSiSen;
+  delete [] fLV_PWO4;
+  delete [] fOS_PWO4wrap;
+  delete [] fLV_EXSi;
   delete fStepLimit;
   delete fMessenger;
 }
@@ -78,9 +78,9 @@ void mxg4DetectorConstruction::DefineMaterials()
 {
   G4NistManager* nistManager = G4NistManager::Instance();
   nistManager->FindOrBuildMaterial("G4_AIR");
-  fTargetMaterial  = nistManager->FindOrBuildMaterial("G4_W");
-  fLayerMaterial = nistManager->FindOrBuildMaterial("G4_Si");
-  fMPCMaterial = nistManager->FindOrBuildMaterial("G4_PbWO4");
+  fMaterial_W  = nistManager->FindOrBuildMaterial("G4_W");
+  fMaterial_Si = nistManager->FindOrBuildMaterial("G4_Si");
+  fMaterial_PWO4 = nistManager->FindOrBuildMaterial("G4_PbWO4");
   G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
 
@@ -208,7 +208,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   G4VisAttributes* mpcVisAtt = new G4VisAttributes(G4Colour(0.0,1.0,1.0));
   
   worldLV      ->SetVisAttributes(boxVisAtt);
-  //  fLogicTarget ->SetVisAttributes(boxVisAtt);
+  //  fLV_EXW ->SetVisAttributes(boxVisAtt);
   // trackerLV    ->SetVisAttributes(boxVisAtt);
   EXNLV        ->SetVisAttributes(boxVisAtt);
   EXSLV        ->SetVisAttributes(boxVisAtt);
@@ -216,10 +216,10 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   MPCSLV       ->SetVisAttributes(siliconVisAtt);
   // Tracker segments
 
-  G4cout << "There are " << fNbOfChambers << " chambers in the tracker region. "
+  G4cout << "There are " << fNbOfEXSensors << " chambers in the tracker region. "
          << G4endl
          << "The chambers are " << chamberWidth/cm << " cm of "
-         << fLayerMaterial->GetName() << G4endl
+         << fMaterial_Si->GetName() << G4endl
          << "The distance between chamber is " << chamberSpacing/cm << " cm" 
          << G4endl;
 
@@ -232,8 +232,8 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   G4double rmaxFirst = 0.5 * firstLength;
 
   G4double rmaxIncr = 0.0;
-  if( fNbOfChambers > 0 ){
-    rmaxIncr =  0.5 * (lastLength-firstLength)/(fNbOfChambers-1);
+  if( fNbOfEXSensors > 0 ){
+    rmaxIncr =  0.5 * (lastLength-firstLength)/(fNbOfEXSensors-1);
     if (chamberSpacing  < chamberWidth) {
        G4Exception("DetectorConstruction::DefineVolumes()",
                    "InvalidSetup", FatalException,
@@ -242,7 +242,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   }
   
 
-  for (G4int copyNo=0; copyNo < fNbOfChambers; copyNo++) {//Tungsten
+  for (G4int copyNo=0; copyNo < fNbOfEXSensors; copyNo++) {//Tungsten
     
     G4double Zposition = mgeo->W_Z(copyNo);//firstPosition + copyNo * chamberSpacing;
     G4double Xposition = mgeo->W_X(copyNo);
@@ -253,14 +253,14 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     if (Zposition > 0 ) Zposition = Zposition + dz/2.0;
     G4Box* Sensor = new G4Box("Target_W",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
     
-    fLogicTarget[copyNo] =
-      new G4LogicalVolume(Sensor,fTargetMaterial,"Target_LV",0,0,0);
+    fLV_EXW[copyNo] =
+      new G4LogicalVolume(Sensor,fMaterial_W,"Target_LV",0,0,0);
 
-    fLogicTarget[copyNo]->SetVisAttributes(chamberVisAtt);
+    fLV_EXW[copyNo]->SetVisAttributes(chamberVisAtt);
     if (Zposition < 0){
       new G4PVPlacement(0,                            // no rotation
 			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm+205*cm), // at (x,y,z)
-			fLogicTarget[copyNo],        // its logical volume
+			fLV_EXW[copyNo],        // its logical volume
 			"Target_PV",                 // its name
 			// trackerLV,                    // its mother  volume
 			EXSLV,
@@ -271,7 +271,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     else{
       new G4PVPlacement(0,                            // no rotation
 			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm-205*cm), // at (x,y,z)
-			fLogicTarget[copyNo],        // its logical volume
+			fLV_EXW[copyNo],        // its logical volume
 			"Target_PV",                 // its name
 			// trackerLV,                    // its mother  volume
 			EXNLV,
@@ -284,7 +284,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   //If we want micromodules, not minipads
   /*  if (ftoggleMinipad == false){
 
-    for (G4int copyNo=0; copyNo < fNbOfChambers; copyNo++) {//Silicon
+    for (G4int copyNo=0; copyNo < fNbOfEXSensors; copyNo++) {//Silicon
 
       G4double Zposition = mgeo->W_Z(copyNo);
 
@@ -303,14 +303,14 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
             
       G4Box* Sensor = new G4Box("Sensor_Si",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
       
-      fLogicChambersil[copyNo] =
-	new G4LogicalVolume(Sensor,fLayerMaterial,"Chambersil_LV",0,0,0);
+      fLV_EXSiSen[copyNo] =
+	new G4LogicalVolume(Sensor,fMaterial_Si,"Chambersil_LV",0,0,0);
       
-      fLogicChambersil[copyNo]->SetVisAttributes(siliconVisAtt);
+      fLV_EXSiSen[copyNo]->SetVisAttributes(siliconVisAtt);
             
       new G4PVPlacement(0,                            // no rotation
 			G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm), // at (x,y,z)
-			fLogicChambersil[copyNo],        // its logical volume
+			fLV_EXSiSen[copyNo],        // its logical volume
 			"Chambersil_PV",                 // its name
 			trackerLV,                    // its mother  volume
 			false,                        // no boolean operations
@@ -336,14 +336,14 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
       
       G4Box* Minipad = new G4Box("Minipad",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
 
-      fLogicMinipads[copyNo] =
-	new G4LogicalVolume(Minipad,fLayerMaterial,"Minipad_LV",0,0,0);
+      fLV_EXSi[copyNo] =
+	new G4LogicalVolume(Minipad,fMaterial_Si,"Minipad_LV",0,0,0);
       
-      fLogicMinipads[copyNo]->SetVisAttributes(minipadVisAtt);
+      fLV_EXSi[copyNo]->SetVisAttributes(minipadVisAtt);
       if (Zposition < 0){
 	new G4PVPlacement(0,                            // no rotation
 			  G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm+205*cm), // at (x,y,z)
-			  fLogicMinipads[copyNo],        // its logical volume
+			  fLV_EXSi[copyNo],        // its logical volume
 			  "Minipad_PV",                 // its name
 			  //trackerLV,                    // its mother  volume
 			  EXSLV,
@@ -354,7 +354,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
       else{
 	new G4PVPlacement(0,                            // no rotation
 			  G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm-205*cm), // at (x,y,z)
-			  fLogicMinipads[copyNo],        // its logical volume
+			  fLV_EXSi[copyNo],        // its logical volume
 			  "Minipad_PV",                 // its name
 			  //trackerLV,                    // its mother  volume
 			  EXNLV,
@@ -382,17 +382,17 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     if (mpcz > 0 ) mpcz = mpcz + dz/2;
     G4Box* Crystal = new G4Box("Crystal_Pb",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
 
-    fLogicCrystal[mid] =
-      new G4LogicalVolume(Crystal,fMPCMaterial,"Crystal_LV",0,0,0);
+    fLV_PWO4[mid] =
+      new G4LogicalVolume(Crystal,fMaterial_PWO4,"Crystal_LV",0,0,0);
     
-    fLogicCrystal[mid]->SetVisAttributes(mpcVisAtt);
+    fLV_PWO4[mid]->SetVisAttributes(mpcVisAtt);
     
-    fCrystalWrap[mid] = new G4OpticalSurface("CrystalWrap");
+    fOS_PWO4wrap[mid] = new G4OpticalSurface("CrystalWrap");
     G4VPhysicalVolume* crys;
     if (mpcz<0){
       crys = new G4PVPlacement(0,                            // no rotation
 			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm+220*cm+mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
-			       fLogicCrystal[mid],        // its logical volume
+			       fLV_PWO4[mid],        // its logical volume
 			       "Crystal_PV",                 // its name
 			       //trackerLV,                    // its mother  volume
 			       MPCSLV,
@@ -403,7 +403,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     else{
       crys = new G4PVPlacement(0,                            // no rotation
 			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm-220*cm-mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
-			       fLogicCrystal[mid],        // its logical volume
+			       fLV_PWO4[mid],        // its logical volume
 			       "Crystal_PV",                 // its name
 			       //trackerLV,                    // its mother  volume
 			       MPCNLV,
@@ -412,10 +412,10 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
 			       fCheckOverlaps);              // checking overlaps
     }
     
-    new G4LogicalBorderSurface("CrystalWrap",crys,worldPV,fCrystalWrap[mid]);
-    fCrystalWrap[mid]->SetType(dielectric_LUT);
-    fCrystalWrap[mid]->SetModel(LUT);
-    fCrystalWrap[mid]->SetFinish(polishedtyvekair);
+    new G4LogicalBorderSurface("CrystalWrap",crys,worldPV,fOS_PWO4wrap[mid]);
+    fOS_PWO4wrap[mid]->SetType(dielectric_LUT);
+    fOS_PWO4wrap[mid]->SetModel(LUT);
+    fOS_PWO4wrap[mid]->SetFinish(polishedtyvekair);
     
     const G4int NUM = 2;
     G4double pp[NUM] = {2.0*eV, 3.5*eV};
@@ -426,7 +426,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     
     CrystWrapProperty->AddProperty("REFLECTIVITY",pp,reflectivity,NUM);
     CrystWrapProperty->AddProperty("EFFICIENCY",pp,efficiency,NUM);
-    fCrystalWrap[mid]->SetMaterialPropertiesTable(CrystWrapProperty);
+    fOS_PWO4wrap[mid]->SetMaterialPropertiesTable(CrystWrapProperty);
   }
   
   
@@ -450,7 +450,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
 					    minEkin));*/
   /*
   for (int n = 0; n < 49152; n++){
-    fLogicMinipads[n]->SetUserLimits(new G4UserLimits(0.5*mgeo->Si_a2(),
+    fLV_EXSi[n]->SetUserLimits(new G4UserLimits(0.5*mgeo->Si_a2(),
 						      0.5*mgeo->Si_a2(),
 						      maxTime,
 						      0.5*MeV ));}*/
@@ -478,7 +478,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   
   /*								 
   for (int q = 0; q < 288*2; q++){
-    fLogicCrystal[q]->SetUserLimits(new G4UserLimits(0.5*mgeo->PWO4_a2(),
+    fLV_PWO4[q]->SetUserLimits(new G4UserLimits(0.5*mgeo->PWO4_a2(),
 						     0.5*mgeo->PWO4_a2(),
 						     maxTime,
 						     6*MeV));}
@@ -534,12 +534,12 @@ void mxg4DetectorConstruction::SetTargetMaterial(G4String materialName)
   G4Material* pttoMaterial = 
               nistManager->FindOrBuildMaterial(materialName);
 
-  if (fTargetMaterial != pttoMaterial) {
+  if (fMaterial_W != pttoMaterial) {
      if ( pttoMaterial ) {
-        fTargetMaterial = pttoMaterial;
-	for (G4int copyNo=0; copyNo<fNbOfChambers; copyNo++) {
+        fMaterial_W = pttoMaterial;
+	for (G4int copyNo=0; copyNo<fNbOfEXSensors; copyNo++) {
 	  
-	  if (fLogicTarget[copyNo]) fLogicTarget[copyNo]->SetMaterial(fTargetMaterial);
+	  if (fLV_EXW[copyNo]) fLV_EXW[copyNo]->SetMaterial(fMaterial_W);
 	}
 	G4cout 
           << G4endl 
@@ -562,12 +562,12 @@ void mxg4DetectorConstruction::SetChamberMaterial(G4String materialName)
   G4Material* pttoMaterial =
               nistManager->FindOrBuildMaterial(materialName);
 
-  if (fLayerMaterial != pttoMaterial) {
+  if (fMaterial_Si != pttoMaterial) {
      if ( pttoMaterial ) {
-        fLayerMaterial = pttoMaterial;
-        for (G4int copyNo=0; copyNo<fNbOfChambers; copyNo++) {
-            if (fLogicChambersil[copyNo]) fLogicChambersil[copyNo]->
-                                            SetMaterial(fLayerMaterial);
+        fMaterial_Si = pttoMaterial;
+        for (G4int copyNo=0; copyNo<fNbOfEXSensors; copyNo++) {
+            if (fLV_EXSiSen[copyNo]) fLV_EXSiSen[copyNo]->
+                                            SetMaterial(fMaterial_Si);
         }
         G4cout 
           << G4endl 
@@ -591,12 +591,12 @@ void mxg4DetectorConstruction::SetMinipadMaterial(G4String materialName)
   G4Material* pttoMaterial =
     nistManager->FindOrBuildMaterial(materialName);
   
-  if (fLayerMaterial != pttoMaterial) {
+  if (fMaterial_Si != pttoMaterial) {
     if ( pttoMaterial ) {
-      fLayerMaterial = pttoMaterial;
+      fMaterial_Si = pttoMaterial;
       for (G4int copyNomp = 0; copyNomp < 49152; copyNomp++) {
-	if (fLogicMinipads[copyNomp]) fLogicMinipads[copyNomp]->
-					SetMaterial(fLayerMaterial);
+	if (fLV_EXSi[copyNomp]) fLV_EXSi[copyNomp]->
+					SetMaterial(fMaterial_Si);
       }
       G4cout
 	<< G4endl
@@ -617,11 +617,11 @@ void mxg4DetectorConstruction::SetMpcMaterial(G4String materialName) {
     G4cout << G4endl << "-->  WARNING from SetTargetMaterial : " << materialName << " not found" << G4endl;
     return;
   }
-  if(fTargetMaterial != pttoMaterial) {
-    fTargetMaterial = pttoMaterial;
+  if(fMaterial_W != pttoMaterial) {
+    fMaterial_W = pttoMaterial;
     for(G4int copyNo=0; copyNo<288*2; copyNo++) {
-      if(fLogicCrystal[copyNo])
-	fLogicCrystal[copyNo]->SetMaterial(fMPCMaterial);
+      if(fLV_PWO4[copyNo])
+	fLV_PWO4[copyNo]->SetMaterial(fMaterial_PWO4);
     }
     G4cout << G4endl << "----> The mpc is made of " << materialName << G4endl;
   }
