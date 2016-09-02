@@ -261,6 +261,17 @@ void mxGeometry::UpdateSiW(int key) {
   fLastIdx = k;
 }
 //========
+float mxGeometry::RZ(int lyr) {
+  if(lyr==8) {
+    return fPWO4_RZ[13];
+  } else if(lyr==17) {
+    return fPWO4_RZ[294];
+  } else {
+    if(lyr<8) return fSi_RZ[lyr];
+    else return fSi_RZ[lyr-1];
+  }
+}
+//========
 void mxGeometry::UpdatePWO4(int k) {
   fX = fPWO4_RX[k];
   fY = fPWO4_RY[k];

@@ -23,7 +23,9 @@ class mxReconstruction {
   std::vector<mxParty*> GetParties(int lyr) {return fPty[lyr];}
   std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
   std::vector<mxUnion*> GetUnions(int arm) {return fUni[arm];}
+  mxParty* GetParty(int lyr, int idx) {return fPty[lyr].at(idx);}
   void DumpStats();
+  void DumpHits();
   void DumpParties();
 
   float GetVertexX() {return fV[0];}

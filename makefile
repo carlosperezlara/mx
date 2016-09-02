@@ -1,10 +1,10 @@
-all:	libMX.so standalone simqa display
+all:	libMX.so reconstruct simqa display
 
 clean:
-	rm libMX.so standalone simqa
+	rm libMX.so reconstruct simqa
 
-standalone: standalone.cc
-	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o standalone
+reconstruct: reconstruct.cc
+	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o reconstruct
 
 simqa: simqa.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o simqa

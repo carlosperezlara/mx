@@ -9,14 +9,18 @@
 
 //========
 mxParty::mxParty():
-  fNHits(0),
   fAssigned(false),
   fSgn(0),
   fSx(0),
   fSy(0),
   fSxx(0),
   fSyy(0),
-  fSxy(0) {
+  fSxy(0),
+  fN(0),
+  fNx(0),
+  fNy(0),
+  fDx(0),
+  fDy(0) {
   // ctor
   for(int i=0; i!=128; ++i) fHits[i]=NULL;
 }
@@ -27,7 +31,6 @@ mxParty::~mxParty() {
 //========
 mxParty::mxParty(const mxParty &src) {
   // copy ctor
-  fNHits = src.fNHits;
   fAssigned = src.fAssigned;
   fSgn = src.fSgn;
   fSx = src.fSx;
@@ -35,14 +38,18 @@ mxParty::mxParty(const mxParty &src) {
   fSxx = src.fSxx;
   fSyy = src.fSyy;
   fSxy = src.fSxy;
-  for(int i=0; i!=fNHits; ++i)
+  fN = src.fN;
+  fNx = src.fNx;
+  fNy = src.fNy;
+  fDx = src.fDx;
+  fDy = src.fDy;
+  for(int i=0; i!=N(); ++i)
     fHits[i] = src.fHits[i];
 }
 //========
 mxParty& mxParty::operator=(const mxParty &src) {
   // asgmnt operator
   if(&src!=this) {
-    fNHits = src.fNHits;
     fAssigned = src.fAssigned;
     fSgn = src.fSgn;
     fSx = src.fSx;
@@ -50,7 +57,12 @@ mxParty& mxParty::operator=(const mxParty &src) {
     fSxx = src.fSxx;
     fSyy = src.fSyy;
     fSxy = src.fSxy;
-    for(int i=0; i!=fNHits; ++i)
+    fN = src.fN;
+    fNx = src.fNx;
+    fNy = src.fNy;
+    fDx = src.fDx;
+    fDy = src.fDy;
+    for(int i=0; i!=N(); ++i)
       fHits[i] = src.fHits[i];
   }
   return *this;
@@ -58,8 +70,26 @@ mxParty& mxParty::operator=(const mxParty &src) {
 //========
 void mxParty::Fill(mxHit *hit, float x, float y) {
   // filler
-  if(fNHits>127) return;
-  fHits[fNHits] = hit;
+  int n = N();
+  if(n>127) return;
+  fHits[n] = hit;
+  if(n<1) {
+    fN = 1;
+  } else {
+    if(fDx>fDy) {
+      if( TMath::Abs(GetX()-x)>0.9*GetSpreadX() ) {
+	fNx++;
+      } else {
+	fNy++;
+      }
+    } else {
+      if( TMath::Abs(GetY()-y)>0.9*GetSpreadY() ) {
+	fNy++;
+      } else {
+	fNx++;
+      }
+    }
+  }
   hit->SetAssigned(true);
   float sgn = hit->Signal();
   fSx += x*sgn;
@@ -67,35 +97,32 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
   fSxx += x*x*sgn;
   fSyy += y*y*sgn;
   fSxy += x*y*sgn;
-  ++fNHits;
   fSgn += sgn;
 }
 //========
 float mxParty::GetX() {
   // <x>
-  if( fNHits<1 ) return 0;
+  if( N()<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSx/fSgn;
 }
 //========
 float mxParty::GetY() {
   // <y>
-  if( fNHits<1 ) return 0;
+  if( N()<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSy/fSgn;
 }
 //========
-float mxParty::Test(float nx, float ny, float dx, float dy) {
+float mxParty::Test(float xx, float yy) {
   // tester
-  if( fNHits<1 ) return -1;
+  if( N()<1 ) return -1;
   float cx = GetX();
   float cy = GetY();
-  float varX = GetCov(0);
-  float varY = GetCov(1);
-  if(varX<dx) varX = dx*dx; // prior
-  if(varY<dy) varY = dy*dy; // prior
-  float dx2 = (nx-cx)/varX*(nx-cx);
-  float dy2 = (ny-cy)/varY*(ny-cy);
+  float varX = GetSpreadX()*GetSpreadX();
+  float varY = GetSpreadY()*GetSpreadY();
+  float dx2 = (xx-cx)/varX*(xx-cx);
+  float dy2 = (yy-cy)/varY*(yy-cy);
   return TMath::Sqrt( dx2 + dy2 );
 }
 //========
@@ -107,12 +134,14 @@ void mxParty::Reset() {
   fSxx=0;
   fSyy=0;
   fSxy=0;
-  fNHits=0;
+  fN=0;
+  fNx=0;
+  fNy=0;
 }
 //========
 float mxParty::GetCov(int dim) {
   // covariance matrix
-  if( fNHits<1 ) return -1;
+  if( N()<1 ) return -1;
   if( fSgn<1e-6 ) return -1;
   float var;
   if     (dim==0) var = fSxx/fSgn-fSx/fSgn*fSx/fSgn;

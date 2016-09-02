@@ -91,7 +91,7 @@ mxQAReconstruction::mxQAReconstruction() {
     fHcoaEt[arm] = new TH1F( Form("mxReco_%s_coaEt",arm==0?"S":"N"), Form("mxReco_%s_coaEt;ETA",arm==0?"S":"N"), 100,-5,+5);
     fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;RAD^2",arm==0?"S":"N"), 100,0,2);
     fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;ETA^2",arm==0?"S":"N"), 100,0,1);
-    fHcoaLpC[arm] = new TH1D( Form("mxReco_%s_coaLpC",arm==0?"S":"N"), Form("mxReco_%s_coaLpC;Layers per Coalition", arm==0?"S":"N"), 20, 0, 20);
+    fHcoaLpC[arm] = new TH1F( Form("mxReco_%s_coaLpC",arm==0?"S":"N"), Form("mxReco_%s_coaLpC;Layers per Coalition", arm==0?"S":"N"), 20, 0, 20);
     fList->Add( fHcoaN[arm] );
     fList->Add( fHcoaEn[arm] );
     fList->Add( fHcoaET[arm] );
@@ -120,10 +120,10 @@ mxQAReconstruction::mxQAReconstruction() {
     fList->Add( fHuniEt[arm] );
 
     fHpcEn[arm] = new TH1F( Form("mxReco_%s_pcEn",arm==0?"S":"N"), Form("mxReco_%s_pcEn;MeV",arm==0?"S":"N"), 100, 0, 1e5);
-    fHpcLyr [arm] = new TH1D( Form("mxReco_%s_pcLyr",arm==0?"S":"N"), Form("mxReco_%s_pcLyr;Layer",arm==0?"S":"N"), 10, 0, 10);
+    fHpcLyr [arm] = new TH1F( Form("mxReco_%s_pcLyr",arm==0?"S":"N"), Form("mxReco_%s_pcLyr;Layer",arm==0?"S":"N"), 10, 0, 10);
     fHpcEffic[arm] = new TH1F( Form("mxRecopcEff_%s",arm==0?"S":"N"), Form("mxRecopcEff_%s;At Least Layers;Efficiency",arm==0?"S":"N"),10,0,10);
     fHpcEn3D[arm] = new TH2F( Form("mxRecopcEn3D_%s",arm==0?"S":"N"), Form("mxRecopcEn3D_%s;Layers;Energy",arm==0?"S":"N"),10,0,10,100,0,5e4);
-    fHpcCoaLyr[arm] = new TH1D( Form("mxRecopcCoaLyr_%s",arm==0?"S":"N"), Form("mxRecopcCoaLyr_%s;Layer",arm==0?"S":"N"),10,0,10);
+    fHpcCoaLyr[arm] = new TH1F( Form("mxRecopcCoaLyr_%s",arm==0?"S":"N"), Form("mxRecopcCoaLyr_%s;Layer",arm==0?"S":"N"),10,0,10);
     fList->Add( fHpcEn[arm] );
     fList->Add( fHpcLyr[arm] );
     fList->Add( fHpcEffic[arm] );
@@ -186,7 +186,7 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
 	while(pclayhit>0){
 	  fHpcEffic[arm]->Fill(pclayhit,0.01);
 	  pclayhit--;
-	  std::cout << pclayhit << std::endl;
+	  //std::cout << pclayhit << std::endl;
 	}
       }
     }

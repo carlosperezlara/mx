@@ -24,6 +24,7 @@
 
 int main()
 {
+  /*
   ifstream ifile;
   ifile.open("/Users/stacykarthas/Geant4/geant4.10.02.p01/examples/basic/MPCEXsim-build/100direction.txt");
   if (!ifile) {
@@ -48,14 +49,14 @@ int main()
       i++;
     }
     ifile.close();
-      
+  */      
   mxGeometry *geo = new mxGeometry();
   mxReconstruction *Reco = new mxReconstruction();
   mxQAReconstruction *QAReco = new mxQAReconstruction();
   
   //note that we use "new" to create the TFile and TTree objects !
   //because we want to keep these objects alive when we leave this function.
-  TFile *f = new TFile("/Users/stacykarthas/Geant4/geant4.10.02.p01/examples/basic/MPCEXsim-build/MPCEXfile.root");
+  TFile *f = new TFile("MPCEXfile.root");
   TTree *t1 = (TTree*)f->Get("MPCEXfile");
 
   Int_t mxhits, mhits;
@@ -86,7 +87,7 @@ int main()
   TH1D *mpchits  = new TH1D("mpchits","MPC Crystal Hits; Crystal id; Hits", 576, -0.5,575.5);
   TH2F *mpcdisplay = new TH2F("mpcdisp","MPC Crystal Hits;X;Y",61,-30,30,61,-30,30);
   TH1F *mpcexenhist   = new TH1F("mpcexenhist","MPCEX Energy; Energy;", 2000,0,1);
-  TH1F *mpcenhist   = new TH1F("mpcenhist","MPC Energy; Energy(MeV);", 100,0,3.5e4);
+  TH1F *mpcenhist   = new TH1F("mpcenhist","MPC Energy; Energy(MeV);", 100,0,1.5e5);
   TH2F *aero[18];
   for(int i=0; i!=9; ++i) {
     if(i%2==0) {

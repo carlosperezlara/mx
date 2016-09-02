@@ -6,9 +6,15 @@
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TString.h"
 
-int main() {
-  TFile *f = new TFile("MPCEXfile.root");
+int main(int narg, char **carg) {
+  TString file = "MPCEXfile";
+  if(narg>1) {
+    file = carg[1];
+  }
+  std::cout << "INPUT: " << Form("%s.root",file.Data()) << std::endl;
+  TFile *f = new TFile(Form("%s.root",file.Data()));
   TTree *t1 = (TTree*)f->Get("MPCEXfile");
   Int_t mxhits, mhits;
   Double_t mxen, men;
@@ -31,7 +37,7 @@ int main() {
   t1->SetBranchAddress("MPCHitcrystals",&cmhits,&bcmhits);
   t1->SetBranchAddress("MPCEnergysens",&cmen,&bcmen);
 
-  std::ofstream fout("input.dat");
+  std::ofstream fout(Form("%s.hit",file.Data()));
   //Read all entries and fill the histograms
   Long64_t nentries = t1->GetEntries();
   for(Long64_t i=0;i<nentries;i++) {
@@ -55,5 +61,6 @@ int main() {
 	fout << j << " " << energyarray[j] << std::endl;
   }
   fout.close();
+  std::cout << "OUTPUT: " << Form("%s.hit",file.Data()) << std::endl;
   return 0;
 }

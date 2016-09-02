@@ -84,6 +84,24 @@ mxReconstruction::~mxReconstruction() {
   }
 }
 //========
+void mxReconstruction::DumpHits() {
+  std::cout << "=============================" << std::endl;
+  std::cout << "mxReconstruction::DumpHits" << std::endl;
+  mxHit *hit;
+  int nn=0;
+  for(int i=0; i!=18; ++i) {
+    int n = fNHit[i];
+    std::cout << "  Layer " << i << " || Nhits " << n << std::endl;
+    nn += n;
+    for(int j=0; j!=n; ++j) {
+      hit = fHit[i].at(j);
+      std::cout << "  ||" << j << "|| index "  << hit->Idx() << " signal " << hit->Signal() << std::endl;
+    }
+  }
+  std::cout << "Total Hits: " << nn << std::endl;
+  std::cout << "=============================" << std::endl;
+}
+//========
 void mxReconstruction::DumpParties() {
   std::cout << "=============================" << std::endl;
   std::cout << "mxReconstruction::DumpParties" << std::endl;
@@ -94,18 +112,14 @@ void mxReconstruction::DumpParties() {
     int n = fNPty[i];
     nn += n;
     std::cout << "  Layer " << i << " || Nparties " << n << std::endl;
-
     int nhit = fNHit[i];
-    // std::cout << nhit << std::endl; 
-    //std::cout << hit->Idx() <<" " << hit->Signal() << std::endl; 
-    
-
     for(int j=0; j!=n; ++j) {
       pty = fPty[i].at(j);
-      std::cout << "  ||" << j << "|| x y "  <<pty->GetX() << " " << pty->GetY() << " || sgn " << pty->Signal() << std::endl;
+      std::cout << "  ||" << j << "|| x y "  <<pty->GetX() << " " << pty->GetY() << " || hits " << pty->N() << " || sgn " << pty->Signal() << " || dx dy " << pty->GetSpreadX() << " " << pty->GetSpreadY() << std::endl;
       int m = pty->N();
       for(int k=0; k!=m; ++k) {
 	hit = pty->GetHit(k);
+	if(!hit) std::cout << "CORRUPTION. Crashing..." << std::endl;
 	float x = fGeo->X(hit->Idx());
 	float y = fGeo->Y(hit->Idx());
 	std::cout << "       ||" << k << "|| key x y " << hit->Idx() <<" "<< x << " " << y << " || sgn " << hit->Signal() << std::endl;
@@ -145,21 +159,15 @@ void mxReconstruction::Fill(int idx, float sgn) {
   mxHit *hit;
   if(fNHit[lyridx]>nmax-1) {
     hit = new mxHit();
-    //hit->Fill( idx, sgn );
     fHit[lyridx].push_back( hit );
   } else hit = fHit[lyridx].at( fNHit[lyridx] );
-    hit->Fill( idx, sgn );
+  hit->Fill( idx, sgn );
   fNHit[lyridx]++;
-  //std::cout << hit->Idx() << " " << hit->Signal()<<std::endl;
 }
 //========
 void mxReconstruction::Make() {
   // maker
-  for(int lyr=0; lyr!=18; ++lyr) {std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
-    /* for (int i = 0; i < fHit[lyr].size(); ++i) {
-      std::cout << fHit[lyr].at(i)->Idx() << " " << fHit[lyr].at(i)->Signal() << std::endl;
-      }*/
-  }
+  for(int lyr=0; lyr!=18; ++lyr) std::sort(fHit[lyr].begin(),fHit[lyr].end(),GreaterSignal());
   Parties();
   for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].end(),GreaterSignal());
   Coalitions();
@@ -176,16 +184,22 @@ void mxReconstruction::Parties() {
     for(int mh=0; mh!=fNHit[lyr]; ++mh) {
       hit = (mxHit*) fHit[lyr].at( mh );
       hit->SetAssigned( false );
-      //  std::cout << hit->Idx() << " " << hit->Signal()<<std::endl;      
     }
     // building
-    //if(lyr!=12) continue;
-    float dx = 0.2;
-    float dy = 0.2;
+    float dx, dy;
     if(lyr==8||lyr==17) {
-      dx = 2.5;
-      dy = 2.5;
+      dx = fGeo->PWO4_a0();
+      dy = fGeo->PWO4_a1();
+    } else {
+      if((lyr%9)%2==0) {
+	dx = fGeo->Si_a0();
+	dy = fGeo->Si_a1();
+      } else {
+	dx = fGeo->Si_a1();
+	dy = fGeo->Si_a0();
+      }
     }
+    //std::cout << "Layer " << lyr << " | dx " << dx << " dy " << dy << std::endl;
     for(int mh=0; mh!=fNHit[lyr]; ++mh) {
       hit = (mxHit*) fHit[lyr].at( mh );
       if(hit->IsAssigned()) continue;
@@ -193,16 +207,16 @@ void mxReconstruction::Parties() {
       float x = fGeo->X( idx );
       float y = fGeo->Y( idx );
       bool append = false;
-      //std::cout << "  hit no " << mh << " in " << x << " " << y << " " << hit->Signal()<< std::endl;
+      //std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = (mxParty*) fPty[lyr].at( mp );
-	float test = pty->Test(x,y,dx,dy);
-	//std::cout << "    pty no " << mp << "||=> " << pty->GetX() << " " << pty->GetY();
-	//std::cout << " || " << pty->N() << " || stddev " << sqrt(pty->GetCov(0));
-	//std::cout << " " << sqrt(pty->GetCov(1)) << " || test " << test << std::endl;
-	if(test<3) {
+	float test = pty->Test(x,y);
+	//std::cout << "    pty no " << mp << "|| in x y " << pty->GetX() << " " << pty->GetY();
+	//std::cout << " || hits " << pty->N() << " || spreadX " << pty->GetSpreadX();
+	//std::cout << " spreadY " << pty->GetSpreadY() << " || test " << test << std::endl;
+	if(test<10) {
 	  append = true;
-	  //std::cout << "    >>party update<< before:" << pty->GetX() << " " << pty->GetY();
+	  //std::cout << "    >>party update<< before: x=" << pty->GetX() << " y=" << pty->GetY();
 	  break;
 	}
       }
@@ -210,6 +224,7 @@ void mxReconstruction::Parties() {
 	int nmax = fPty[lyr].size();
 	if(fNPty[lyr]>nmax-1) {
 	  pty = new mxParty();
+	  pty->SetDxDy(dx,dy);
 	  fPty[lyr].push_back(pty);
 	} else pty = fPty[lyr].at( fNPty[lyr] );
 	pty->Reset();
@@ -217,15 +232,16 @@ void mxReconstruction::Parties() {
 	//std::cout << "    >>NEW PARTY<<  ";
       }
       pty->Fill( hit, x, y );
-      //std::cout << " now " << pty->GetX() << " " << pty->GetY() <<" " <<pty->Signal() <<std::endl;
+      //std::cout << " now x=" << pty->GetX() << " y=" << pty->GetY() <<" sgn=" <<pty->Signal() <<std::endl;
     }
   }
 }
 //========
 void mxReconstruction::Coalitions() {
   // forming global coalitions
-  float Z[18] = {-203.982, -204.636, -205.29, -205.944, -206.598, -207.252, -207.906, -208.560, -220.9,
-                 +203.982, +204.636, +205.29, +205.944, +206.598, +207.252, +207.906, +208.560, +220.9};
+  float Z[18];// = {-203.982, -204.636, -205.29, -205.944, -206.598, -207.252, -207.906, -208.560, -220.9,
+              //   +203.982, +204.636, +205.29, +205.944, +206.598, +207.252, +207.906, +208.560, +220.9};
+  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);
 
   mxParty *pty;
   mxCoalition *coa;

@@ -46,7 +46,7 @@ class mxQAReconstruction {
   TH1F *fHcoaEt[2];
   TH1F *fHcoaSPh[2];
   TH1F *fHcoaSEt[2];
-  TH1D *fHcoaLpC[2];
+  TH1F *fHcoaLpC[2];
   
   TH1F *fHuniN[2];
   TH1F *fHuniEn[2];
@@ -58,10 +58,10 @@ class mxQAReconstruction {
   TH1F *fHuniEt[2];
 
   TH1F *fHpcEn[2];
-  TH1D *fHpcLyr[2];
+  TH1F *fHpcLyr[2];
   TH1F *fHpcEffic[2];
   TH2F *fHpcEn3D[2];
-  TH1D *fHpcCoaLyr[2];
+  TH1F *fHpcCoaLyr[2];
 };
 
 #endif /* __mxQAReconstruction_H__ */ 

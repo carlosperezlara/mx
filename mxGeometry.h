@@ -22,6 +22,7 @@ class mxGeometry {
   float W_X(int sidx);
   float W_Y(int sidx);
   float W_Z(int sidx);
+  float RZ(int lyr);
 
  private:
   float Reference(int,int);
