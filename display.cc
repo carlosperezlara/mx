@@ -13,6 +13,8 @@
 #include "TLatex.h"
 
 #include "mxGeometry.h"
+#include "phMath.h"
+
 mxGeometry *geo = new mxGeometry();
 
 void drawEX() {
@@ -67,26 +69,24 @@ int main(int argn, char **argc) {
   }
   aero[8]  = new TH2F( "S8", "S8", 120, -22, +22, 120, -22, +22 );
   aero[17] = new TH2F( "N8", "N8", 120, -22, +22, 120, -22, +22 );
+  TH2F *phieta[2];
+  phieta[0] = new TH2F("phieta0","S;ETA;PHI",100,-4,-3,100,0,TMath::TwoPi());
+  phieta[1] = new TH2F("phieta1","N;ETA;PHI",100,+3,+4,100,0,TMath::TwoPi());
   TCanvas *main = new TCanvas("main","main",600,600);
+  main->Divide(2,5,0,0);
   int plotarm = 0;
-  switch(plotarm) {
-  case(0):
-    main->Divide(3,3,0,0);
-    break;
-  case(1):
-    main->Divide(3,3,0,0);
-    break;
-  default:
-    main->Divide(4,4,0,0);
-  }
-
   TEllipse *lips = new TEllipse;
-  lips->SetLineColor(kRed-3);
-  lips->SetFillColorAlpha(kBlue-3,0.1);
   main->SaveAs( Form("%s_disp.pdf[",file.Data()),"pdf");
   int hits, idx;
   float sgn, xx, yy;
   TLatex *tex = new TLatex();
+  int col[9] = {kRed-3, kOrange-3, kYellow-3, kGreen-3, kCyan-3, kBlue-3, kMagenta-3, kAzure-3, kBlack};
+  float z[18];
+  float ez[18];
+  for(int i=0;i!=18;++i) ez[i] = geo->Si_a2();
+  ez[8] = geo->PWO4_a2();
+  ez[17] = geo->PWO4_a2();
+  for(int i=0;i!=18;++i) z[i] = geo->RZ(i);// + 0.5*ez[i];
   for(int ev=0;; ++ev) {
     input >> hits;
     if(!input.good()) break;
@@ -113,6 +113,7 @@ int main(int argn, char **argc) {
       main->cd(7);  aero[6]->Draw("colz"); drawEX();   aero[6]->Draw("colz same"); tex->DrawLatex(18,18,Form("%.0f",aero[6]->GetEntries()));
       main->cd(8);  aero[7]->Draw("colz"); drawEX();   aero[7]->Draw("colz same"); tex->DrawLatex(18,18,Form("%.0f",aero[7]->GetEntries()));
       main->cd(9);  aero[8]->Draw("colz"); drawMPC(0); aero[8]->Draw("colz same"); tex->DrawLatex(18,18,Form("%.0f",aero[8]->GetEntries()));
+      main->cd(10); phieta[0]->Draw("colz");
       int pties;
       input2 >> pties;
       if(!input2.good()) pties = 0;
@@ -122,8 +123,16 @@ int main(int argn, char **argc) {
 	input2 >> ll >> xx >> yy >> sgnP >> sx >> sy >> sxy >> spx >> spy;
 	if(ll>8) continue;
 	main->cd(1+ll);
+	lips->SetLineColor( col[ll] );
+	lips->SetFillColorAlpha(kBlue-3,0.1);
 	lips->DrawEllipse(xx,yy,spx,spy,0,360,0);
 	npt[ll]++;
+	main->cd(10);
+	lips->SetLineColor( col[ll] );
+	float ephi, eeta;
+        float phi = _phi( xx, yy, ephi, spx, spy );
+        float eta = _eta( xx, yy, z[ll], eeta, spx, spy, ez[ll] );
+        lips->DrawEllipse(eta,phi,eeta,ephi,0,360,0);
 	//draw
       }
       tex->SetTextColor(kRed-3);
@@ -136,8 +145,19 @@ int main(int argn, char **argc) {
       main->cd(7);  tex->DrawLatex(18,16,Form("%d",npt[6]));
       main->cd(8);  tex->DrawLatex(18,16,Form("%d",npt[7]));
       main->cd(9);  tex->DrawLatex(18,16,Form("%d",npt[8]));
+      main->cd(10);
+      tex->SetTextColor(col[0]); tex->DrawLatex(-3.9,5.5,Form("%d",npt[0]));
+      tex->SetTextColor(col[1]); tex->DrawLatex(-3.9,4.5,Form("%d",npt[1]));
+      tex->SetTextColor(col[2]); tex->DrawLatex(-3.9,3.0,Form("%d",npt[2]));
+      tex->SetTextColor(col[3]); tex->DrawLatex(-3.9,1.5,Form("%d",npt[3]));
+      tex->SetTextColor(col[4]); tex->DrawLatex(-3.9,0.5,Form("%d",npt[4]));
+      tex->SetTextColor(col[5]); tex->DrawLatex(-3.2,5.5,Form("%d",npt[5]));
+      tex->SetTextColor(col[6]); tex->DrawLatex(-3.2,4.5,Form("%d",npt[6]));
+      tex->SetTextColor(col[7]); tex->DrawLatex(-3.2,1.5,Form("%d",npt[7]));
+      tex->SetTextColor(col[8]); tex->DrawLatex(-3.2,0.5,Form("%d",npt[8]));
       break;
     case(1):
+      //main->Divide(3,3,0,0);
       main->cd(1);  aero[9]->Draw("colz");
       main->cd(2); aero[10]->Draw("colz");
       main->cd(3); aero[11]->Draw("colz");
@@ -149,6 +169,7 @@ int main(int argn, char **argc) {
       main->cd(9); aero[17]->Draw("colz");
       break;
     default:
+      //main->Divide(4,4,0,0);
       main->cd(1);  aero[0]->Draw("colz");
       main->cd(2);  aero[1]->Draw("colz");
       main->cd(3);  aero[2]->Draw("colz");

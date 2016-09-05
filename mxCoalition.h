@@ -15,7 +15,7 @@ class mxCoalition {
   mxCoalition& operator=(const mxCoalition&);
   virtual ~mxCoalition();
   void Fill(int,mxParty*,float,float);
-  float Test(float,float);
+  float Test(float,float,float,float);
   int N() {return fNParties;}
   mxParty* GetParty(int val) {return val<fNParties?fParties[val]:NULL;}
   float GetEta();

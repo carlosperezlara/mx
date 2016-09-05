@@ -239,9 +239,11 @@ void mxReconstruction::Parties() {
 //========
 void mxReconstruction::Coalitions() {
   // forming global coalitions
-  float Z[18];// = {-203.982, -204.636, -205.29, -205.944, -206.598, -207.252, -207.906, -208.560, -220.9,
-              //   +203.982, +204.636, +205.29, +205.944, +206.598, +207.252, +207.906, +208.560, +220.9};
-  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);
+  float Z[18], dz[18];
+  for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
+  dz[8] = fGeo->PWO4_a2();
+  dz[17] = fGeo->PWO4_a2();
+  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
 
   mxParty *pty;
   mxCoalition *coa;
@@ -254,7 +256,7 @@ void mxReconstruction::Coalitions() {
       }
     // call for coalition formation
     for(int lyr=arm*9+8; lyr!=arm*9+1; --lyr) {
-      //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
+      std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = fPty[lyr].at(mp);
         if(pty->IsAssigned()) continue;
@@ -263,31 +265,34 @@ void mxReconstruction::Coalitions() {
         if(fNCoa[arm]>nmax-1) {
           coa = new mxCoalition();
           fCoa[arm].push_back(coa);
-        } else coa = fCoa[arm].at( fNCoa[arm] );
+        } else
+	  coa = fCoa[arm].at( fNCoa[arm] );
 	coa->Reset();
-	float phi = _phi( pty->GetX(), pty->GetY() );
-	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr] );
-	//std::cout << " seeding pty " << mp << " with " << phi << " " << eta  << std::endl;
+	float ephi, eeta;
+	float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
+	std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
 	int coalyr = lyr%9;
         coa->Fill( coalyr, pty, phi, eta );
-	//std::cout << " >>>NEW COALITION<<< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+	std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
         for(int inc=lyr-1; inc!=arm*9-1; --inc) {
-	  //std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	  std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
 	  for(int np=0; np!=fNPty[inc]; ++np) {
             pty = fPty[inc].at(np);
 	    if(pty->IsAssigned()) continue;
-	    phi = _phi( pty->GetX(), pty->GetY() );
-	    eta = _eta( pty->GetX(), pty->GetY(), Z[lyr] );
-	    float test = coa->Test( phi, eta );
-	    //std::cout << "    ptyno " << np << " with " << phi << " " << eta << " || test " << test << std::endl;
+	    phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+	    eta = _eta( pty->GetX(), pty->GetY(), Z[inc], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+	    float test = coa->Test( phi, eta, ephi, eeta );
+	    std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
             if( test < 3) {
+	      std::cout << "    [compatible]  saving..." << std::endl;
               coa->Fill( inc, pty, phi, eta );
 	      break;
 	    }
           }
-	  //std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+	  std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	}
       }
     }

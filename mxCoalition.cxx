@@ -85,15 +85,13 @@ void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta) {
   fSgn += sgn;
 }
 //========
-float mxCoalition::Test(float phi, float eta) {
+float mxCoalition::Test(float phi, float eta, float ephi, float eeta) {
   // tester
   if(fNParties<1) return -1;
   float cx = GetPhi();
   float cy = GetEta();
-  float varX = GetCov(0);
-  float varY = GetCov(1);
-  if(varX<1e-6) varX = 0.1; // prior
-  if(varY<1e-6) varY = 0.1; // prior
+  float varX = ephi*ephi;
+  float varY = eeta*eeta;
   float dx2 = (phi-cx)/varX*(phi-cx);
   float dy2 = (eta-cy)/varY*(eta-cy);
   return TMath::Sqrt( dx2 + dy2 );

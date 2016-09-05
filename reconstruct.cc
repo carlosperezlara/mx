@@ -6,8 +6,10 @@
 #include "TList.h"
 #include "TError.h"
 
-#include "mxReconstruction.h"
+#include "phMath.h"
+
 #include "mxParty.h"
+#include "mxReconstruction.h"
 #include "mxQAReconstruction.h"
 
 int main(int narg, char **carg) {
@@ -50,7 +52,8 @@ int main(int narg, char **carg) {
       int n = reco->GetNParties(lyr);
       for(int i=0; i!=n; ++i) {
 	party = reco->GetParty(lyr,i);
-	outputP << lyr << " " << party->GetX() << " " << party->GetY() << " " << party->Signal() << " ";
+	outputP << lyr << " " << party->GetX() << " " << party->GetY() << " ";
+	outputP << party->Signal() << " ";
 	outputP << party->GetCov(0) << " " << party->GetCov(1) << " " << party->GetCov(2) << " ";
 	outputP << party->GetSpreadX() << " " << party->GetSpreadY() << " ";
 	outputP << std::endl;
