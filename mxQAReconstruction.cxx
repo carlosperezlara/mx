@@ -17,7 +17,7 @@
 #include "mxHit.h"
 
 //========
-mxQAReconstruction::mxQAReconstruction() {
+mxQAReconstruction::mxQAReconstruction(float maxe) {
   // ctor
   std::cout << "mxQAReconstruction:: ctor" << std::endl;
   fList = new TList();
@@ -32,66 +32,54 @@ mxQAReconstruction::mxQAReconstruction() {
   fList->Add( fHvz );
 
   for(int arm=0; arm!=2; ++arm) {
-    for(int lyr=0; lyr!=8; ++lyr) {
-      fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",lyr), 100,0,800);
-      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",lyr), 100,0,3);
+    for(int lyr=0; lyr!=9; ++lyr) {
+      float emax = maxe/100;
+      float smax= 1;
+      if(lyr==8||lyr==17) {
+	emax = maxe;
+	smax = 10;
+      }
+      fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;NO of HITS",arm==0?"S":"N",lyr), 800,-0.5,799.5);
+      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHhitN[arm][lyr] );
       fList->Add( fHhitE[arm][lyr] );
 
-      fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",lyr), 100,0,150);
-      fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",lyr), 100,0,3);
-      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyEN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyEN;GEV;HITS",arm==0?"S":"N",lyr), 100,0,3, 60,-0.5,59.5);
-      fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",lyr), 100,-20,+20);
-      fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",lyr), 100,-20,+20);
-      fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",lyr), 100,0,2);
-      fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",lyr), 100,0,2);
-      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyESX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyESX;GEV;CM^2",arm==0?"S":"N",lyr), 100,0,100, 100,0,50);
-      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_ptyESY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyESY;GEV;CM^2",arm==0?"S":"N",lyr), 100,0,100, 100,0,50);
+      fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;NO of PARTIES",arm==0?"S":"N",lyr), 100,-0.5,99.5);
+      fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
+      fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;X  CM",arm==0?"S":"N",lyr), 100,-22,+22);
+      fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;Y  CM",arm==0?"S":"N",lyr), 100,-22,+22);
+      fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;SPREAD X  CM",arm==0?"S":"N",lyr), 100,0,smax);
+      fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;SPREAD Y  CM",arm==0?"S":"N",lyr), 100,0,smax);
       fList->Add( fHptyN[arm][lyr] );
       fList->Add( fHptyE[arm][lyr] );
-      fList->Add( fHptyEN[arm][lyr] );
       fList->Add( fHptyX[arm][lyr] );
       fList->Add( fHptyY[arm][lyr] );
       fList->Add( fHptySX[arm][lyr] );
       fList->Add( fHptySY[arm][lyr] );
+      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyEN",arm==0?"S":"N",lyr),
+				    Form("mxReco_%s%d_coaptyEN;COA-ENERGY  GEV;NO of HITS",arm==0?"S":"N",lyr),
+				    100,0,maxe, 60,-0.5,59.5);
+      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESX",arm==0?"S":"N",lyr),
+				     Form("mxReco_%s%d_coaptyESX;COA-ENERGY  GEV;SPREAD X  CM",arm==0?"S":"N",lyr),
+				     100,0,maxe, 100,0,smax);
+      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESY",arm==0?"S":"N",lyr),
+				     Form("mxReco_%s%d_coaptyESY;COA-ENERGY  GEV;SPREAD Y  CM",arm==0?"S":"N",lyr),
+				     100,0,maxe, 100,0,smax);
+      fList->Add( fHptyEN[arm][lyr] );
       fList->Add( fHptyESX[arm][lyr] );
       fList->Add( fHptyESY[arm][lyr] );
     }
-    fHhitN[arm][8] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",8), Form("mxReco_%s%d_hitN;HITS",arm==0?"S":"N",8), 220,-0.5,219.5);
-    fHhitE[arm][8] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",8), Form("mxReco_%s%d_hitE;GEV",arm==0?"S":"N",8), 500,0,100);
-    fList->Add( fHhitN[arm][8] );
-    fList->Add( fHhitE[arm][8] );
-
-    fHptyN[arm][8] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyN;PARTIES",arm==0?"S":"N",8), 25,-0.5,24.5);
-    fHptyE[arm][8] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyE;GEV",arm==0?"S":"N",8), 500,0,100);
-    fHptyEN[arm][8] = new TH2F( Form("mxReco_%s%d_ptyEN",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyEN;GEV;HITS",arm==0?"S":"N",8), 100,0,100, 60,-0.5,59.5);
-    fHptyX[arm][8] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyX;CM",arm==0?"S":"N",8), 100,-20,+20);
-    fHptyY[arm][8] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyY;CM",arm==0?"S":"N",8), 100,-20,+20);
-    fHptySX[arm][8] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySX;CM^2",arm==0?"S":"N",8), 100,0,50);
-    fHptySY[arm][8] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptySY;CM^2",arm==0?"S":"N",8), 100,0,50);
-    fHptyESX[arm][8] = new TH2F( Form("mxReco_%s%d_ptyESX",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyESX;GEV;CM^2",arm==0?"S":"N",8), 100,0,100, 100,0,50);
-    fHptyESY[arm][8] = new TH2F( Form("mxReco_%s%d_ptyESY",arm==0?"S":"N",8), Form("mxReco_%s%d_ptyESY;GEV;CM^2",arm==0?"S":"N",8), 100,0,100, 100,0,50);
-    fList->Add( fHptyN[arm][8] );
-    fList->Add( fHptyE[arm][8] );
-    fList->Add( fHptyEN[arm][8] );
-    fList->Add( fHptyEN[arm][8] );
-    fList->Add( fHptyX[arm][8] );
-    fList->Add( fHptyY[arm][8] );
-    fList->Add( fHptySX[arm][8] );
-    fList->Add( fHptySY[arm][8] );
-    fList->Add( fHptyESX[arm][8] );
-    fList->Add( fHptyESY[arm][8] );
-
-
-    fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;COALITIONS",arm==0?"S":"N"), 100,0,100);
-    fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;GEV",arm==0?"S":"N"), 100,0,3);
-    fHcoaET[arm] = new TH1F( Form("mxReco_%s_coaET",arm==0?"S":"N"), Form("mxReco_%s_coaET;GEV",arm==0?"S":"N"), 100,0,0.3);
-    fHcoaEL[arm] = new TH1F( Form("mxReco_%s_coaEL",arm==0?"S":"N"), Form("mxReco_%s_coaEL;GEV",arm==0?"S":"N"), 100,0,3);
-    fHcoaPh[arm] = new TH1F( Form("mxReco_%s_coaPh",arm==0?"S":"N"), Form("mxReco_%s_coaPh;RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
-    fHcoaEt[arm] = new TH1F( Form("mxReco_%s_coaEt",arm==0?"S":"N"), Form("mxReco_%s_coaEt;ETA",arm==0?"S":"N"), 100,-5,+5);
-    fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;RAD^2",arm==0?"S":"N"), 100,0,2);
-    fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;ETA^2",arm==0?"S":"N"), 100,0,1);
-    fHcoaLpC[arm] = new TH1F( Form("mxReco_%s_coaLpC",arm==0?"S":"N"), Form("mxReco_%s_coaLpC;Layers per Coalition", arm==0?"S":"N"), 20, 0, 20);
+    fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
+    fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHcoaET[arm] = new TH1F( Form("mxReco_%s_coaET",arm==0?"S":"N"), Form("mxReco_%s_coaET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe/10);
+    fHcoaEL[arm] = new TH1F( Form("mxReco_%s_coaEL",arm==0?"S":"N"), Form("mxReco_%s_coaEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHcoaPh[arm] = new TH1F( Form("mxReco_%s_coaPh",arm==0?"S":"N"), Form("mxReco_%s_coaPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
+    fHcoaEt[arm] = new TH1F( Form("mxReco_%s_coaEt",arm==0?"S":"N"), Form("mxReco_%s_coaEt;ETA",arm==0?"S":"N"), 100,-4.2,+4.2);
+    fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;SPREAD PHI  RAD",arm==0?"S":"N"), 100,0,0.006);
+    fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;SPREAD ETA",arm==0?"S":"N"), 100,0,0.02);
+    fHcoaPty[arm] = new TH1F( Form("mxReco_%s_coaPty",arm==0?"S":"N"), Form("mxReco_%s_coaPty;NO of PARTIES in COALITION", arm==0?"S":"N"), 9, -0.5, 8.5);
+    fHcoaEff[arm] = new TH1F( Form("mxReco_%s_coaEff",arm==0?"S":"N"), Form("mxReco_%s_coaEff;LAYER;EFFICIENCY",arm==0?"S":"N"), 9,-0.5,8.5);
+    fHcoaSta[arm] = new TH2F( Form("mxReco_%s_coaSta",arm==0?"S":"N"), Form("mxReco_%s_coaSta;STARTING  LAYER;ENERGY",arm==0?"S":"N"), 9,-0.5,8.5, 100,0,maxe);
     fList->Add( fHcoaN[arm] );
     fList->Add( fHcoaEn[arm] );
     fList->Add( fHcoaET[arm] );
@@ -100,15 +88,17 @@ mxQAReconstruction::mxQAReconstruction() {
     fList->Add( fHcoaEt[arm] );
     fList->Add( fHcoaSPh[arm] );
     fList->Add( fHcoaSEt[arm] );
-    fList->Add( fHcoaLpC[arm] );
+    fList->Add( fHcoaPty[arm] );
+    fList->Add( fHcoaEff[arm] );
+    fList->Add( fHcoaSta[arm] );
 
-    fHuniN[arm] = new TH1F( Form("mxReco_%s_uniN",arm==0?"S":"N"), Form("mxReco_%s_uniN;UNIONS",arm==0?"S":"N"), 100,0,1e4);
-    fHuniEn[arm] = new TH1F( Form("mxReco_%s_uniEn",arm==0?"S":"N"), Form("mxReco_%s_uniEn;GEV",arm==0?"S":"N"), 100,0,10);
-    fHuniET[arm] = new TH1F( Form("mxReco_%s_uniET",arm==0?"S":"N"), Form("mxReco_%s_uniET;GEV",arm==0?"S":"N"), 100,0,1);
-    fHuniEL[arm] = new TH1F( Form("mxReco_%s_uniEL",arm==0?"S":"N"), Form("mxReco_%s_uniEL;GEV",arm==0?"S":"N"), 100,0,10);
-    fHuniDP[arm] = new TH1F( Form("mxReco_%s_uniDP",arm==0?"S":"N"), Form("mxReco_%s_uniDP;RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
-    fHuniMa[arm] = new TH1F( Form("mxReco_%s_uniMa",arm==0?"S":"N"), Form("mxReco_%s_uniMa;GEV/C^2",arm==0?"S":"N"), 100,0,0.5);
-    fHuniPh[arm] = new TH1F( Form("mxReco_%s_uniPh",arm==0?"S":"N"), Form("mxReco_%s_uniPh;RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
+    fHuniN[arm] = new TH1F( Form("mxReco_%s_uniN",arm==0?"S":"N"), Form("mxReco_%s_uniN;NO of UNIONS",arm==0?"S":"N"), 100,-0.5,99.5);
+    fHuniEn[arm] = new TH1F( Form("mxReco_%s_uniEn",arm==0?"S":"N"), Form("mxReco_%s_uniEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHuniET[arm] = new TH1F( Form("mxReco_%s_uniET",arm==0?"S":"N"), Form("mxReco_%s_uniET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHuniEL[arm] = new TH1F( Form("mxReco_%s_uniEL",arm==0?"S":"N"), Form("mxReco_%s_uniEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHuniDP[arm] = new TH1F( Form("mxReco_%s_uniDP",arm==0?"S":"N"), Form("mxReco_%s_uniDP;THETA_{O}  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
+    fHuniMa[arm] = new TH1F( Form("mxReco_%s_uniMa",arm==0?"S":"N"), Form("mxReco_%s_uniMa;MASS  GEV C^{-2}",arm==0?"S":"N"), 100,0,0.5);
+    fHuniPh[arm] = new TH1F( Form("mxReco_%s_uniPh",arm==0?"S":"N"), Form("mxReco_%s_uniPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
     fHuniEt[arm] = new TH1F( Form("mxReco_%s_uniEt",arm==0?"S":"N"), Form("mxReco_%s_uniEt;ETA",arm==0?"S":"N"), 100,-5,+5);
     fList->Add( fHuniN[arm] );
     fList->Add( fHuniEn[arm] );
@@ -118,17 +108,6 @@ mxQAReconstruction::mxQAReconstruction() {
     fList->Add( fHuniMa[arm] );
     fList->Add( fHuniPh[arm] );
     fList->Add( fHuniEt[arm] );
-
-    fHpcEn[arm] = new TH1F( Form("mxReco_%s_pcEn",arm==0?"S":"N"), Form("mxReco_%s_pcEn;MeV",arm==0?"S":"N"), 100, 0, 1e5);
-    fHpcLyr [arm] = new TH1F( Form("mxReco_%s_pcLyr",arm==0?"S":"N"), Form("mxReco_%s_pcLyr;Layer",arm==0?"S":"N"), 10, 0, 10);
-    fHpcEffic[arm] = new TH1F( Form("mxRecopcEff_%s",arm==0?"S":"N"), Form("mxRecopcEff_%s;At Least Layers;Efficiency",arm==0?"S":"N"),10,0,10);
-    fHpcEn3D[arm] = new TH2F( Form("mxRecopcEn3D_%s",arm==0?"S":"N"), Form("mxRecopcEn3D_%s;Layers;Energy",arm==0?"S":"N"),10,0,10,100,0,5e4);
-    fHpcCoaLyr[arm] = new TH1F( Form("mxRecopcCoaLyr_%s",arm==0?"S":"N"), Form("mxRecopcCoaLyr_%s;Layer",arm==0?"S":"N"),10,0,10);
-    fList->Add( fHpcEn[arm] );
-    fList->Add( fHpcLyr[arm] );
-    fList->Add( fHpcEffic[arm] );
-    fList->Add( fHpcEn3D[arm] );				
-    fList->Add( fHpcCoaLyr[arm] );
   }
 }
 //========
@@ -168,27 +147,21 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       fHcoaSPh[arm]->Fill( coa[k]->GetCov(0) );
       fHcoaSEt[arm]->Fill( coa[k]->GetCov(1) );
       int layhit = 0;
-      for(int lyr=0;lyr!=9; ++lyr){
-	if (coa[k]->IsHitLayer(lyr)){
+      mxParty *mypty;
+      int minlyr = -1;
+      for(int lyr=0;lyr!=9; ++lyr) {
+	if(coa[k]->IsHitLayer(lyr)) {
+	  fHcoaEff[arm]->Fill(lyr);
 	  layhit++;
-	  if (coa[k]->GetEnergy()>5e3)fHpcCoaLyr[arm]->Fill(lyr);
+	  mypty = coa[k]->GetParty(lyr);
+	  fHptyEN[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->N() );
+	  fHptyESX[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadX() );
+	  fHptyESY[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadY() );
+	  if(minlyr<0) minlyr = lyr;
 	}
       }
-      fHcoaLpC[arm]->Fill(layhit);
-      int pclayhit = 0;
-      for(int lyr=0;lyr!=9; ++lyr){
-	if (coa[k]->IsHitLayer(lyr))pclayhit++;
-      }
-      if (coa[k]->IsHitLayer(8)){
-	if (pclayhit>5){fHpcEn[arm]->Fill( coa[k]->GetEnergy());}
-	/*if (coa[k]->GetEnergy()>5e3)*/fHpcLyr[arm]->Fill(pclayhit);
-	fHpcEn3D[arm]->Fill(pclayhit,coa[k]->GetEnergy());
-	while(pclayhit>0){
-	  fHpcEffic[arm]->Fill(pclayhit,0.01);
-	  pclayhit--;
-	  //std::cout << pclayhit << std::endl;
-	}
-      }
+      fHcoaPty[arm]->Fill(layhit);
+      fHcoaSta[arm]->Fill(minlyr,coa[k]->GetEnergy());
     }
 
     for(int lyr=0; lyr!=9; ++lyr) {
@@ -198,13 +171,11 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       std::vector<mxParty*> pty = r->GetParties(glyr);
       for(int k=0; k!=r->GetNParties(glyr); ++k) {
 	fHptyE[arm][lyr]->Fill( pty[k]->Signal() );
-	fHptyEN[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->N() );
 	fHptyX[arm][lyr]->Fill( pty[k]->GetX() );
 	fHptyY[arm][lyr]->Fill( pty[k]->GetY() );
 	fHptySX[arm][lyr]->Fill( pty[k]->GetCov(0) );
 	fHptySY[arm][lyr]->Fill( pty[k]->GetCov(1) );
-	fHptyESX[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->GetCov(0) );
-	fHptyESY[arm][lyr]->Fill( pty[k]->Signal(), pty[k]->GetCov(1) );      }
+      }
       //==>HIT
       fHhitN[arm][lyr]->Fill( r->GetNHits(glyr) );
       std::vector<mxHit*> hit = r->GetHits(glyr);

@@ -105,7 +105,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
     }
   }
   for(G4int j = 0; j<49152; j++) {
-    if(miniarray[j] > 1.5) {//0.0){
+    if(miniarray[j] > 0.010) { //0.0 1.5
       minipads.push_back(j);
       minienergies.push_back(miniarray[j]);
       totalMPCEXHit++;
@@ -126,7 +126,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
     }
   }
   for(G4int j = 0; j<288*2; j++) {
-    if(mpcarray[j] > 100.0) {//0.0){
+    if(mpcarray[j] > 100.0) { //0.0 100.0
        crystals.push_back(j);
        mpcenergies.push_back(mpcarray[j]);
        totalMPCHit++;

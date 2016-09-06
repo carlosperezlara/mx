@@ -14,13 +14,18 @@
 
 int main(int narg, char **carg) {
   gErrorIgnoreLevel = kWarning;
-  mxReconstruction *reco = new mxReconstruction();
-  mxQAReconstruction *QAReco = new mxQAReconstruction();
-
   TString file = "input";
+  float maxe = 100;
   if(narg>1) {
     file = carg[1];
   }
+  if(narg>2) {
+    TString sMaxE = carg[2];
+    maxe = sMaxE.Atof();
+  }
+  mxReconstruction *reco = new mxReconstruction();
+  mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
+
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::ifstream input( Form("%s.hit",file.Data()));
   std::ofstream outputP(Form("%s.pty",file.Data()));

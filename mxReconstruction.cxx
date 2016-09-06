@@ -255,8 +255,9 @@ void mxReconstruction::Coalitions() {
 	pty->SetAssigned( false );
       }
     // call for coalition formation
-    for(int lyr=arm*9+8; lyr!=arm*9+1; --lyr) {
-      std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
+    //for(int lyr=arm*9+8; lyr!=arm*9+1; --lyr) {
+    for(int lyr=arm*9+8; lyr!=arm*9+7; --lyr) {
+      //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
 	pty = fPty[lyr].at(mp);
         if(pty->IsAssigned()) continue;
@@ -271,28 +272,28 @@ void mxReconstruction::Coalitions() {
 	float ephi, eeta;
 	float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
 	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
-	std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
+	//std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
 	int coalyr = lyr%9;
         coa->Fill( coalyr, pty, phi, eta );
-	std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+	//std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
         for(int inc=lyr-1; inc!=arm*9-1; --inc) {
-	  std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	  //std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
 	  for(int np=0; np!=fNPty[inc]; ++np) {
             pty = fPty[inc].at(np);
 	    if(pty->IsAssigned()) continue;
 	    phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
 	    eta = _eta( pty->GetX(), pty->GetY(), Z[inc], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
 	    float test = coa->Test( phi, eta, ephi, eeta );
-	    std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
+	    //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
             if( test < 3) {
-	      std::cout << "    [compatible]  saving..." << std::endl;
+	      //std::cout << "    [compatible]  saving..." << std::endl;
               coa->Fill( inc, pty, phi, eta );
 	      break;
 	    }
           }
-	  std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+	  //std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	}
       }
     }
