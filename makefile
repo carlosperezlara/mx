@@ -1,13 +1,16 @@
-all:	libMX.so reconstruct simqa display
+all:	libMX.so reconstruct simqa display raw_energy
 
 clean:
-	rm libMX.so reconstruct simqa
+	rm libMX.so reconstruct simqa raw_energy
 
 reconstruct: reconstruct.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o reconstruct
 
 simqa: simqa.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o simqa
+
+raw_energy: raw_energy.cc
+	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o raw_energy
 
 display: display.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o display
