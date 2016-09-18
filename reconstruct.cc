@@ -40,6 +40,7 @@ int main(int narg, char **carg) {
     reco->Reset();
     for(int i=0; i!=hits; ++i) {
       input >> idx >> sgn;
+      if(idx>49152 && sgn<0.3) continue;
       reco->Fill(idx,sgn);
     }
     reco->Make();

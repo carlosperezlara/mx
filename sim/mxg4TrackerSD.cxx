@@ -35,12 +35,10 @@ G4bool mxg4TrackerSD::ProcessHits(G4Step* aStep,
 
   newHit->SetTrackID  (aStep->GetTrack()->GetTrackID());
   newHit->SetChamberNb(aStep->GetPreStepPoint()->GetTouchableHandle()
-                                               ->GetCopyNumber());
+		       ->GetCopyNumber());
   newHit->SetEdep(edep);
   newHit->SetPos (aStep->GetPostStepPoint()->GetPosition());
-
   fHitsCollection->insert( newHit );
-
   //newHit->Print();
 
   return true;

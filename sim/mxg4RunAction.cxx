@@ -88,8 +88,8 @@ void mxg4RunAction::EndOfRunAction(const G4Run* run) {
       nEvets=1;
     }
     G4double si_ene = myrun->GetSiEnergy();
-    G4cout<<"Run["<<myrun->GetRunID()<<"] With: "<<nEvets<<"Events\n"
-	  <<" <Si_em>="<<G4BestUnit(si_ene/nEvets,"Energy")<<G4endl;//<<"\n"
+    //G4cout<<"Run["<<myrun->GetRunID()<<"] With: "<<nEvets<<"Events\n"
+    //	  <<" <Si_em>="<<G4BestUnit(si_ene/nEvets,"Energy")<<G4endl;//<<"\n"
   } else {
     G4ExceptionDescription msg;
     msg << "Run is not of correct type, skypping analysis via RunAction";

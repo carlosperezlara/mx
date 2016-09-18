@@ -77,11 +77,11 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
   G4int n_mpchit = mpcHC->entries();
-  G4cout << "mpchit: " <<n_mpchit << G4endl;
+  //G4cout << "mpchit: " <<n_mpchit << G4endl;
   analysisManager->FillNtupleIColumn(1,n_mpchit);
 
   G4int  n_mpcexhit = mpcexHC->entries();
-  G4cout << "mpcexhit: " <<n_mpcexhit << G4endl;
+  //G4cout << "mpcexhit: " <<n_mpcexhit << G4endl;
   analysisManager->FillNtupleIColumn(0,n_mpcexhit);
 
   G4int totalMPCEXHit = 0;
@@ -126,7 +126,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
     }
   }
   for(G4int j = 0; j<288*2; j++) {
-    if(mpcarray[j] > 100.0) { //0.0 100.0
+    if(mpcarray[j] > 1) { //DEFAULT should be 1!!! 0.0 1.0 10.0 100.0
        crystals.push_back(j);
        mpcenergies.push_back(mpcarray[j]);
        totalMPCHit++;
