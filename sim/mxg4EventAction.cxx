@@ -49,6 +49,17 @@ void mxg4EventAction::BeginOfEventAction(const G4Event*) {
 
 void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   G4HCofThisEvent* hce = event->GetHCofThisEvent();
+  G4PrimaryVertex* primaryVertex = event->GetPrimaryVertex();
+  G4PrimaryParticle* primaryParticle = primaryVertex->GetPrimary();
+  G4double ke = primaryParticle->GetKineticEnergy();
+  // G4double px = primaryParticle->GetMomentum().getX();
+  // G4double py = primaryParticle->GetMomentum().getY();
+  // G4double pz = primaryParticle->GetMomentum().getZ();
+  G4double peta = primaryParticle->GetMomentum().getEta();
+  G4double pphi = primaryParticle->GetMomentum().getPhi();
+  G4int trackid = primaryParticle->GetTrackID();
+  
+  std::cout<< ke << " " << trackid <<" "<< peta <<" "<< pphi << std::endl;
   if(!hce) {
     G4ExceptionDescription msg;
     msg << "No hits collection of this event found.\n";
@@ -95,8 +106,10 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   for(G4int i=0; i<n_mpcexhit; i++) {
     mxg4TrackerHit* hit = (*mpcexHC)[i];
     G4double eDep = hit->GetEdep();
+    G4int extrackID = hit->GetTrackID();
     G4int minnum = hit->GetChamberNb();
     if(eDep>0.) {
+      // if (extrackID <100 )std::cout <<"Track ID is " <<extrackID<< std::endl;
       miniarray[minnum] += eDep;
       // if (i%50 == 0 ){std::cout << i<< std::endl;}
       //      totalMPCEXHit++;
@@ -116,9 +129,11 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   for(G4int i=0; i<n_mpchit; i++) {
     mxg4TrackerHit* mpchit = (*mpcHC)[i];
     G4double mpceDep = mpchit->GetEdep();
+    G4int mpctrackID = mpchit->GetTrackID();
     G4int crystalnum = mpchit->GetChamberNb();
     if(mpceDep>0.0) {
       mpcarray[crystalnum] += mpceDep;
+      //if (mpctrackID < 100) std::cout << "Track ID is " <<mpctrackID<< std::endl;
       //      if (i%50 == 0 ){      std::cout << i<< std::endl;}
       // totalMPCHit++;
       //totalMPCE += mpceDep;
@@ -126,7 +141,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
     }
   }
   for(G4int j = 0; j<288*2; j++) {
-    if(mpcarray[j] > 100.0) { //0.0 100.0
+    if(mpcarray[j] > 1.0) { //0.0 100.0
        crystals.push_back(j);
        mpcenergies.push_back(mpcarray[j]);
        totalMPCHit++;
@@ -135,6 +150,10 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   }
   analysisManager->FillNtupleDColumn(2, totalMPCEXE);
   analysisManager->FillNtupleDColumn(3, totalMPCE);
+  analysisManager->FillNtupleDColumn(8, ke);
+  analysisManager->FillNtupleIColumn(9, pphi);
+  analysisManager->FillNtupleIColumn(10, peta);
+  //  analysisManager->FillNtupleDColumn(11, pz);
   analysisManager->AddNtupleRow();
   //  runaction->PrintVector();
 }  
