@@ -61,7 +61,10 @@ void mxg4RunAction::BeginOfRunAction(const G4Run* /*run*/) {
   analysisManager->CreateNtupleDColumn("MPCEXEnergysens",eventAction->GetMiniEnergies()); // column Id = 5
   analysisManager->CreateNtupleIColumn("MPCHitcrystals",eventAction->GetCrystals()); // column Id = 6
   analysisManager->CreateNtupleDColumn("MPCEnergysens",eventAction->GetMPCEnergies()); // column Id = 7
-  
+  analysisManager->CreateNtupleDColumn("PPEnergy"); // column Id = 8
+  analysisManager->CreateNtupleIColumn("PPEta"); // column Id = 9
+  analysisManager->CreateNtupleIColumn("PPPhi"); // column Id = 10
+  //  analysisManager->CreateNtupleIColumn("PPPz"); // column Id = 11
   analysisManager->FinishNtuple();
    
   // Open an output file
