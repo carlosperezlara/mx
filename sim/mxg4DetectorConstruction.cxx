@@ -135,11 +135,16 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   G4VisAttributes* minipadVisAtt = new G4VisAttributes(G4Colour(1.0,0.0,1.0));
   G4VisAttributes* mpcVisAtt = new G4VisAttributes(G4Colour(0.0,1.0,1.0));
   
-  worldLV->SetVisAttributes(boxVisAtt);
-  EXNLV->SetVisAttributes(boxVisAtt);
-  EXSLV->SetVisAttributes(boxVisAtt);
-  MPCNLV->SetVisAttributes(siliconVisAtt);
-  MPCSLV->SetVisAttributes(siliconVisAtt);
+  //worldLV->SetVisAttributes(boxVisAtt);
+  //EXNLV->SetVisAttributes(boxVisAtt);
+  //EXSLV->SetVisAttributes(boxVisAtt);
+  //MPCNLV->SetVisAttributes(siliconVisAtt);
+  //MPCSLV->SetVisAttributes(siliconVisAtt);
+  worldLV->SetVisAttributes(G4VisAttributes::GetInvisible());
+  EXNLV->SetVisAttributes(G4VisAttributes::GetInvisible());
+  EXSLV->SetVisAttributes(G4VisAttributes::GetInvisible());
+  MPCNLV->SetVisAttributes(G4VisAttributes::GetInvisible());
+  MPCSLV->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   //=======================
   // EX TUNGSTEN
@@ -196,7 +201,8 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
       dz = mgeo->Si_a2();
       G4Box* Sensor = new G4Box("Sensor_Si",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
       fLV_EXSiSen[copyNo] = new G4LogicalVolume(Sensor,material_Si,"Chambersil_LV",0,0,0);
-      fLV_EXSiSen[copyNo]->SetVisAttributes(siliconVisAtt);
+      //fLV_EXSiSen[copyNo]->SetVisAttributes(siliconVisAtt);
+      fLV_EXSiSen[copyNo]->SetVisAttributes(G4VisAttributes::GetInvisible());
       if(Zposition < 0) {
 	new G4PVPlacement(0,                            // no rotation
 			  G4ThreeVector(Xposition*cm,Yposition*cm,Zposition*cm), // at (x,y,z)

@@ -52,6 +52,12 @@ int main(int argn, char **argc) {
   if(argn>1) {
     file = argc[1];
   }
+  TString aa;
+  int eventnumber = -1;
+  if(argn>2) {
+    aa = argc[2];
+    eventnumber = aa.Atoi();
+  }
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::cout << "INPUT: " << Form("%s.pty",file.Data()) << std::endl;
   std::ifstream input( Form("%s.hit",file.Data()) );
@@ -90,6 +96,7 @@ int main(int argn, char **argc) {
   for(int ev=0;; ++ev) {
     input >> hits;
     if(!input.good()) break;
+    if(eventnumber>-1 && eventnumber!=ev) continue;
     for(int i=0; i!=9; ++i) {
       aero[i]->Reset();
       aero[9+i]->Reset();
@@ -98,6 +105,7 @@ int main(int argn, char **argc) {
       input >> idx >> sgn;// >> xx >> yy;
       float x = geo->X(idx);
       float y = geo->Y(idx);
+      //if(idx>49152 && sgn<1) continue;
       aero[geo->LyrIdx(idx)]->Fill(x,y,sgn);
     }
     int npt[18] = {0};
@@ -188,6 +196,7 @@ int main(int argn, char **argc) {
       main->cd(16); aero[16]->Draw("colz");
     }
     main->SaveAs(Form("%s_disp.pdf",file.Data()),"pdf");
+    if(eventnumber>-1 && eventnumber!=ev) break;
   }
   input.close();
   input2.close();

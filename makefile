@@ -1,7 +1,7 @@
-all:	libMX.so reconstruct simqa display raw_energy
+all:	libMX.so reconstruct simqa display raw_energy plotnice
 
 clean:
-	rm libMX.so reconstruct simqa raw_energy
+	rm libMX.so reconstruct simqa raw_energy plotnice
 
 reconstruct: reconstruct.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o reconstruct
@@ -14,6 +14,9 @@ raw_energy: raw_energy.cc
 
 display: display.cc
 	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o display
+
+plotnice: plotnice.cc
+	`root-config --cxx` `root-config --cflags --libs` -L. -lMX $^ -o plotnice
 
 libMX.so: mxHit.o mxParty.o mxCoalition.o mxUnion.o mxGeometry.o mxReconstruction.o mxQAReconstruction.o
 	 `root-config --cxx` -shared -WL,-soname,libMX.so `root-config --cflags --libs` $^ -o libMX.so 
