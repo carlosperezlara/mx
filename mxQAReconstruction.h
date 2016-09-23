@@ -5,6 +5,7 @@
 
 class TH1F;
 class TH2F;
+class TProfile;
 class TList;
 class mxReconstruction;
 
@@ -23,6 +24,7 @@ class mxQAReconstruction {
   TH1F *fHvy;
   TH1F *fHvz;
 
+  TProfile *fHHits[2];
   TH1F *fHhitN[2][9];
   TH1F *fHhitE[2][9];
   TH1F *fHhitX[2][9];
@@ -49,6 +51,7 @@ class mxQAReconstruction {
   TH1F *fHcoaPty[2];
   TH1F *fHcoaEff[2];
   TH2F *fHcoaSta[2];
+  TProfile *fHcoaHit[2];
   
   TH1F *fHuniN[2];
   TH1F *fHuniEn[2];
