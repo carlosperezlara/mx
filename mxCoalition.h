@@ -14,7 +14,7 @@ class mxCoalition {
   mxCoalition(const mxCoalition&);
   mxCoalition& operator=(const mxCoalition&);
   virtual ~mxCoalition();
-  void Fill(int,mxParty*,float,float);
+  void Fill(int,mxParty*,float,float,float,float,float);
   float Test(float,float,float,float);
   int N() {return fNParties;}
   mxParty* GetParty(int val) {return IsHitLayer(val)?fParties[val]:NULL;}
@@ -25,6 +25,9 @@ class mxCoalition {
   float GetEnergy() {return fSgn*fSgnE;}
   float GetEnergyT() {return GetEnergy()/TMath::CosH(GetEta());}
   float GetEnergyL() {return GetEnergy()*TMath::Abs(TMath::TanH(GetEta()));}
+  float GetPEnergy() {return fPEnergy;}
+  float GetPEta() {return fPEta;}
+  float GetPPhi() {return fPPhi;}
   void Reset();
   bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
@@ -38,5 +41,8 @@ class mxCoalition {
   float fSphiphi;
   float fSetaeta;
   float fSphieta;
+  float fPEnergy;
+  float fPEta;
+  float fPPhi;
 };
 #endif /* __mxCoalition_H__ */

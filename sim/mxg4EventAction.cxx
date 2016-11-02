@@ -58,6 +58,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   G4double peta = primaryParticle->GetMomentum().getEta();
   G4double pphi = primaryParticle->GetMomentum().getPhi();
   G4int trackid = primaryParticle->GetTrackID();
+  G4int pdgid = primaryParticle->GetPDGcode();
   
   std::cout<< ke << " " << trackid <<" "<< peta <<" "<< pphi << std::endl;
   if(!hce) {
@@ -151,9 +152,9 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   analysisManager->FillNtupleDColumn(2, totalMPCEXE);
   analysisManager->FillNtupleDColumn(3, totalMPCE);
   analysisManager->FillNtupleDColumn(8, ke);
-  analysisManager->FillNtupleIColumn(9, pphi);
-  analysisManager->FillNtupleIColumn(10, peta);
-  //  analysisManager->FillNtupleDColumn(11, pz);
+  analysisManager->FillNtupleDColumn(9, pphi);
+  analysisManager->FillNtupleDColumn(10, peta);
+  analysisManager->FillNtupleIColumn(11, pdgid);
   analysisManager->AddNtupleRow();
   //  runaction->PrintVector();
 }  

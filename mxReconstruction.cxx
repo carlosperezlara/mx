@@ -11,6 +11,7 @@
 #include "mxCoalition.h"
 #include "mxUnion.h"
 #include "mxReconstruction.h"
+#include "mxMCParticle.h"
 
 struct GreaterSignal
 {
@@ -31,6 +32,7 @@ mxReconstruction::mxReconstruction() {
     fNUni[i] = 0;
   }
   fGeo = new mxGeometry();
+  fMCPart = new mxMCParticle();
   fV[0] = 0.;
   fV[1] = 0.;
   fV[2] = 0.;
@@ -245,6 +247,11 @@ void mxReconstruction::Coalitions() {
   dz[17] = fGeo->PWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
 
+  float partenergy = fMCPart->GetEnergy();
+  float parteta = fMCPart->GetEta();
+  float partphi = fMCPart->GetPhi();
+  //std::cout << partenergy << std::endl;
+  
   mxParty *pty;
   mxCoalition *coa;
   for(int arm=0; arm!=2; ++arm) {
@@ -274,7 +281,7 @@ void mxReconstruction::Coalitions() {
 	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
 	//std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
 	int coalyr = lyr%9;
-        coa->Fill( coalyr, pty, phi, eta );
+        coa->Fill( coalyr, pty, phi, eta, partenergy, parteta, partphi );
 	//std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
@@ -289,7 +296,8 @@ void mxReconstruction::Coalitions() {
 	    //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
             if( test < 3) {
 	      //std::cout << "    [compatible]  saving..." << std::endl;
-              coa->Fill( inc, pty, phi, eta );
+	      //	      FillPP(penergy, peta, pphi, ppdg);
+	      coa->Fill( inc, pty, phi, eta, partenergy, parteta, partphi );
 	      break;
 	    }
           }
@@ -323,4 +331,8 @@ void mxReconstruction::Unions() {
     }
     // DONE with arm
   }
+}
+//=======
+void mxReconstruction::FillPP(float energy, float eta, float phi, int pdg) {
+  fMCPart->Fill(energy,eta,phi,pdg);
 }

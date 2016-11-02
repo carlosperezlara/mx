@@ -18,6 +18,8 @@ int main(int narg, char **carg) {
   TTree *t1 = (TTree*)f->Get("MPCEXfile");
   Int_t mxhits, mhits;
   Double_t mxen, men;
+  Double_t ppenergy, ppeta, ppphi;
+  Int_t pppdg;
   std::vector<int> *mmxhits=0;
   std::vector<int> *cmhits=0;
   std::vector<double> *mmxen, *cmen;
@@ -36,8 +38,13 @@ int main(int narg, char **carg) {
   t1->SetBranchAddress("MPCEXEnergysens",&mmxen,&bmmxen);
   t1->SetBranchAddress("MPCHitcrystals",&cmhits,&bcmhits);
   t1->SetBranchAddress("MPCEnergysens",&cmen,&bcmen);
-
+  t1->SetBranchAddress("PPEnergy",&ppenergy);
+  t1->SetBranchAddress("PPEta",&ppeta);
+  t1->SetBranchAddress("PPPhi",&ppphi);
+  t1->SetBranchAddress("PPpdg",&pppdg);
+  
   std::ofstream fout(Form("%s.hit",file.Data()));
+  std::ofstream pout(Form("%s.prim",file.Data()));
   //Read all entries and fill the histograms
   Long64_t nentries = t1->GetEntries();
   for(Long64_t i=0;i<nentries;i++) {
@@ -59,8 +66,11 @@ int main(int narg, char **carg) {
     for(int j=0; j!=49152+288*2; ++j) 
       if(energyarray[j]>1e-6)
 	fout << j << " " << energyarray[j]/1000 << std::endl; // to GeV
+    pout << 1 << std::endl;
+    pout << pppdg <<" "<<ppenergy << " " << ppeta << " " << ppphi << std::endl;
   }
   fout.close();
   std::cout << "OUTPUT: " << Form("%s.hit",file.Data()) << std::endl;
+  std::cout << "OUTPUT: " << Form("%s.prim",file.Data()) << std::endl;
   return 0;
 }

@@ -25,6 +25,9 @@ class mxQAReconstruction {
   TH1F *fHvz;
 
   TProfile *fHHits[2];
+  TProfile *fHEnergy[2];
+  //  TH1F *fHHitsx[2];
+
   TH1F *fHhitN[2][9];
   TH1F *fHhitE[2][9];
   TH1F *fHhitX[2][9];
@@ -45,6 +48,8 @@ class mxQAReconstruction {
   TH1F *fHcoaET[2];
   TH1F *fHcoaEL[2];
   TH1F *fHcoaPh[2];
+  TH1F *fHcoaX[2];
+  TH1F *fHcoaY[2];
   TH1F *fHcoaEt[2];
   TH1F *fHcoaSPh[2];
   TH1F *fHcoaSEt[2];
@@ -53,9 +58,29 @@ class mxQAReconstruction {
   TH1F *fHcoaSla[2];
   TH2F *fHcoaSta[2];
   TProfile *fHcoaHit[2];
+  TH1F *fHcoaHitx[2];
+  TH2F *fHcoaHitxTH2F[2];
+  TProfile *fHcoaHitxProf[2];
+  TProfile *fHcoaEnergy[2];
+  TH1F *fHcoaEnergyx[2];
+  TH2F *fHcoaEnergyxTH2F[2];
+  TProfile *fHcoaEnergyxProf[2];
   TH2F *fHcoaEtEn[2];
+  TProfile *fHcoaEtEnProf[2];
   TH1F *fHcoaS[2];
   TH2F *fHcoaExMpc[2];
+  TH2F *fHcoaTruthE[2];
+  TH2F *fHcoaTruthEL[2];
+  TH2F *fHcoaTruthET[2];
+  TH1F *fHcoaTruthdET[2];
+  TH2F *fHcoaTruthEloc[2];
+  TH2F *fHcoaTruthElocth[2];
+  TH1F *fHcoaTruthdE[2];
+  TH2F *fHcoaTruthPhi[2];
+  TH1F *fHcoaTruthdPhi[2];
+  TH2F *fHcoaTruthEta[2];
+  TH1F *fHcoaTruthdEta[2];
+  TH1F *fHcoaTruthEtaRat[2];
   
   TH1F *fHuniN[2];
   TH1F *fHuniEn[2];

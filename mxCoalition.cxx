@@ -35,6 +35,9 @@ mxCoalition::mxCoalition(const mxCoalition &src) {
   fSphiphi = src.fSphiphi;
   fSetaeta = src.fSetaeta;
   fSphieta = src.fSphieta;
+  fPEnergy = src.fPEnergy;
+  fPEta = src.fPEta;
+  fPPhi = src.fPPhi;
   for(int i=0; i!=9; ++i)
     fParties[i] = src.fParties[i];
 }
@@ -50,6 +53,9 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
     fSphiphi = src.fSphiphi;
     fSetaeta = src.fSetaeta;
     fSphieta = src.fSphieta;
+    fPEnergy = src.fPEnergy;
+    fPEta = src.fPEta;
+    fPPhi = src.fPPhi;
     for(int i=0; i!=9; ++i)
       fParties[i] = src.fParties[i];
   }
@@ -70,7 +76,7 @@ float mxCoalition::GetEta() {
   return fSeta/fSgn;
 }
 //========
-void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta) {
+void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta, float parten, float partet, float partphi) {
   // filler
   if(fParties[lyr]) return;
   fParties[ lyr ] = pty;
@@ -83,6 +89,9 @@ void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta) {
   fSphieta += phi*eta*sgn;
   ++fNParties;
   fSgn += sgn;
+  fPEnergy = parten;
+  fPEta = partet;
+  fPPhi = partphi;
 }
 //========
 float mxCoalition::Test(float phi, float eta, float ephi, float eeta) {
