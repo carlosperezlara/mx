@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 
 #include "TMath.h"
 #include "TList.h"
@@ -33,6 +34,7 @@
 #include "mxCalibMaster.h"
 #include "mxCalibDAu16.h"
 #include "mxCalibBaseSiW.h"
+#include "mxDB.cc"
 
 #include "mxReconstruction.h"
 #include "mxQAReconstruction.h"
@@ -62,6 +64,7 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fCheckMpcExRawHit(true)
 {
   printf("mcReco::CTOR\n");
+  fFileOut.open("dataflow.hit");
   for(int i=0; i!=2; ++i) {
     fHstk[i] = NULL;
     fHpar[i] = NULL;
@@ -78,12 +81,13 @@ mSubsysReco::mSubsysReco( const char* name ) :
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
+  fFileOut.close();
   return EVENT_OK;
 }
 //====================================================
 mSubsysReco::~mSubsysReco() {
   if(fCal) delete fCal;
-  if(fRec) delete fRec;
+  //if(fRec) delete fRec; // deleted by Node
   if(fQA) delete fQA;
   if(fList) delete fList;
 }
@@ -95,12 +99,13 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
 
   if(fDoQA) {
     fQA = new mxQAReconstruction();
+    fQA->GetList()->SetOwner(false);
     for(int i=0; i!=fQA->GetList()->GetEntries(); ++i)
       se->registerHisto( ((TH1F*) (fQA->GetList()->At(i))) );
   }
 
   fList = new TList();
-  fList->SetOwner();
+  //fList->SetOwner(); // histos passed to mannager
   if(fCheckMpcExRawHit) {
     for(int i=0; i!=2; ++i) {
       fHstk[i] = new TH1F( Form("mxDet_Hstk%d",i), Form("mxDet_Hstk%d",i),  6,-0.5,5.5);
@@ -155,7 +160,8 @@ int mSubsysReco::InitRun(PHCompositeNode* top_node) {
   int runno = runhead->get_RunNumber();
 
   printf("mSubsysReco::InitRun || Run number %d\n",runno);
-  fCal = new mxCalibDAu16();
+  fCal = new mxCalibMaster();//new mxCalibDAu16();
+  mxDB::read(runno,fCal);
   if(!fCal) return ABORTEVENT;
 
   return EVENT_OK; 
@@ -273,6 +279,9 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
 
   /////////////////
   // reading mpcex data
+  float buffE[49152];
+  int buffK[49152];
+  int nbuff = 0;
   MpcExRawHit *mMpcExRawHits = getClass<MpcExRawHit>(top_node, "MpcExRawHit");
   if(!mMpcExRawHits) return ABORTEVENT;
   TMpcExHitSet<myOrder> rawcontainer(mMpcExRawHits);
@@ -282,21 +291,31 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     TMpcExHit *raw_hit = (*itr);
     if(!raw_hit) continue;
     unsigned int key = raw_hit->key();
-
     float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
     float lo_adc = raw_hit->low()  - fCal->GetPLMu()->Get(key);
     float hires = hi_adc * fCal->GetLMPV()->Get(key)*0.14/20.;
-    float lores = lo_adc * fCal->GetLHft()->Get(key) * fCal->GetLMPV()->Get(key)*0.14/20.;
+    float lores = lo_adc * fCal->GetLHft()->Get(key) * fCal->GetLMPV()->Get(key)*0.00014/20.;
     if(fCheckMpcExRawHit) {
       fHadc[0]->Fill(key,hi_adc);
       if(hi_adc>40 && hi_adc<150)
 	fHlhf[0]->Fill(key,lo_adc/hi_adc);
     }
-
-    float ene = hires; // 0.5*(hires+lores); // hires<mThrhld?hires:lores;
-    float enecut = TMath::Abs(fCal->GetPHSg()->Get(key))*5 *0.14/20 ; // fCal->GetLMPV()->Get(key) - 1*fCal->GetLSgm()->Get(key);
-    if(ene>enecut) fRec->Fill(key,ene);
+    if( fCal->IsBadKey(key) ) continue;
+    bool useHi = hi_adc<150;
+    float ene = useHi?hires:lores;
+    float enecut = 0.00008; //fCal->GetLMPV()->Get(key) - 1*fCal->GetLSgm()->Get(key);
+    if(ene>enecut) {
+      fRec->Fill(key,ene);
+      buffE[nbuff] = ene;
+      buffK[nbuff] = key;
+      ++nbuff;
+    }
   }
+  fFileOut << nbuff << std::endl;
+  for(int i=0; i!=nbuff; ++i) {
+    fFileOut << buffK[i] << " " << buffE[i] << std::endl;
+  }
+
   /////////////////
   // reading mpc data
   mpcRawContainer *mpcraw2 = findNode::getClass<mpcRawContainer>(top_node,"MpcRaw2");
@@ -321,10 +340,53 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   /////////////////
 
   fRec->Make();
+  //fRec->DumpStats();
+  //fRec->DumpParties();
 
   //for(int gl=0; gl!=18; ++gl)
   //  std::cout << fRec->GetNHits(gl) << " ";
   //std::cout << std::endl;
+
+  if(fCheckMpcExRawHit) {
+    // selecting only hits that make a coalition
+    bool keyfiltered[49152];
+    for(int k=0; k!=49152; ++k) keyfiltered[k] = false;
+    for(int arm=0; arm!=2; ++arm) {
+      std::vector<mxCoalition*> coa = fRec->GetCoalitions(arm);
+      for(int k=0; k!=fRec->GetNCoalitions(arm); ++k) {
+	//==> coalition cuts
+	if( coa[k]->N() < 3 ) continue;
+	bool failed = false;
+	for(int hl=0; hl!=9; ++hl) {
+	  if( coa[k]->IsHitLayer(hl) ) {
+	    mxParty *pty = coa[k]->GetParty(hl);
+	    if(pty->N()<5) failed = true;
+	  }
+	}
+	if(failed) continue;
+	//==<
+	for(int hl=0; hl!=9; ++hl) {
+	  mxParty *pty = coa[k]->GetParty(hl);
+	  if(!pty) continue;
+	  for(int ht=0; ht!=pty->N(); ++ht) {
+	    mxHit *hit = pty->GetHit(ht);
+	    if(!hit) continue;
+	    keyfiltered[ hit->Idx() ] = true;
+	  }
+	}
+      }
+    }
+    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator();
+	itr!=rawcontainer.end();
+	++itr) {
+      TMpcExHit *raw_hit = (*itr);
+      if(!raw_hit) continue;
+      unsigned int key = raw_hit->key();
+      if( !keyfiltered[key] ) continue;
+      float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
+      fHadc[1]->Fill(key,hi_adc);
+    }
+  }
 
   if(fDoQA) fQA->Make(fRec);
 

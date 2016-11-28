@@ -1,6 +1,7 @@
 #ifndef __mSubsysReco_HH__
 #define __mSubsysReco_HH__
 
+#include <fstream>
 #include "SubsysReco.h"
 
 class TList;
@@ -30,6 +31,7 @@ class mSubsysReco: public SubsysReco {
   mxCalibMaster *fCal;
   mxReconstruction *fRec;
   mxQAReconstruction *fQA;
+  ofstream fFileOut;
 
   TList *fList;
   bool fCheckMpcRaw2;
