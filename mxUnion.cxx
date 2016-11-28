@@ -14,11 +14,14 @@
 mxUnion::mxUnion():
   fPhi(0),
   fEta(0),
+  fDPhi(0),
   fEnergy(0),
   fEnergyT(0),
   fEnergyL(0),
   fMass(0) {
   // ctor
+  fCoalitions[0] = 0;
+  fCoalitions[1] = 0;
 }
 //========
 mxUnion::~mxUnion() {
@@ -29,10 +32,13 @@ mxUnion::mxUnion(const mxUnion &src) {
   // copy ctor
   fPhi = src.fPhi;
   fEta = src.fEta;
+  fDPhi = src.fDPhi;
   fEnergy = src.fEnergy;
   fEnergyT = src.fEnergyT;
   fEnergyL = src.fEnergyL;
   fMass = src.fMass;
+  fCoalitions[0] = src.fCoalitions[0];
+  fCoalitions[1] = src.fCoalitions[1];
 }
 //========
 mxUnion& mxUnion::operator=(const mxUnion &src) {
@@ -40,10 +46,13 @@ mxUnion& mxUnion::operator=(const mxUnion &src) {
   if(&src!=this) {
     fPhi = src.fPhi;
     fEta = src.fEta;
+    fDPhi = src.fDPhi;
     fEnergy = src.fEnergy;
     fEnergyT = src.fEnergyT;
     fEnergyL = src.fEnergyL;
     fMass = src.fMass;
+    fCoalitions[0] = src.fCoalitions[0];
+    fCoalitions[1] = src.fCoalitions[1];
   }
   return *this;
 }

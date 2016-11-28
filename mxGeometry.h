@@ -36,7 +36,6 @@ class mxGeometry {
   float fY;
   float fZ;
   // ==== SiW
-  float fSiW_Sen;
   float fSi_a0;
   float fSi_a1;
   float fSi_a2;
