@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
+#include "mxMCParticle.h"
 #include "phMath.h"
 
 #include "mxGeometry.h"
@@ -11,7 +11,6 @@
 #include "mxCoalition.h"
 #include "mxUnion.h"
 #include "mxReconstruction.h"
-#include "mxMCParticle.h"
 
 struct GreaterSignal
 {
@@ -84,6 +83,8 @@ mxReconstruction::~mxReconstruction() {
     for(int j=0; j!=fNUni[i]; ++j)
       delete fUni[i].at(j);
   }
+  if(fGeo) delete fGeo;
+  if(fMCPart) delete fMCPart;
 }
 //========
 void mxReconstruction::DumpHits() {
@@ -240,6 +241,23 @@ void mxReconstruction::Parties() {
 }
 //========
 void mxReconstruction::Coalitions() {
+  mxParty *pty;
+  // dissociating previous allignments
+  for(int lyr=0; lyr!=18; ++lyr)
+    for(int mp=0; mp!=fNPty[lyr]; ++mp) {
+      pty = fPty[lyr].at(mp);
+      pty->SetAssigned( false );
+    }
+  //Coalitions_ALG0();
+  Coalitions_ALG1();
+}
+//========
+void mxReconstruction::Coalitions_ALG0() {
+  // 0 1 2 3 4 5 6 7 || 8
+  // O<=================O
+  // Build the coalition from MPC backwards
+  // Parties cannot be shared among coalitions
+
   // forming global coalitions
   float Z[18], dz[18];
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
@@ -247,22 +265,10 @@ void mxReconstruction::Coalitions() {
   dz[17] = fGeo->PWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
 
-  float partenergy = fMCPart->GetEnergy();
-  float parteta = fMCPart->GetEta();
-  float partphi = fMCPart->GetPhi();
-  //std::cout << partenergy << std::endl;
-  
   mxParty *pty;
   mxCoalition *coa;
   for(int arm=0; arm!=2; ++arm) {
-    // dissociating previous unions
-    for(int lyr=arm*9; lyr!=(arm+1)*9; ++lyr)
-      for(int mp=0; mp!=fNPty[lyr]; ++mp) {
-	pty = fPty[lyr].at(mp);
-	pty->SetAssigned( false );
-      }
     // call for coalition formation
-    //for(int lyr=arm*9+8; lyr!=arm*9+1; --lyr) {
     for(int lyr=arm*9+8; lyr!=arm*9+7; --lyr) {
       //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
@@ -276,12 +282,12 @@ void mxReconstruction::Coalitions() {
         } else
 	  coa = fCoa[arm].at( fNCoa[arm] );
 	coa->Reset();
-	float ephi, eeta;
+	float ephi=0, eeta=0;
 	float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
 	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
 	//std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
 	int coalyr = lyr%9;
-        coa->Fill( coalyr, pty, phi, eta, partenergy, parteta, partphi );
+        coa->Fill( coalyr, pty, phi, eta );
 	//std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
@@ -296,13 +302,97 @@ void mxReconstruction::Coalitions() {
 	    //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
             if( test < 3) {
 	      //std::cout << "    [compatible]  saving..." << std::endl;
-	      //	      FillPP(penergy, peta, pphi, ppdg);
-	      coa->Fill( inc, pty, phi, eta, partenergy, parteta, partphi );
+              coa->Fill( inc, pty, phi, eta );
 	      break;
 	    }
           }
 	  //std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	}
+      }
+    }
+    // DONE with arm
+  }
+}
+//========
+void mxReconstruction::Coalitions_ALG1() {
+  // 0 1 2 3 4 5 6 7 || 8
+  // O<==========O   ||
+  //             =>O ||
+  // Building coalitions using EX only
+  // Coalition formation starts at layer 6 and move backwards
+  // then continues to last layer.
+  // Parties cannot be shared among coalitions
+
+  // forming global coalitions
+  float Z[18], dz[18];
+  for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
+  dz[8] = fGeo->PWO4_a2();
+  dz[17] = fGeo->PWO4_a2();
+  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
+
+  mxParty *pty;
+  mxCoalition *coa;
+  for(int arm=0; arm!=2; ++arm) {
+    // call for coalition formation
+    int lyr=arm*9+6;
+    //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
+    for(int mp=0; mp!=fNPty[lyr]; ++mp) {
+      pty = fPty[lyr].at(mp);
+      if(pty->IsAssigned()) continue;
+      // seeding
+      int nmax = fCoa[arm].size();
+      if(fNCoa[arm]>nmax-1) {
+	coa = new mxCoalition();
+	fCoa[arm].push_back(coa);
+      } else
+	coa = fCoa[arm].at( fNCoa[arm] );
+      coa->Reset();
+      float ephi=0, eeta=0;
+      float spreadxy = TMath::Max( pty->GetSpreadX(), pty->GetSpreadY() );
+      float phi = _phi( pty->GetX(), pty->GetY(), ephi, spreadxy, spreadxy );
+      float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, spreadxy, spreadxy, dz[lyr] );
+      //std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
+      int coalyr = lyr%9;
+      coa->Fill( coalyr, pty, phi, eta );
+      //std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+      ++fNCoa[arm];
+      // check for allignments backwards
+      for(int inc=lyr-1; inc!=arm*9-1; --inc) {
+	//std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	for(int np=0; np!=fNPty[inc]; ++np) {
+	  pty = fPty[inc].at(np);
+	  if(pty->IsAssigned()) continue;
+	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+	  eta = _eta( pty->GetX(), pty->GetY(), Z[inc], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+	  float test = coa->Test( phi, eta, ephi, eeta );
+	  //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
+	  int coainc = inc%9;
+	  if( test < 3 ) {
+	    //std::cout << "    [compatible]  saving..." << std::endl;
+	    coa->Fill( coainc, pty, phi, eta );
+	    break;
+	  }
+	}
+	//std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
+      }
+      // check for allignments forward
+      for(int inc=lyr+1; inc!=(arm+1)*9-1; ++inc) {
+	//std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	for(int np=0; np!=fNPty[inc]; ++np) {
+	  pty = fPty[inc].at(np);
+	  if(pty->IsAssigned()) continue;
+	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+	  eta = _eta( pty->GetX(), pty->GetY(), Z[inc], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+	  float test = coa->Test( phi, eta, ephi, eeta );
+	  //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
+          int coainc = inc%9;
+	  if( test < 3 ) {
+	    //std::cout << "    [compatible]  saving..." << std::endl;
+	    coa->Fill( coainc, pty, phi, eta );
+	    break;
+	  }
+	}
+	//std::cout << " >update< " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
       }
     }
     // DONE with arm
@@ -332,7 +422,7 @@ void mxReconstruction::Unions() {
     // DONE with arm
   }
 }
-//=======
+
 void mxReconstruction::FillPP(float energy, float eta, float phi, int pdg) {
   fMCPart->Fill(energy,eta,phi,pdg);
 }
