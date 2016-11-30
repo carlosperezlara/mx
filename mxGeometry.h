@@ -7,6 +7,7 @@ class mxGeometry {
   float X(int idx) { return Reference(idx,0); }
   float Y(int idx) { return Reference(idx,1); }
   float Z(int idx) { return Reference(idx,2); }
+  int RefKey(int lyr, int tb);
   int Adjacent_Si_0(int idx);
   int Adjacent_Si_1(int idx);
   int LyrIdx(int idx) { return Reference(idx,3); }

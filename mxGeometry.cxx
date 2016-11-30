@@ -188,6 +188,27 @@ float mxGeometry::W_Z(int sidx) {
   return z;
 }
 //========
+int mxGeometry::RefKey(int lyridx, int tb) {
+  int ret=-1;
+  if(tb<0||tb>1) return ret;
+  if(lyridx<0||lyridx>16||lyridx==8) return ret;
+  int lyr = lyridx;
+  if(lyr>7) lyr--;
+  int arm = lyr/8;
+  lyr = lyr%8;
+  int pktA[8] = {2,2,3,3,0,0,1,1};
+  int keyA = pktA[lyr]*3072 + (lyr%2)*1536;
+  int keyB = (pktA[lyr]+4)*3072 + (lyr%2)*1536;
+  if(arm==1) {
+    keyA += 24576;
+    keyB += 24576;
+  }
+  if(arm==0 && tb==0) return keyB;
+  if(arm==0 && tb==1) return keyA;
+  if(arm==1 && tb==0) return keyA;
+  if(arm==1 && tb==1) return keyB;
+}
+//========
 int mxGeometry::Adjacent_Si_0(int idx) {
   int adj = idx;
   int mpd = idx%128;
