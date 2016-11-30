@@ -279,8 +279,8 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
 
   /////////////////
   // reading mpcex data
-  float buffE[49152];
-  int buffK[49152];
+  float buffE[49728];
+  int buffK[49728];
   int nbuff = 0;
   MpcExRawHit *mMpcExRawHits = getClass<MpcExRawHit>(top_node, "MpcExRawHit");
   if(!mMpcExRawHits) return ABORTEVENT;
@@ -311,10 +311,6 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
       ++nbuff;
     }
   }
-  fFileOut << nbuff << std::endl;
-  for(int i=0; i!=nbuff; ++i) {
-    fFileOut << buffK[i] << " " << buffE[i] << std::endl;
-  }
 
   /////////////////
   // reading mpc data
@@ -326,6 +322,9 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     float tof = raw->get_sample();
     float ene = raw->get_adc();
     fRec->Fill(49152+key,ene);
+    buffE[nbuff] = ene;
+    buffK[nbuff] = 49152+key;
+    ++nbuff;
     if(fCheckMpcRaw2) {
       if(key<288) {
 	fHcrytofS->Fill( tof );
@@ -338,6 +337,11 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     }
   }
   /////////////////
+
+  fFileOut << nbuff << std::endl;
+  for(int i=0; i!=nbuff; ++i) {
+    fFileOut << buffK[i] << " " << buffE[i] << std::endl;
+  }
 
   fRec->Make();
   //fRec->DumpStats();

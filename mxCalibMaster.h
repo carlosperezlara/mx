@@ -15,6 +15,7 @@ class mxCalibMaster {
   mxCalibBaseSiW* GetLMPV() {return fLMPV;}  // Landau MPV
   mxCalibBaseSiW* GetLSgm() {return fLSgm;}  // Landau Sigma
   mxCalibBaseSiW* GetLHft() {return fLHft;}  // Hi2Lo Factor
+  bool IsBadKey(int);
 
  protected:
   mxCalibBaseSiW *fPHMu;

@@ -1,6 +1,17 @@
 #include "mxCalibMaster.h"
 #include "mxCalibBaseSiW.h"
 
+bool mxCalibMaster::IsBadKey(int key) {
+  if(fLHft->Get(key)<0) return true;
+  //if(fLMPV->Get(key)<0) return true;
+  //if(fLSgm->Get(key)<0) return true;
+  if(fPHSg->Get(key)>1.5) return true;
+  if(fPHSg->Get(key)<0.5) return true;
+  if(fPLSg->Get(key)>1.5) return true;
+  if(fPLSg->Get(key)<0.5) return true;
+  return false;
+}
+
 mxCalibMaster::mxCalibMaster() :
   fPHMu( new mxCalibBaseSiW() ),
   fPHSg( new mxCalibBaseSiW() ),
