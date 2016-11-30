@@ -258,6 +258,10 @@ void mxReconstruction::Coalitions_ALG0() {
   // Build the coalition from MPC backwards
   // Parties cannot be shared among coalitions
 
+  float partenergy = fMCPart->GetEnergy();
+  float parteta = fMCPart->GetEta();
+  float partphi = fMCPart->GetPhi();
+
   // forming global coalitions
   float Z[18], dz[18];
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
@@ -287,7 +291,7 @@ void mxReconstruction::Coalitions_ALG0() {
 	float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
 	//std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
 	int coalyr = lyr%9;
-        coa->Fill( coalyr, pty, phi, eta );
+        coa->Fill( coalyr, pty, phi, eta, partenergy, parteta, partphi );
 	//std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
 	++fNCoa[arm];
         // check for allignments
@@ -302,7 +306,7 @@ void mxReconstruction::Coalitions_ALG0() {
 	    //std::cout << "    ptyno " << np << " with phi eta " << phi << " " << eta << " || ephi eeta " << ephi << " " << eeta << " || test " << test << std::endl;
             if( test < 3) {
 	      //std::cout << "    [compatible]  saving..." << std::endl;
-              coa->Fill( inc, pty, phi, eta );
+              coa->Fill( inc, pty, phi, eta, partenergy, parteta, partphi );
 	      break;
 	    }
           }
@@ -322,6 +326,10 @@ void mxReconstruction::Coalitions_ALG1() {
   // Coalition formation starts at layer 6 and move backwards
   // then continues to last layer.
   // Parties cannot be shared among coalitions
+
+  float partenergy = fMCPart->GetEnergy();
+  float parteta = fMCPart->GetEta();
+  float partphi = fMCPart->GetPhi();
 
   // forming global coalitions
   float Z[18], dz[18];
@@ -353,7 +361,7 @@ void mxReconstruction::Coalitions_ALG1() {
       float eta = _eta( pty->GetX(), pty->GetY(), Z[lyr], eeta, spreadxy, spreadxy, dz[lyr] );
       //std::cout << " seeding pty " << mp << " with phi eta " << phi << " " << eta  << " || ephi eeta " << ephi << " " << eeta << std::endl;
       int coalyr = lyr%9;
-      coa->Fill( coalyr, pty, phi, eta );
+      coa->Fill( coalyr, pty, phi, eta, partenergy, parteta, partphi );
       //std::cout << " >>>NEW COALITION<<< with phi eta " << coa->GetPhi() << " " << coa->GetEta() << std::endl;
       ++fNCoa[arm];
       // check for allignments backwards
@@ -369,7 +377,7 @@ void mxReconstruction::Coalitions_ALG1() {
 	  int coainc = inc%9;
 	  if( test < 3 ) {
 	    //std::cout << "    [compatible]  saving..." << std::endl;
-	    coa->Fill( coainc, pty, phi, eta );
+	    coa->Fill( coainc, pty, phi, eta, partenergy, parteta, partphi );
 	    break;
 	  }
 	}
@@ -388,7 +396,7 @@ void mxReconstruction::Coalitions_ALG1() {
           int coainc = inc%9;
 	  if( test < 3 ) {
 	    //std::cout << "    [compatible]  saving..." << std::endl;
-	    coa->Fill( coainc, pty, phi, eta );
+	    coa->Fill( coainc, pty, phi, eta, partenergy, parteta, partphi );
 	    break;
 	  }
 	}

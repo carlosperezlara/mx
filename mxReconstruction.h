@@ -7,6 +7,7 @@
 #include "mxParty.h"
 #include "mxCoalition.h"
 #include "mxUnion.h"
+#include "mxMCParticle.h"
 
 class mxGeometry;
 
@@ -27,6 +28,7 @@ class mxReconstruction {
   void DumpStats();
   void DumpHits();
   void DumpParties();
+  void FillPP( float energy, float eta, float phi, int pdg);
 
   float GetVertexX() {return fV[0];}
   float GetVertexY() {return fV[1];}
@@ -40,8 +42,6 @@ class mxReconstruction {
   void Parties();
   void Coalitions();
   void Unions();
-
-  void FillPP( float energy, float eta, float phi, int pdg);
 
   void Coalitions_ALG0();
   void Coalitions_ALG1();
