@@ -32,7 +32,6 @@
 #include "MpcExEventHeader.h"
 
 #include "mxCalibMaster.h"
-#include "mxCalibDAu16.h"
 #include "mxCalibBaseSiW.h"
 #include "mxDB.cc"
 
@@ -160,7 +159,7 @@ int mSubsysReco::InitRun(PHCompositeNode* top_node) {
   int runno = runhead->get_RunNumber();
 
   printf("mSubsysReco::InitRun || Run number %d\n",runno);
-  fCal = new mxCalibMaster();//new mxCalibDAu16();
+  fCal = new mxCalibMaster();
   mxDB::read(runno,fCal);
   if(!fCal) return ABORTEVENT;
 

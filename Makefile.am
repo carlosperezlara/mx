@@ -19,7 +19,6 @@ include_HEADERS = \
   mxReconstruction.h \
   mxQAReconstruction.h \
   \
-  mxCalibDAu16.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   PHMXData.h \
@@ -34,7 +33,6 @@ libMXphnx_la_SOURCES = \
   mxReconstruction.cxx \
   mxQAReconstruction.cxx \
   \
-  mxCalibDAu16.cxx \
   mxCalibMaster.cxx \
   mxCalibBaseSiW.cxx \
   mSubsysReco.cxx \
@@ -58,7 +56,6 @@ MXphnx_Dict.C: \
   mxReconstruction.h \
   mxQAReconstruction.h \
   \
-  mxCalibDAu16.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   PHMXData.h \
