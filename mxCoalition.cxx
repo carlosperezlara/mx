@@ -76,6 +76,24 @@ float mxCoalition::GetEta() {
   return fSeta/fSgn;
 }
 //========
+float mxCoalition::SignalPreShower() {
+  float sgn = 0;
+  mxParty *pty;
+  for(int l=0; l!=8; ++l) {
+    pty = GetParty(l);
+    if(pty) sgn += pty->Signal();
+  }
+  return sgn;
+}
+//========
+int mxCoalition::NPreShower() {
+  int hts = 0;
+  for(int l=0; l!=8; ++l) {
+    if(IsHitLayer(l)) hts++;
+  }
+  return hts;
+}
+//========
 void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float eta, float parten, float partet, float partphi) {
   // filler
   if(fParties[lyr]) return;

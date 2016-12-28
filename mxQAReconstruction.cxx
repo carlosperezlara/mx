@@ -90,6 +90,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
+    fHcoaPS[arm] = new TH2F( Form("mxReco_%s_coaPS",arm==0?"S":"N"), Form("mxReco_%s_coaPS;Signal in Preshower  GEV;No Parties in PreShower",arm==0?"S":"N"), 100,0,0.5, 9,-0.5,8.5 );
     fHcoaET[arm] = new TH1F( Form("mxReco_%s_coaET",arm==0?"S":"N"), Form("mxReco_%s_coaET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe/10);
     fHcoaEL[arm] = new TH1F( Form("mxReco_%s_coaEL",arm==0?"S":"N"), Form("mxReco_%s_coaEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
     fHcoaPh[arm] = new TH1F( Form("mxReco_%s_coaPh",arm==0?"S":"N"), Form("mxReco_%s_coaPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
@@ -131,6 +132,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     fList->Add( fHEnergy[arm] );
     fList->Add( fHcoaN[arm] );
     fList->Add( fHcoaEn[arm] );
+    fList->Add( fHcoaPS[arm] );
     fList->Add( fHcoaET[arm] );
     fList->Add( fHcoaEL[arm] );
     fList->Add( fHcoaPh[arm] );
@@ -221,6 +223,7 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
     std::vector<mxCoalition*> coa = r->GetCoalitions(arm);
     for(int k=0; k!=r->GetNCoalitions(arm); ++k) {
       fHcoaEn[arm]->Fill( coa[k]->GetEnergy() );
+      fHcoaPS[arm]->Fill( coa[k]->SignalPreShower(), coa[k]->NPreShower() );
       fHcoaET[arm]->Fill( coa[k]->GetEnergyT() );
       fHcoaEL[arm]->Fill( coa[k]->GetEnergyL() );
       fHcoaPh[arm]->Fill( coa[k]->GetPhi() );

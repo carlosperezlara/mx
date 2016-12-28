@@ -28,6 +28,7 @@ class mxReconstruction {
   void DumpStats();
   void DumpHits();
   void DumpParties();
+  void DumpCoalitions();
   void FillPP( float energy, float eta, float phi, int pdg);
 
   float GetVertexX() {return fV[0];}
@@ -42,6 +43,9 @@ class mxReconstruction {
   void Parties();
   void Coalitions();
   void Unions();
+
+  void Parties_ALG0(int);
+  void Parties_ALG1(int);
 
   void Coalitions_ALG0();
   void Coalitions_ALG1();

@@ -55,8 +55,8 @@ int main(int narg, char **carg) {
       // std::cout << penergy << std::endl;
     }
     
+    reco->DumpStats();
     reco->Make();
-    //reco->DumpStats();
     //reco->DumpHits();
     //reco->DumpParties();
     QAReco->Make(reco);
@@ -79,6 +79,7 @@ int main(int narg, char **carg) {
 	outputP << std::endl;
       }
     }
+    //break;
   }
   input.close();
   inputP.close();

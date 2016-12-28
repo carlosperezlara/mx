@@ -22,6 +22,8 @@ class mxCoalition {
   float GetPhi();
   float GetCov(int);
   float Signal() {return fSgn;}
+  float SignalPreShower();
+  int NPreShower();
   float GetEnergy() {return fSgn*fSgnE;}
   float GetEnergyT() {return GetEnergy()/TMath::CosH(GetEta());}
   float GetEnergyL() {return GetEnergy()*TMath::Abs(TMath::TanH(GetEta()));}

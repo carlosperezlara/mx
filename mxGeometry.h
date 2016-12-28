@@ -4,10 +4,14 @@ class mxGeometry {
  public:
   mxGeometry();
   ~mxGeometry() {}
+  int Si_Idx2Sen(int idx) { return (idx%3072)/128; }
+  int Si_Idx2Row(int idx) { return idx%4; }
+  int Si_Idx2Col(int idx) { return (idx%128)/4; }
   float X(int idx) { return Reference(idx,0); }
   float Y(int idx) { return Reference(idx,1); }
   float Z(int idx) { return Reference(idx,2); }
   int RefKey(int lyr, int tb);
+  int RefKey(int lyr, int tb, int sen);
   int Adjacent_Si_0(int idx);
   int Adjacent_Si_1(int idx);
   int LyrIdx(int idx) { return Reference(idx,3); }

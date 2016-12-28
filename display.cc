@@ -130,28 +130,32 @@ void drawPtyLayer(int lyridx) {
   }
 }
 
-/*
 void drawSummary(int arm) {
   if(arm==0) phietaS->Draw();
   else phietaN->Draw();
   for(int i=0; i!=npty; ++i) {
+    int ll = pty_ll[i];
+    if(ll<9 && arm==1) continue;
+    if(ll>8 && arm==0) continue;
     lips->SetLineColor( col[ll] );
     float ephi, eeta;
-    float phi = _phi( xx, yy, ephi, spx, spy );
-    float eta = _eta( xx, yy, z[ll], eeta, spx, spy, ez[ll] );
+    float phi = _phi( pty_xx[i], pty_yy[i], ephi,
+		      pty_spx[i], pty_spy[i] );
+    float eta = _eta( pty_xx[i], pty_yy[i], z[ll], eeta,
+		      pty_spx[i], pty_spy[i], ez[ll] );
     lips->DrawEllipse(eta,phi,eeta,ephi,0,360,0);
   }
-  tex->SetTextColor(col[0]); tex->DrawLatex(-3.9,5.5,Form("%d",npt[0]));
-  tex->SetTextColor(col[1]); tex->DrawLatex(-3.9,4.5,Form("%d",npt[1]));
-  tex->SetTextColor(col[2]); tex->DrawLatex(-3.9,3.0,Form("%d",npt[2]));
-  tex->SetTextColor(col[3]); tex->DrawLatex(-3.9,1.5,Form("%d",npt[3]));
-  tex->SetTextColor(col[4]); tex->DrawLatex(-3.9,0.5,Form("%d",npt[4]));
-  tex->SetTextColor(col[5]); tex->DrawLatex(-3.2,5.5,Form("%d",npt[5]));
-  tex->SetTextColor(col[6]); tex->DrawLatex(-3.2,4.5,Form("%d",npt[6]));
-  tex->SetTextColor(col[7]); tex->DrawLatex(-3.2,1.5,Form("%d",npt[7]));
-  tex->SetTextColor(col[8]); tex->DrawLatex(-3.2,0.5,Form("%d",npt[8]));
+  //tex->SetTextColor(col[0]); tex->DrawLatex(-3.9,5.5,Form("%d",npt[0]));
+  //tex->SetTextColor(col[1]); tex->DrawLatex(-3.9,4.5,Form("%d",npt[1]));
+  //tex->SetTextColor(col[2]); tex->DrawLatex(-3.9,3.0,Form("%d",npt[2]));
+  //tex->SetTextColor(col[3]); tex->DrawLatex(-3.9,1.5,Form("%d",npt[3]));
+  //tex->SetTextColor(col[4]); tex->DrawLatex(-3.9,0.5,Form("%d",npt[4]));
+  //tex->SetTextColor(col[5]); tex->DrawLatex(-3.2,5.5,Form("%d",npt[5]));
+  //tex->SetTextColor(col[6]); tex->DrawLatex(-3.2,4.5,Form("%d",npt[6]));
+  //tex->SetTextColor(col[7]); tex->DrawLatex(-3.2,1.5,Form("%d",npt[7]));
+  //tex->SetTextColor(col[8]); tex->DrawLatex(-3.2,0.5,Form("%d",npt[8]));
 }
-*/
+
 void drawLayer(int lyridx) {
   axis->Draw();
   if(lyridx==8) {
@@ -200,7 +204,6 @@ int main(int argn, char **argc) {
     //reading hits
     input >> nhit;
     if(!input.good()) break;
-    if(eventnumber>-1 && eventnumber!=ev) continue;
     for(int i=0; i!=18; ++i) hitlayer[i] = 0;
     for(int i=0; i!=nhit; ++i) {
       input >> hit_kk[i] >> hit_ee[i];
@@ -215,6 +218,7 @@ int main(int argn, char **argc) {
       input2 >> pty_sx[i] >> pty_sy[i] >> pty_sxy[i] >> pty_spx[i] >> pty_spy[i];
       ptylayer[ pty_ll[i] ]++;
     }
+    if(eventnumber>-1 && eventnumber!=ev) continue;
     // draw south
     cmain->Divide(3,3,0,0);
     for(int i=0; i!=9; ++i) {
@@ -222,14 +226,19 @@ int main(int argn, char **argc) {
       drawLayer(i);
     }
     cmain->SaveAs(Form("%s_disp.pdf",file.Data()),"pdf");
+    // draw north
     for(int i=9; i!=18; ++i) {
       cmain->cd(i-8);
       drawLayer(i);
     }
     cmain->SaveAs(Form("%s_disp.pdf",file.Data()),"pdf");
-    //cmain->cd(10);
-    //drawSummary(0);
-    if(eventnumber>-1 && eventnumber!=ev) break;
+    cmain->Clear();
+    cmain->Divide(2,1);
+    cmain->cd(1);
+    drawSummary(0);
+    cmain->cd(2);
+    drawSummary(1);
+    cmain->SaveAs(Form("%s_disp.pdf",file.Data()),"pdf");
   }
   input.close();
   input2.close();

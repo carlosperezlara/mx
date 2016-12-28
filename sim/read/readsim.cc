@@ -65,7 +65,7 @@ int main(int narg, char **carg) {
     fout << nhits << std::endl;
     for(int j=0; j!=49152+288*2; ++j) 
       if(energyarray[j]>1e-6)
-	fout << j << " " << energyarray[j]/1000 << std::endl; // to GeV
+	fout << j << " " << energyarray[j]/1000 << std::endl; // from MeV to GeV
     pout << 1 << std::endl;
     pout << pppdg <<" "<<ppenergy << " " << ppeta << " " << ppphi << std::endl;
   }
