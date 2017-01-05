@@ -16,6 +16,8 @@ mxParty::mxParty():
   fSxx(0),
   fSyy(0),
   fSxy(0),
+  fX0(0),
+  fY0(0),
   fN(0),
   fNx(0),
   fNy(0),
@@ -38,6 +40,8 @@ mxParty::mxParty(const mxParty &src) {
   fSxx = src.fSxx;
   fSyy = src.fSyy;
   fSxy = src.fSxy;
+  fX0 = src.fX0;
+  fY0 = src.fY0;
   fN = src.fN;
   fNx = src.fNx;
   fNy = src.fNy;
@@ -57,6 +61,8 @@ mxParty& mxParty::operator=(const mxParty &src) {
     fSxx = src.fSxx;
     fSyy = src.fSyy;
     fSxy = src.fSxy;
+    fX0 = src.fX0;
+    fY0 = src.fY0;
     fN = src.fN;
     fNx = src.fNx;
     fNy = src.fNy;
@@ -73,45 +79,48 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
   int n = N();
   if(n>127) return;
   fHits[n] = hit;
-  if(n<1) {
-    fN = 1;
-  } else {
-    if(fDx>fDy) {
-      if( TMath::Abs(GetX()-x)>0.9*GetSpreadX() ) {
-	fNx++;
-      } else {
-	fNy++;
-      }
-    } else {
-      if( TMath::Abs(GetY()-y)>0.9*GetSpreadY() ) {
-	fNy++;
-      } else {
-	fNx++;
-      }
-    }
-  }
   hit->SetAssigned(true);
   float sgn = hit->Signal();
-  fSx += x*sgn;
-  fSy += y*sgn;
-  fSxx += x*x*sgn;
-  fSyy += y*y*sgn;
-  fSxy += x*y*sgn;
   fSgn += sgn;
+  if(n<1) {
+    //seeding
+    fX0 = x;
+    fY0 = y;
+    fSx = 0;
+    fSy = 0;
+    fSxx = 0;
+    fSyy = 0;
+    fSxy = 0;
+    fN = 1; // seed
+    fNx = 0;
+    fNy = 0;
+  } else {
+    //adding
+    float prex = GetX();
+    float dx = x-fX0; // avoids catastrophic cancellation
+    float dy = y-fY0; // avoids catastrophic cancellation
+    fSx += dx*sgn;
+    fSy += dy*sgn;
+    fSxx += dx*dx*sgn;
+    fSyy += dy*dy*sgn;
+    fSxy += dx*dy*sgn;
+    if( TMath::AreEqualAbs(prex,GetX(),1e-6) ) fNy++; // asumming sensitivity of 1e-6 cm (noticed this is E weighted)
+    else fNx++;
+  }
 }
 //========
 float mxParty::GetX() {
   // <x>
   if( N()<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
-  return fSx/fSgn;
+  return fSx/fSgn+fX0;
 }
 //========
 float mxParty::GetY() {
   // <y>
   if( N()<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
-  return fSy/fSgn;
+  return fSy/fSgn+fY0;
 }
 //========
 float mxParty::Test(float xx, float yy) {
@@ -137,6 +146,8 @@ void mxParty::Reset() {
   fN=0;
   fNx=0;
   fNy=0;
+  fX0=0;
+  fY0=0;
 }
 //========
 float mxParty::GetCov(int dim) {
@@ -146,7 +157,7 @@ float mxParty::GetCov(int dim) {
   float var;
   if     (dim==0) var = fSxx/fSgn-fSx/fSgn*fSx/fSgn;
   else if(dim==1) var = fSyy/fSgn-fSy/fSgn*fSy/fSgn;
-  else if(dim==2) var = fSxy/fSgn-fSy/fSgn*fSy/fSgn;
+  else if(dim==2) var = fSxy/fSgn-fSx/fSgn*fSy/fSgn;
   else var = -1;
   return var;
 }

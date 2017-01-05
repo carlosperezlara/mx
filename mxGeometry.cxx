@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mxGeometry.h"
 
 mxGeometry::mxGeometry() :
@@ -300,4 +301,54 @@ void mxGeometry::UpdatePWO4(int k) {
   int arm = k/288;
   fLyrIdx = arm*9+8;
   fLastIdx = k;
+}
+//========
+int mxGeometry::PWO4_FindIdx(int arm, float x, float y) {
+  int a = 0;
+  int b = 288;
+  if(arm==1) {
+    a=288;
+    b=576;
+  }
+  float dx = fPWO4_a0/2;
+  float dy = fPWO4_a1/2;
+  int ret = -1;
+  int cn =0;
+  bool foundinx = false;
+  for(int i=a; i!=b; ++i) {
+    if( fPWO4_RX[i]-dx < x ) continue;
+    if( fPWO4_RX[i]+dx > x ) continue;
+    foundinx = true;
+    if( fPWO4_RY[i]-dy < y ) continue;
+    if( fPWO4_RY[i]+dy > y ) continue;
+    ret = i;
+    cn++;
+  }
+  if(cn>0) std::cout << "mxGeometry unexpected " << cn << std::endl;
+  if(ret>-1) return ret+49152;
+  if(foundinx) return -2;
+  else return -1;
+}
+//========
+int mxGeometry::PWO4_FindClosestIdx(int arm, float x0, float y0) {
+  int ret = PWO4_FindIdx(arm,x0,y0);
+  float dx = fPWO4_a0/2;
+  float dy = fPWO4_a1/2;
+  if(ret>0) return ret;
+  if(ret==-2) {
+    ret = PWO4_FindIdx(arm, x0, y0-dy);
+    if(ret>0) return ret;
+    ret = PWO4_FindIdx(arm, x0, y0+dy);
+    if(ret>0) return ret;
+  } else {
+    ret = PWO4_FindIdx(arm, x0-dx, y0-dy);
+    if(ret>0) return ret;
+    ret = PWO4_FindIdx(arm, x0+dx, y0-dy);
+    if(ret>0) return ret;
+    ret = PWO4_FindIdx(arm, x0-dx, y0+dy);
+    if(ret>0) return ret;
+    ret = PWO4_FindIdx(arm, x0+dx, y0+dy);
+    if(ret>0) return ret;
+  }
+  return -3;
 }

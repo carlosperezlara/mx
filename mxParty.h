@@ -17,10 +17,12 @@ class mxParty {
   float Test(float,float);
   int N() {return fN+fNx+fNy;}
   float GetX();
+  float GetXVar() {return GetCov(0);}
   float GetY();
+  float GetYVar() {return GetCov(1);}
   float GetCov(int);
-  float GetSpreadX() {return (fN+fNx)*fDx*0.29;}
-  float GetSpreadY() {return (fN+fNy)*fDy*0.29;}
+  float GetSpreadX() {return (fN+fNx)*fDx*0.29;} //sqrt12
+  float GetSpreadY() {return (fN+fNy)*fDy*0.29;} //sqrt12
   float GetDx() {return fDx;}
   float GetDy() {return fDy;}
   float Signal() {return fSgn;}
@@ -38,6 +40,8 @@ class mxParty {
   float fSxx;
   float fSyy;
   float fSxy;
+  float fX0;
+  float fY0;
   int fN;
   int fNx;
   int fNy;

@@ -1,4 +1,7 @@
-//#include <stdlib>
+//=========================
+// written by Carlos Perez 
+// 2015-2016               
+//=========================
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -36,20 +39,19 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
   for(int arm=0; arm!=2; ++arm) {
     double sn = 0.0;
     if (arm == 0) sn = 1.0;
-    
     for(int lyr=0; lyr!=9; ++lyr) {
       float emax = maxe/100;
       float smax= 1;
       if(lyr==8||lyr==17) {
-	emax = maxe;
-	smax = 10;
+      	emax = maxe;
+      	smax = 10;
       }
-
+      //HIT
       fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;NO of HITS",arm==0?"S":"N",lyr), 800,-0.5,799.5);
       fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHhitN[arm][lyr] );
       fList->Add( fHhitE[arm][lyr] );
-
+      //PARTY
       fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;NO of PARTIES",arm==0?"S":"N",lyr), 100,-0.5,99.5);
       fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;X  CM",arm==0?"S":"N",lyr), 100,-22,+22);
@@ -62,32 +64,28 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
       fList->Add( fHptyY[arm][lyr] );
       fList->Add( fHptySX[arm][lyr] );
       fList->Add( fHptySY[arm][lyr] );
-      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyEN",arm==0?"S":"N",lyr),
-				    Form("mxReco_%s%d_coaptyEN;COA-ENERGY  GEV;NO of HITS",arm==0?"S":"N",lyr),
+      //COALITION-PERLAYER
+      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyEN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyEN;COA-ENERGY  GEV;NO of HITS",arm==0?"S":"N",lyr),
 				    100,0,maxe, 60,-0.5,59.5);
-      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESX",arm==0?"S":"N",lyr),
-				     Form("mxReco_%s%d_coaptyESX;COA-ENERGY  GEV;SPREAD X  CM",arm==0?"S":"N",lyr),
+      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESX;COA-ENERGY  GEV;SPREAD X  CM",arm==0?"S":"N",lyr),
 				     100,0,maxe, 100,0,smax);
-      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESY",arm==0?"S":"N",lyr),
-				     Form("mxReco_%s%d_coaptyESY;COA-ENERGY  GEV;SPREAD Y  CM",arm==0?"S":"N",lyr),
+      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESY;COA-ENERGY  GEV;SPREAD Y  CM",arm==0?"S":"N",lyr),
 				     100,0,maxe, 100,0,smax);
       fList->Add( fHptyEN[arm][lyr] );
       fList->Add( fHptyESX[arm][lyr] );
       fList->Add( fHptyESY[arm][lyr] );
     }
-    fHHits[arm] = new TProfile( Form("mxReco_%s_HitsPerLayer",arm==0?"S":"N"),
-				Form("mxReco_%s_HitPerLayer;LAYER;AvgHits",arm==0?"S":"N"),
-				9,-0.5,8.5);
-    /*    fHHitsx[arm] = new TH1F( Form("mxReco_%s_Hitsatx",arm==0?"S":"N"),
-				 Form("mxReco_%s_Hitsatx;x;hits",arm==0?"S":"N"),
-				 50,-22,22);*/
-    fHEnergy[arm] = new TProfile( Form("mxReco_%s_EnergyPerLayer",arm==0?"S":"N"),
-				Form("mxReco_%s_EnergyPerLayer;LAYER;AvgEnergy",arm==0?"S":"N"),
-				8,-0.5,7.5);
-    /*   fHEnergyx[arm] = new TH1F( Form("mxReco_%s_Energyatx",arm==0?"S":"N"),
-			     Form("mxReco_%s_Energyatx;x;energy",arm==0?"S":"N"),
-			     50,-22,22);*/
-    
+    //COALITION
+    fHHits[arm] = new TProfile( Form("mxReco_%s_HitsPerLayer",arm==0?"S":"N"), Form("mxReco_%s_HitPerLayer;LAYER;AvgHits",arm==0?"S":"N"), 9,-0.5,8.5);
+    /*
+    fHHitsx[arm] = new TH1F( Form("mxReco_%s_Hitsatx",arm==0?"S":"N"),
+		Form("mxReco_%s_Hitsatx;x;hits",arm==0?"S":"N"),
+		50,-22,22);*/
+    fHEnergy[arm] = new TProfile( Form("mxReco_%s_EnergyPerLayer",arm==0?"S":"N"), Form("mxReco_%s_EnergyPerLayer;LAYER;AvgEnergy",arm==0?"S":"N"), 8,-0.5,7.5);
+    /*
+    fHEnergyx[arm] = new TH1F( Form("mxReco_%s_Energyatx",arm==0?"S":"N"),
+    Form("mxReco_%s_Energyatx;x;energy",arm==0?"S":"N"),
+    50,-22,22);*/
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
     fHcoaPS[arm] = new TH2F( Form("mxReco_%s_coaPS",arm==0?"S":"N"), Form("mxReco_%s_coaPS;Signal in Preshower  GEV;No Parties in PreShower",arm==0?"S":"N"), 100,0,0.5, 9,-0.5,8.5 );
@@ -169,6 +167,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     fList->Add( fHcoaTruthEta[arm] );
     fList->Add( fHcoaTruthdEta[arm] );
     fList->Add( fHcoaTruthEtaRat[arm] );
+    //UNION
     fHuniN[arm] = new TH1F( Form("mxReco_%s_uniN",arm==0?"S":"N"), Form("mxReco_%s_uniN;NO of UNIONS",arm==0?"S":"N"), 100,-0.5,99.5);
     fHuniEn[arm] = new TH1F( Form("mxReco_%s_uniEn",arm==0?"S":"N"), Form("mxReco_%s_uniEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
     fHuniET[arm] = new TH1F( Form("mxReco_%s_uniET",arm==0?"S":"N"), Form("mxReco_%s_uniET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe);
@@ -237,52 +236,52 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       float mpcexenergy = 0.0;
       float mpcenergy = 0.0;
       for(int lyr=0;lyr!=9; ++lyr) {
-	if(coa[k]->IsHitLayer(lyr)) {
-	  fHcoaEff[arm]->Fill(lyr);
-	  layhit++;
-	  mypty = coa[k]->GetParty(lyr);
-	  fHptyEN[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->N() );
-	  fHptyESX[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadX() );
-	  fHptyESY[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadY() );
-	  fHcoaHit[arm]->Fill( lyr, (double)mypty->N()/1000.0 );
-	  //	  fHcoaHitxProf[arm]->Fill(lyr,1);
-	  if (lyr!=8){
-	    for(int n=0; n!=mypty->N(); ++n) {
-	      mxHit* hit = mypty->GetHit(n);
-	      double hitx = 0.0;
-	      if (lyr%2 == 0){
-		//hitx = std::abs(mypty->GetX() - mxgeo->X(hit->Idx()));
-		hitx = mypty->GetX() - mxgeo->X(hit->Idx()); 
-	      }
-	      if (lyr%2 == 1){
-		//hitx = std::abs(mypty->GetY() - mxgeo->Y(hit->Idx()));
-		hitx = mypty->GetY() - mxgeo->Y(hit->Idx());       
-	      }
-	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal());
-	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal());
-	      fHcoaHitx[arm]->Fill(hitx);
-	      fHcoaHitxTH2F[arm]->Fill(lyr,hitx);
-	      fHcoaHitxProf[arm]->Fill(lyr,hitx);
-	      //fHcoaHitxProf[arm]->Fill(lyr,1);
-	      fHcoaEnergyx[arm]->Fill(hitx,hit->Signal());
-	      fHcoaEnergyxTH2F[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
-	      fHcoaEnergyxProf[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
-	      //	      std::cout << hitx << std::endl;
-	    }
-	  }
-	  /* if (lyr == 8) {
-	    for(int n=0; n!=mypty->N(); ++n) {
-	      mxHit* hit = mypty->GetHit(n);
-	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal()/10.0);
-	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal()/10.0);
-	    }
-	    }*/
-	  //	  fHcoaHitxProf[arm]->Fill(lyr,1); 
-	  fHcoaEnergy[arm]->Fill( lyr, mypty->Signal() );
-	  if(minlyr<0) minlyr = lyr;
-	  if(lyr<8) mpcexenergy+=mypty->Signal();
-	  if(lyr == 8) mpcenergy=mypty->Signal();
-	}
+      	if(coa[k]->IsHitLayer(lyr)) {
+      	  fHcoaEff[arm]->Fill(lyr);
+      	  layhit++;
+      	  mypty = coa[k]->GetParty(lyr);
+      	  fHptyEN[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->N() );
+      	  fHptyESX[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadX() );
+      	  fHptyESY[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadY() );
+      	  fHcoaHit[arm]->Fill( lyr, (double)mypty->N()/1000.0 );
+      	  //	  fHcoaHitxProf[arm]->Fill(lyr,1);
+      	  if(lyr!=8) {
+      	    for(int n=0; n!=mypty->N(); ++n) {
+      	      mxHit* hit = mypty->GetHit(n);
+      	      double hitx = 0.0;
+      	      if(lyr%2 == 0) {
+      		      //hitx = std::abs(mypty->GetX() - mxgeo->X(hit->Idx()));
+      		      hitx = mypty->GetX() - mxgeo->X(hit->Idx()); 
+              }
+      	      if(lyr%2==1) {
+            		//hitx = std::abs(mypty->GetY() - mxgeo->Y(hit->Idx()));
+            		hitx = mypty->GetY() - mxgeo->Y(hit->Idx());       
+      	      }
+      	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal());
+      	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal());
+      	      fHcoaHitx[arm]->Fill(hitx);
+      	      fHcoaHitxTH2F[arm]->Fill(lyr,hitx);
+      	      fHcoaHitxProf[arm]->Fill(lyr,hitx);
+      	      //fHcoaHitxProf[arm]->Fill(lyr,1);
+      	      fHcoaEnergyx[arm]->Fill(hitx,hit->Signal());
+      	      fHcoaEnergyxTH2F[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
+      	      fHcoaEnergyxProf[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
+      	      //	      std::cout << hitx << std::endl;
+      	    }
+      	  }
+      	  /* if (lyr == 8) {
+      	    for(int n=0; n!=mypty->N(); ++n) {
+      	      mxHit* hit = mypty->GetHit(n);
+      	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal()/10.0);
+      	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal()/10.0);
+      	    }
+      	    }*/
+      	  //	  fHcoaHitxProf[arm]->Fill(lyr,1); 
+      	  fHcoaEnergy[arm]->Fill( lyr, mypty->Signal() );
+      	  if(minlyr<0) minlyr = lyr;
+      	  if(lyr<8) mpcexenergy+=mypty->Signal();
+      	  if(lyr == 8) mpcenergy=mypty->Signal();
+      	}
       }
       fHcoaPty[arm]->Fill(layhit);
       fHcoaSta[arm]->Fill(minlyr,coa[k]->GetEnergy());
@@ -293,27 +292,8 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       fHcoaExMpc[arm]->Fill(mpcexenergy,mpcenergy);
       keeplay+=minlyr;
       for (int ll = minlyr; ll!=9; ++ll){
-	fHcoaS[arm]->Fill(ll);
+      	fHcoaS[arm]->Fill(ll);
       }
-      float pphi = coa[k]->GetPPhi();
-      if (pphi < 0) pphi += TMath::TwoPi();
-      //      std::cout<< coa[k]->GetEnergy() << " " << coa[k]->GetPEnergy() <<std::endl;
-      float difE = coa[k]->GetPEnergy()/1000.0 - coa[k]->GetEnergy();
-      fHcoaTruthE[arm]->Fill(coa[k]->GetEnergy(),coa[k]->GetPEnergy()/1000.0);
-      fHcoaTruthET[arm]->Fill(coa[k]->GetEnergyT(),coa[k]->GetPEnergy()/(1000.0*TMath::CosH(coa[k]->GetPEta())));
-      fHcoaTruthdET[arm]->Fill(-coa[k]->GetEnergyT()+coa[k]->GetPEnergy()/(1000.0*TMath::CosH(coa[k]->GetPEta())));
-      fHcoaTruthEL[arm]->Fill(coa[k]->GetEnergyL(),coa[k]->GetPEnergy()*TMath::Abs(TMath::TanH(coa[k]->GetPEta()))/1000.0);
-      if (difE > 15) fHcoaTruthEloc[arm]->Fill(pphi,coa[k]->GetPEta(),difE);
-      if (difE > 15) fHcoaTruthElocth[arm]->Fill(pphi,2*TMath::ATan(exp(-1*coa[k]->GetPEta())),difE);
-      fHcoaTruthdE[arm]->Fill(difE);
-      //      std::cout << coa[k]->GetPEta() << std::endl;
-      fHcoaTruthPhi[arm]->Fill(coa[k]->GetPhi(),pphi);
-      fHcoaTruthdPhi[arm]->Fill(pphi-coa[k]->GetPhi());      
-      fHcoaTruthEta[arm]->Fill(coa[k]->GetEta(),coa[k]->GetPEta());
-      
-      if (coa[k]->GetPEta()>-3.6 && coa[k]->GetPEta()<-3.2) fHcoaTruthdEta[arm]->Fill(-coa[k]->GetEta()+coa[k]->GetPEta());
-      fHcoaTruthEtaRat[arm]->Fill(coa[k]->GetPEta()/coa[k]->GetEta());
-      //      fHcoaTruthE[arm]->Fill(5,5);
     }
 
     for(int lyr=0; lyr!=9; ++lyr) {
@@ -323,12 +303,12 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       fHptyN[arm][lyr]->Fill( r->GetNParties(glyr) );
       std::vector<mxParty*> pty = r->GetParties(glyr);
       for(int k=0; k!=r->GetNParties(glyr); ++k) {
-	fHptyE[arm][lyr]->Fill( pty[k]->Signal() );
-	fHptyX[arm][lyr]->Fill( pty[k]->GetX() );
-	fHptyY[arm][lyr]->Fill( pty[k]->GetY() );
-	fHptySX[arm][lyr]->Fill( pty[k]->GetCov(0) );
-	fHptySY[arm][lyr]->Fill( pty[k]->GetCov(1) );
-	enplay+=pty[k]->Signal();
+      	fHptyE[arm][lyr]->Fill( pty[k]->Signal() );
+      	fHptyX[arm][lyr]->Fill( pty[k]->GetX() );
+      	fHptyY[arm][lyr]->Fill( pty[k]->GetY() );
+      	fHptySX[arm][lyr]->Fill( pty[k]->GetCov(0) );
+      	fHptySY[arm][lyr]->Fill( pty[k]->GetCov(1) );
+      	enplay+=pty[k]->Signal();
       }
       //==>HIT
       fHhitN[arm][lyr]->Fill( r->GetNHits(glyr) );
@@ -337,19 +317,17 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       fHEnergy[arm]->Fill(lyr,enplay);
       
       for(int k=0; k!=r->GetNHits(glyr); ++k) {
-	fHhitE[arm][lyr]->Fill( hit[k]->Signal() );
-	/*	double hitx = 0.0;
-	if (lyr%2 == 0){
-	  hitx = r->GetX() - mxgeo->X(hit[k]->Idx());
-	}
-	if (lyr%2 == 1){
-	  hitx = r->GetY() - mxgeo->Y(hit[k]->Idx());
-	}
-	fHHitsx[arm]->Fill(hitx);
-	std::cout << hitx << std::endl;*/
+      	fHhitE[arm][lyr]->Fill( hit[k]->Signal() );
+      	/*	double hitx = 0.0;
+      	if (lyr%2 == 0){
+      	  hitx = r->GetX() - mxgeo->X(hit[k]->Idx());
+      	}
+      	if (lyr%2 == 1){
+      	  hitx = r->GetY() - mxgeo->Y(hit[k]->Idx());
+      	}
+      	fHHitsx[arm]->Fill(hitx);
+      	std::cout << hitx << std::endl;*/
       }
-
     }
   }
-
 }

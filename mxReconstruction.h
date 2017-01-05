@@ -1,3 +1,7 @@
+//=========================
+// written by Carlos Perez 
+// 2015-2016               
+//=========================
 #ifndef __mxReconstruction_HH__
 #define __mxReconstruction_HH__
 
@@ -25,6 +29,7 @@ class mxReconstruction {
   std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
   std::vector<mxUnion*> GetUnions(int arm) {return fUni[arm];}
   mxParty* GetParty(int lyr, int idx) {return fPty[lyr].at(idx);}
+  mxCoalition* GetCoalition(int arm, int idx) {return fCoa[arm].at(idx);}
   void DumpStats();
   void DumpHits();
   void DumpParties();
@@ -39,6 +44,9 @@ class mxReconstruction {
   int GetNCoalitions(int arm) {return fNCoa[arm];}
   int GetNUnions(int arm) {return fNUni[arm];}
 
+  void SetPartyAlgorithm(int v) {fPtyAlg=v;}
+  void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
+
  private:
   void Parties();
   void Coalitions();
@@ -49,6 +57,8 @@ class mxReconstruction {
 
   void Coalitions_ALG0();
   void Coalitions_ALG1();
+  mxParty* SeekHitInEM(float, float, int);
+  float ComputePSChi2Prob(int, mxCoalition*);
 
   std::vector<mxHit*> fHit[18];
   std::vector<mxParty*> fPty[18];
@@ -56,6 +66,8 @@ class mxReconstruction {
   std::vector<mxUnion*> fUni[2];
   mxGeometry *fGeo;
   mxMCParticle *fMCPart;
+  int fPtyAlg;
+  int fCoaAlg;
   int fNHit[18];
   int fNPty[18];
   int fNCoa[2];

@@ -1,3 +1,7 @@
+//=========================
+// written by Carlos Perez 
+// 2015-2016               
+//=========================
 #ifndef __mxQAReconstruction_HH__
 #define __mxQAReconstruction_HH__
 

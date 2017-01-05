@@ -14,22 +14,25 @@ class mxCoalition {
   mxCoalition(const mxCoalition&);
   mxCoalition& operator=(const mxCoalition&);
   virtual ~mxCoalition();
-  void Fill(int,mxParty*,float,float,float,float,float);
+  void Fill(int,mxParty*,float,float);
   float Test(float,float,float,float);
   int N() {return fNParties;}
   mxParty* GetParty(int val) {return IsHitLayer(val)?fParties[val]:NULL;}
   float GetEta();
+  float GetEtaVar();
+  float GetTheta();
+  float GetThetaVar() {return GetCov(1);}
   float GetPhi();
+  float GetPhiVar() {return GetCov(0);}
   float GetCov(int);
   float Signal() {return fSgn;}
   float SignalPreShower();
+  float GetPSChi2Prob() {return fPSChi2Prob;}
+  void SetPSChi2Prob(float v) {fPSChi2Prob = v;}
   int NPreShower();
   float GetEnergy() {return fSgn*fSgnE;}
   float GetEnergyT() {return GetEnergy()/TMath::CosH(GetEta());}
   float GetEnergyL() {return GetEnergy()*TMath::Abs(TMath::TanH(GetEta()));}
-  float GetPEnergy() {return fPEnergy;}
-  float GetPEta() {return fPEta;}
-  float GetPPhi() {return fPPhi;}
   void Reset();
   bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
@@ -39,12 +42,12 @@ class mxCoalition {
   float fSgn;
   float fSgnE;
   float fSphi;
-  float fSeta;
+  float fStheta;
   float fSphiphi;
-  float fSetaeta;
-  float fSphieta;
-  float fPEnergy;
-  float fPEta;
-  float fPPhi;
+  float fSthetatheta;
+  float fSphitheta;
+  float fPhi0;
+  float fTheta0;
+  float fPSChi2Prob;
 };
 #endif /* __mxCoalition_H__ */

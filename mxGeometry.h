@@ -27,6 +27,7 @@ class mxGeometry {
   float W_X(int sidx);
   float W_Y(int sidx);
   float W_Z(int sidx);
+  int PWO4_FindClosestIdx(int arm, float x, float y);
   float RZ(int lyr);
 
  private:
@@ -34,6 +35,7 @@ class mxGeometry {
   void UpdateVars(int);
   void UpdateSiW(int);
   void UpdatePWO4(int);
+  int PWO4_FindIdx(int,float,float);
 
   int fLastIdx;
   int fLyrIdx;
