@@ -292,17 +292,27 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     unsigned int key = raw_hit->key();
     float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
     float lo_adc = raw_hit->low()  - fCal->GetPLMu()->Get(key);
-    float hires = hi_adc * fCal->GetLMPV()->Get(key)*0.14/20.;
-    float lores = lo_adc * fCal->GetLHft()->Get(key) * fCal->GetLMPV()->Get(key)*0.00014/20.;
+    float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
+    float lhft = fCal->GetLHft()->Get(key);
+    float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
+    if(fByPassEXCalibration) {
+      //temporal solution towards energy calibration
+      int pkt = key/128*3072;
+      float lmpv = 147.0/20.0;
+      if(pkt==2||pkt==6)
+        float lmpv = 147.0/15.0;
+      float enecut = 1e-6;
+    }
+    float hires = (hi_adc * lmpv) * 1e-6; // in GeV
+    float lores = (lo_adc * lhft * lmpv) * 1e-6; // in GeV
     if(fCheckMpcExRawHit) {
       fHadc[0]->Fill(key,hi_adc);
       if(hi_adc>40 && hi_adc<150)
-	fHlhf[0]->Fill(key,lo_adc/hi_adc);
+      	fHlhf[0]->Fill(key,lo_adc/hi_adc);
     }
     if( fCal->IsBadKey(key) ) continue;
     bool useHi = hi_adc<150;
     float ene = useHi?hires:lores;
-    float enecut = 0.00008; //fCal->GetLMPV()->Get(key) - 1*fCal->GetLSgm()->Get(key);
     if(ene>enecut) {
       fRec->Fill(key,ene);
       buffE[nbuff] = ene;
@@ -315,7 +325,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   // reading mpc data
   mpcRawContainer *mpcraw2 = findNode::getClass<mpcRawContainer>(top_node,"MpcRaw2");
   if(!mpcraw2) return ABORTEVENT;
-  for (unsigned int i=0; i!=mpcraw2->size(); ++i) {
+  for(unsigned int i=0; i!=mpcraw2->size(); ++i) {
     mpcRawContent *raw = mpcraw2->getTower(i);
     int key = raw->get_ch();
     float tof = raw->get_sample();
@@ -326,11 +336,11 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     ++nbuff;
     if(fCheckMpcRaw2) {
       if(key<288) {
-	fHcrytofS->Fill( tof );
-	fHcryeneS->Fill( ene );
+      	fHcrytofS->Fill( tof );
+      	fHcryeneS->Fill( ene );
       } else {
-	fHcrytofN->Fill( tof );
-	fHcryeneN->Fill( ene );
+      	fHcrytofN->Fill( tof );
+      	fHcryeneN->Fill( ene );
       }
       fHcry->Fill( key, ene, tof );
     }
@@ -357,31 +367,29 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     for(int arm=0; arm!=2; ++arm) {
       std::vector<mxCoalition*> coa = fRec->GetCoalitions(arm);
       for(int k=0; k!=fRec->GetNCoalitions(arm); ++k) {
-	//==> coalition cuts
-	if( coa[k]->N() < 3 ) continue;
-	bool failed = false;
-	for(int hl=0; hl!=9; ++hl) {
-	  if( coa[k]->IsHitLayer(hl) ) {
-	    mxParty *pty = coa[k]->GetParty(hl);
-	    if(pty->N()<5) failed = true;
-	  }
-	}
-	if(failed) continue;
-	//==<
-	for(int hl=0; hl!=9; ++hl) {
-	  mxParty *pty = coa[k]->GetParty(hl);
-	  if(!pty) continue;
-	  for(int ht=0; ht!=pty->N(); ++ht) {
-	    mxHit *hit = pty->GetHit(ht);
-	    if(!hit) continue;
-	    keyfiltered[ hit->Idx() ] = true;
-	  }
-	}
+      	//==> coalition cuts
+      	if( coa[k]->N() < 3 ) continue;
+      	bool failed = false;
+      	for(int hl=0; hl!=9; ++hl) {
+      	  if( coa[k]->IsHitLayer(hl) ) {
+      	    mxParty *pty = coa[k]->GetParty(hl);
+      	    if(pty->N()<5) failed = true;
+      	  }
+      	}
+      	if(failed) continue;
+      	//==<
+      	for(int hl=0; hl!=9; ++hl) {
+      	  mxParty *pty = coa[k]->GetParty(hl);
+      	  if(!pty) continue;
+      	  for(int ht=0; ht!=pty->N(); ++ht) {
+      	    mxHit *hit = pty->GetHit(ht);
+      	    if(!hit) continue;
+      	    keyfiltered[ hit->Idx() ] = true;
+      	  }
+      	}
       }
     }
-    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator();
-	itr!=rawcontainer.end();
-	++itr) {
+    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator(); itr!=rawcontainer.end(); ++itr) {
       TMpcExHit *raw_hit = (*itr);
       if(!raw_hit) continue;
       unsigned int key = raw_hit->key();
@@ -392,6 +400,5 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   }
 
   if(fDoQA) fQA->Make(fRec);
-
   return EVENT_OK;
 }

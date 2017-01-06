@@ -38,8 +38,8 @@ float z[18];
 float ez[18];
 
 TH2F *axis = new TH2F("axis",";X;Y",10,-22,+22,10,-22,+22);
-TH2F *phithetaS = new TH2F("phitheta0","S;THETA;PHI",100,3.02,3.12,100,0,TMath::TwoPi());
-TH2F *phithetaN = new TH2F("phitheta1","N;THETA;PHI",100,0.03,0.10,100,0,TMath::TwoPi());
+TH2F *phithetaS = new TH2F("phitheta0","S;THETA;PHI",100,3.035,3.110,100,0,TMath::TwoPi());
+TH2F *phithetaN = new TH2F("phitheta1","N;THETA;PHI",100,0.030,0.105,100,0,TMath::TwoPi());
 TCanvas *cmain = new TCanvas("main","main",600,600);
 TEllipse *lips = new TEllipse;
 TLatex *tex = new TLatex();
@@ -137,7 +137,7 @@ void drawSummary(int arm) {
     int ll = pty_ll[i];
     if(ll<9 && arm==1) continue;
     if(ll>8 && arm==0) continue;
-    lips->SetLineColor( col[ll] );
+    lips->SetLineColor( col[ll%9] );
     float ephi, etheta;
     float phi = _phi( pty_xx[i], pty_yy[i], ephi,
 		      pty_spx[i], pty_spy[i] );

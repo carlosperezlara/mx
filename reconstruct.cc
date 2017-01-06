@@ -26,26 +26,10 @@ int main(int narg, char **carg) {
 	mxGeometry *geo = new mxGeometry();
 
 	TH1F *gen = new TH1F("gen","gen",100,0,101);
-
-	TH1F *rec = new TH1F("rec","rec",100,0,101);
-	TH1F *recX = new TH1F("recX","recX",100,0,0.5);
-	TH1F *recN = new TH1F("recN","recN",9,-0.5,8.5);
 	TH1F *recdphi = new TH1F("recdphi","recdphi",101,-0.5,+0.5);
-	TH2F *recprob = new TH2F("recprob","recprob",100,0,0.5,100,0,1);
 	TH1F *recdeta = new TH1F("recdeta","recdeta",101,-0.5,+0.5);
-	TProfile *rechits = new TProfile("rechits","rechits",9,-0.5,8.5);
-	TProfile *recene = new TProfile("recene","recene",9,-0.5,8.5);
-	TH2F *recXpro = new TH2F("recXpro","recXpro",9,-0.5,8.5,101,-5,+5);
-
-	TH1F *sel = new TH1F("sel","sel",100,0,101);
-	TH1F *selX = new TH1F("selX","selX",100,0,0.5);
-	TH1F *selN = new TH1F("selN","selN",9,-0.5,8.5);
 	TH1F *seldphi = new TH1F("seldphi","seldphi",101,-0.5,+0.5);
-	TH2F *selprob = new TH2F("selprob","selprob",100,0,0.5,100,0,1);
 	TH1F *seldeta = new TH1F("seldeta","seldeta",101,-0.5,+0.5);
-	TProfile *selhits = new TProfile("selhits","selhits",9,-0.5,8.5);
-	TProfile *selene = new TProfile("selene","selene",9,-0.5,8.5);
-	TH2F *selXpro = new TH2F("selXpro","selXpro",9,-0.5,8.5,101,-5,+5);
 
   gErrorIgnoreLevel = kWarning;
   TString file = "input";
@@ -61,17 +45,25 @@ int main(int narg, char **carg) {
   if(1) {
 	  reco->SetPartyAlgorithm(1);
   	reco->SetCoalitionAlgorithm(1);
+  	reco->SetPtyAlg1_Threshold(0.15);
   } else {
 	  reco->SetPartyAlgorithm(0);
   	reco->SetCoalitionAlgorithm(0);
   }
   mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
-  mxCoalitionCuts *cuts = new mxCoalitionCuts();
-	cuts->Set_HitLayer(5);
-	cuts->Set_HitLayer(6);
-	cuts->Set_HitLayer(7);
-	cuts->Set_PS_minChi2Prob(0.2);
-	cuts->Set_PS_minSignal(0.05);
+
+  mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
+  cuts0->SetQA();
+  mxCoalitionCuts *cuts1 = cuts0->Clone("Cut1");
+	cuts1->Set_HitLayer(5);
+	cuts1->Set_HitLayer(6);
+	cuts1->Set_HitLayer(7);
+  mxCoalitionCuts *cuts2 = cuts1->Clone("Cut2");
+	cuts2->Set_PS_minChi2Prob(0.2);
+  mxCoalitionCuts *cuts3 = cuts2->Clone("Cut3");
+	cuts3->Set_PS_minSignal(0.05);
+  mxCoalitionCuts *cuts4 = cuts3->Clone("Cut4");
+	cuts4->Set_HitLayer(8);
 
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::cout << "INPUT: " << Form("%s.prim",file.Data()) << std::endl;
@@ -85,15 +77,17 @@ int main(int narg, char **carg) {
   int hits, idx;
   float sgn;
   float penergy,peta,pphi;
+  //std::cout << "INIT" << std::endl;
   for(;;) {
     input >> hits;
     inputP >> hitP;
     if(!input.good()) break;
-    if(!inputP.good()) break;
+    //if(!inputP.good()) break;
     reco->Reset();
     for(int i=0; i!=hits; ++i) {
       input >> idx >> sgn;
-      if(idx>49152 && sgn<0.3) continue;
+      //if(idx<49152 && sgn<0.003) continue;
+      //if(idx>49152 && sgn<0.3) continue;
       reco->Fill(idx,sgn);
     }
     for(int l=0; l!=hitP; ++l) {
@@ -106,8 +100,8 @@ int main(int narg, char **carg) {
     }
     reco->Make();
     QAReco->Make(reco);
-
-    std::cout << "DUMPING" << std::endl;
+    //std::cout << "DUMPING" << std::endl;
+    //reco->DumpParties();
 
     //dumping parties
     int ntot=0;
@@ -141,46 +135,11 @@ int main(int narg, char **carg) {
 	      outputC << coalition->GetPhiVar() << " " << coalition->GetThetaVar() << " " << coalition->GetEtaVar() << " ";
 	      outputC << coalition->SignalPreShower() << " " << coalition->NPreShower();
 	      outputC << std::endl;
-	      rec->Fill( coalition->GetEnergy() );
-	      recX->Fill( coalition->SignalPreShower() );
-	      recprob->Fill( coalition->SignalPreShower(), coalition->GetPSChi2Prob() );
-	      recN->Fill( coalition->N() );
-	      recdphi->Fill( coalition->GetPhi() - pphi );
-	      recdeta->Fill( coalition->GetEta() - peta );
-	      for(int j=0; j!=9; ++j) {
-	      	mxParty *pty = coalition->GetParty(j);
-	      	if(!pty) continue;
-		      rechits->Fill(j,pty->N());
-		      recene->Fill(j,pty->Signal());
-		      if(j==8) continue;
-		      for(int k=0; k!=pty->N(); ++k) {
-		      	mxHit *hit = pty->GetHit(k);
-		      	if(j%2==0) recXpro->Fill(j, geo->X(hit->Idx()) - pty->GetX() );
-		      	if(j%2==1) recXpro->Fill(j, geo->Y(hit->Idx()) - pty->GetY() );
-		  	  }
-	  	  }
-		    //selection
-	      if(cuts->PassesCuts(coalition)) {
-      		sel->Fill( coalition->GetEnergy() );
-      		selX->Fill( coalition->SignalPreShower() );
-		      selprob->Fill( coalition->SignalPreShower(), coalition->GetPSChi2Prob() );
-		      selN->Fill( coalition->N() );
-		      seldphi->Fill( coalition->GetPhi() - pphi );
-		      seldeta->Fill( coalition->GetEta() - peta );
-		      for(int j=0; j!=9; ++j) {
-		      	mxParty *pty = coalition->GetParty(j);
-		      	if(!pty) continue;
-			      selhits->Fill(j,pty->N());
-			      selene->Fill(j,pty->Signal());
-			      if(j==8) continue;
-			      for(int k=0; k!=pty->N(); ++k) {
-			      	mxHit *hit = pty->GetHit(k);
-			      	if(j%2==0) selXpro->Fill(j, geo->X(hit->Idx()) - pty->GetX() );
-			      	if(j%2==1) selXpro->Fill(j, geo->Y(hit->Idx()) - pty->GetY() );
-			  	  }
-		  	  }
-	      	//here!
-	      }
+	      cuts0->PassesCuts(coalition);
+	      cuts1->PassesCuts(coalition);
+	      cuts2->PassesCuts(coalition);
+	      cuts3->PassesCuts(coalition);
+	      cuts4->PassesCuts(coalition);
       }
     }
 
@@ -197,26 +156,21 @@ int main(int narg, char **carg) {
   QAReco->GetList()->SaveAs( Form("%s_qa.root",file.Data()) );
   TFile *ofile = new TFile( Form("%s_eff.root",file.Data()), "RECREATE" );
   gen->Write();
-  rec->Write();
-  recX->Write();
-  recprob->Write();
-  recN->Write();
   recdphi->Write();
   recdeta->Write();
-  rechits->Write();
-  recene->Write();
-  recXpro->Write();
-
-  sel->Write();
-  selX->Write();
-  selprob->Write();
-  selN->Write();
   seldphi->Write();
   seldeta->Write();
-  selhits->Write();
-  selene->Write();
-  selXpro->Write();
-
+  TList *c;
+  c = cuts0->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
+  c = cuts1->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
+  c = cuts2->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
+  c = cuts3->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
+  c = cuts4->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
   ofile->Close();
   return 0;
 }

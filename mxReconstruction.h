@@ -46,6 +46,7 @@ class mxReconstruction {
 
   void SetPartyAlgorithm(int v) {fPtyAlg=v;}
   void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
+  void SetPtyAlg1_Threshold(float v) {fPtyAlg1_thr=v;}
 
  private:
   void Parties();
@@ -68,6 +69,7 @@ class mxReconstruction {
   mxMCParticle *fMCPart;
   int fPtyAlg;
   int fCoaAlg;
+  float fPtyAlg1_thr;
   int fNHit[18];
   int fNPty[18];
   int fNCoa[2];

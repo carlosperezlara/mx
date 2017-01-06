@@ -30,7 +30,8 @@ struct LowerKey
 //========
 mxReconstruction::mxReconstruction() :
   fPtyAlg(0),
-  fCoaAlg(0) {
+  fCoaAlg(0),
+  fPtyAlg1_thr(0.15) {
   // ctor
   std::cout << "mxReconstruction:: ctor" << std::endl;
   for(int i=0; i!=18; ++i) {
@@ -225,11 +226,11 @@ void mxReconstruction::Fill(int idx, float sgn) {
 //========
 void mxReconstruction::Make() {
   // maker
-  DumpHits();
+  //DumpHits();
   Parties();
   //DumpParties();
   Coalitions();
-  DumpCoalitions();
+  //DumpCoalitions();
   Unions();
 }
 //========
@@ -360,7 +361,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	for(int c=0; c!=32; ++c)
       	  if( buff[r][c] )
       	    if( buff[r][c]->Signal()>mm ) mm = buff[r][c]->Signal();
-      	mm = mm * 0.5; // set threshold to half the biggest leader
+      	mm = mm * fPtyAlg1_thr; // set threshold
       	int nlead = 0;
       	int lead[32];
       	for(int c=0; c!=32; ++c)
@@ -652,12 +653,20 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
   //std::cout << "x y " << x << " " << y << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   mxHit *hit;
-  mxParty *pty = NULL;
+  mxParty *pty;
   float dx = fGeo->PWO4_a0();
   float dy = fGeo->PWO4_a1();
   //look if party is already created and attached to it
-
+  for(int mp=0; mp!=fNPty[lyr]; ++mp) {
+    pty = (mxParty*) fPty[lyr].at(mp);
+    float xp = pty->GetX();
+    float yp = pty->GetY();
+    if( TMath::Abs(xp-x) > (dx/2+0.5) ) continue;
+    if( TMath::Abs(yp-y) > (dy/2+0.5) ) continue;
+    return pty;
+  }
   //try to build one
+  pty = NULL;
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     hit = (mxHit*) fHit[lyr].at( mh );
     //if(hit->IsAssigned()) continue;
