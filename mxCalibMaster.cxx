@@ -1,14 +1,17 @@
 #include "mxCalibMaster.h"
 #include "mxCalibBaseSiW.h"
+#include "mxCalibBasePbWO4.h"
 
 bool mxCalibMaster::IsBadKey(int key) {
-  if(fLHft->Get(key)<0) return true;
-  //if(fLMPV->Get(key)<0) return true;
-  //if(fLSgm->Get(key)<0) return true;
-  if(fPHSg->Get(key)>1.5) return true;
-  if(fPHSg->Get(key)<0.5) return true;
-  if(fPLSg->Get(key)>1.5) return true;
-  if(fPLSg->Get(key)<0.5) return true;
+  if(key>-1&&key<49152) {
+    if(fLHft->Get(key)<0) return true;
+    //if(fLMPV->Get(key)<0) return true;
+    //if(fLSgm->Get(key)<0) return true;
+    if(fPHSg->Get(key)>1.5) return true;
+    if(fPHSg->Get(key)<0.5) return true;
+    if(fPLSg->Get(key)>1.5) return true;
+    if(fPLSg->Get(key)<0.5) return true;
+  }
   return false;
 }
 
@@ -19,7 +22,10 @@ mxCalibMaster::mxCalibMaster() :
   fPLSg( new mxCalibBaseSiW() ),
   fLMPV( new mxCalibBaseSiW() ),
   fLSgm( new mxCalibBaseSiW() ),
-  fLHft( new mxCalibBaseSiW() )
+  fLHft( new mxCalibBaseSiW() ),
+  fTau( new mxCalibBasePbWO4() ),
+  fBet( new mxCalibBasePbWO4() ),
+  fGam( new mxCalibBasePbWO4() )
 {
 }
 
@@ -30,7 +36,10 @@ mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
   fPLSg( cpy.fPLSg ),
   fLMPV( cpy.fLMPV ),
   fLSgm( cpy.fLSgm ),
-  fLHft( cpy.fLHft )
+  fLHft( cpy.fLHft ),
+  fTau( cpy.fTau ),
+  fBet( cpy.fBet ),
+  fGam( cpy.fGam )
 {
 }
 
@@ -42,4 +51,7 @@ mxCalibMaster::~mxCalibMaster() {
   delete fLMPV;
   delete fLSgm;
   delete fLHft;
+  delete fTau;
+  delete fBet;
+  delete fGam;
 }
