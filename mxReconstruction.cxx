@@ -265,8 +265,8 @@ void mxReconstruction::Parties_ALG0(int lyr) {
   // building
   float dx, dy;
   if(lyr==8||lyr==17) {
-    dx = fGeo->PWO4_a0();
-    dy = fGeo->PWO4_a1();
+    dx = fGeo->PbWO4_a0();
+    dy = fGeo->PbWO4_a1();
   } else {
     if((lyr%9)%2==0) {
       dx = fGeo->Si_a0();
@@ -320,8 +320,8 @@ void mxReconstruction::Parties_ALG1(int lyr) {
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],LowerKey());
   float dx, dy;
   if(lyr==8||lyr==17) {
-    dx = fGeo->PWO4_a0();
-    dy = fGeo->PWO4_a1();
+    dx = fGeo->PbWO4_a0();
+    dy = fGeo->PbWO4_a1();
   } else {
     if((lyr%9)%2==0) {
       dx = fGeo->Si_a0();
@@ -467,8 +467,8 @@ void mxReconstruction::Coalitions_ALG0() {
   // forming global coalitions
   float Z[18], dz[18];
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
-  dz[8] = fGeo->PWO4_a2();
-  dz[17] = fGeo->PWO4_a2();
+  dz[8] = fGeo->PbWO4_a2();
+  dz[17] = fGeo->PbWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
 
   mxParty *pty;
@@ -538,8 +538,8 @@ void mxReconstruction::Coalitions_ALG1() {
   // forming global coalitions
   float Z[18], dz[18];
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
-  dz[8] = fGeo->PWO4_a2();
-  dz[17] = fGeo->PWO4_a2();
+  dz[8] = fGeo->PbWO4_a2();
+  dz[17] = fGeo->PbWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
 
   mxParty *pty;
@@ -654,8 +654,8 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   mxHit *hit;
   mxParty *pty;
-  float dx = fGeo->PWO4_a0();
-  float dy = fGeo->PWO4_a1();
+  float dx = fGeo->PbWO4_a0();
+  float dy = fGeo->PbWO4_a1();
   //look if party is already created and attached to it
   for(int mp=0; mp!=fNPty[lyr]; ++mp) {
     pty = (mxParty*) fPty[lyr].at(mp);

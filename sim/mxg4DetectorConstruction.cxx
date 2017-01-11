@@ -49,8 +49,8 @@ mxg4DetectorConstruction::mxg4DetectorConstruction()
   fNbOfEXSensors = 2*8*24; // arms x layers x sensorsPerLayer
   fLV_EXW = new G4LogicalVolume*[fNbOfEXSensors];
   fLV_EXSiSen = new G4LogicalVolume*[fNbOfEXSensors];
-  fLV_PWO4 = new G4LogicalVolume*[288*2];
-  fOS_PWO4wrap = new G4OpticalSurface*[288*2];
+  fLV_PWO4 = new G4LogicalVolume*[416];
+  fOS_PWO4wrap = new G4OpticalSurface*[416];
   fLV_EXSi = new G4LogicalVolume*[49152];
 }
 
@@ -118,13 +118,13 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
   G4LogicalVolume* EXNLV = new G4LogicalVolume(EXNS, air, "MpcexN",0,0,0);
   new G4PVPlacement(0, positionEXN, EXNLV, "MpcexN", worldLV, false, 0, 0);
 
-  G4ThreeVector positionMPCS = G4ThreeVector(0,0,(-220-mgeo->PWO4_a2()*0.5)*cm);//(mgeo->Z(49152+50)-mgeo->PWO4_a2()*0.5)*cm);
-  G4Box* MPCS = new G4Box("mpcs",dx*6.0*cm,dy*6.0*cm,mgeo->PWO4_a2()*0.5*cm+1*cm);
+  G4ThreeVector positionMPCS = G4ThreeVector(0,0,(-220-mgeo->PbWO4_a2()*0.5)*cm);//(mgeo->Z(49152+50)-mgeo->PWO4_a2()*0.5)*cm);
+  G4Box* MPCS = new G4Box("mpcs",dx*6.0*cm,dy*6.0*cm,mgeo->PbWO4_a2()*0.5*cm+1*cm);
   G4LogicalVolume* MPCSLV = new G4LogicalVolume(MPCS, air, "MpcS",0,0,0);
   new G4PVPlacement(0, positionMPCS, MPCSLV, "MpcS", worldLV, false, 0, 0);
 
-  G4ThreeVector positionMPCN = G4ThreeVector(0,0,(220+mgeo->PWO4_a2()*0.5)*cm);//(mgeo->Z(49152+310)+mgeo->PWO4_a2()*0.5)*cm);
-  G4Box* MPCN = new G4Box("mpcn",dx*6.0*cm,dy*6.0*cm,mgeo->PWO4_a2()*0.5*cm+1*cm);
+  G4ThreeVector positionMPCN = G4ThreeVector(0,0,(220+mgeo->PbWO4_a2()*0.5)*cm);//(mgeo->Z(49152+310)+mgeo->PWO4_a2()*0.5)*cm);
+  G4Box* MPCN = new G4Box("mpcn",dx*6.0*cm,dy*6.0*cm,mgeo->PbWO4_a2()*0.5*cm+1*cm);
   G4LogicalVolume* MPCNLV = new G4LogicalVolume(MPCN, air, "MpcN",0,0,0);
   new G4PVPlacement(0, positionMPCN, MPCNLV, "MpcN", worldLV, false, 0, 0);
   
@@ -263,15 +263,15 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
 
   //=======================
   // MPC CRYSTALS
-  for(G4int mid=0; mid < 288*2; mid++) {//MPC
+  for(G4int mid=0; mid < 416; mid++) {//MPC
     int k = mid+49152;
     G4double mpcz = mgeo->Z(k);//firstPosition + copyNo * chamberSpacing;
     G4double mpcx = mgeo->X(k);
     G4double mpcy = mgeo->Y(k);
     if(mpcz < 10 && mpcz>-10) continue; //skip holes
-    dx = mgeo->PWO4_a0();
-    dy = mgeo->PWO4_a1();
-    dz = mgeo->PWO4_a2();
+    dx = mgeo->PbWO4_a0();
+    dy = mgeo->PbWO4_a1();
+    dz = mgeo->PbWO4_a2();
     if (mpcz < 0 ) mpcz = mpcz - dz/2;
     if (mpcz > 0 ) mpcz = mpcz + dz/2;
     G4Box* Crystal = new G4Box("Crystal_Pb",dx/2.0*cm,dy/2.0*cm,dz/2.0*cm);
@@ -281,7 +281,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
     G4VPhysicalVolume* crys;
     if(mpcz<0) {
       crys = new G4PVPlacement(0,                            // no rotation
-			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm+220*cm+mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
+			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm+220*cm+mgeo->PbWO4_a2()*0.5*cm), // at (x,y,z)
 			       fLV_PWO4[mid],        // its logical volume
 			       "Crystal_PV",                 // its name
 			       MPCSLV,
@@ -290,7 +290,7 @@ G4VPhysicalVolume* mxg4DetectorConstruction::DefineVolumes() {
 			       fCheckOverlaps);              // checking overlaps
     } else {
       crys = new G4PVPlacement(0,                            // no rotation
-			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm-220*cm-mgeo->PWO4_a2()*0.5*cm), // at (x,y,z)
+			       G4ThreeVector(mpcx*cm,mpcy*cm,mpcz*cm-220*cm-mgeo->PbWO4_a2()*0.5*cm), // at (x,y,z)
 			       fLV_PWO4[mid],        // its logical volume
 			       "Crystal_PV",                 // its name
 			       MPCNLV,

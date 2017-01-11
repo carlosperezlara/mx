@@ -72,10 +72,10 @@ void drawCrystal(int key, float height=-1, float kol=kGray) {
   int tcol = height>0.75 ? 3: height>0.5 ? 2 : height>0.25 ? 1 : 0;
   if(height<0||height>1) box->SetFillColor( kGray );
   else box->SetFillColor( heat[tcol] );
-  float x0 = geo->X(49152+key) - geo->PWO4_a0()/2;
-  float y0 = geo->Y(49152+key) - geo->PWO4_a1()/2;
-  float x1 = geo->X(49152+key) + geo->PWO4_a0()/2;
-  float y1 = geo->Y(49152+key) + geo->PWO4_a1()/2;
+  float x0 = geo->X(49152+key) - geo->PbWO4_a0()/2;
+  float y0 = geo->Y(49152+key) - geo->PbWO4_a1()/2;
+  float x1 = geo->X(49152+key) + geo->PbWO4_a0()/2;
+  float y1 = geo->Y(49152+key) + geo->PbWO4_a1()/2;
   box->DrawBox( x0,y0, x1,y1 );
 }
 
@@ -95,10 +95,10 @@ void drawEX(int lyr) {
 void drawMPC(int sn) {
   box->SetFillColor( kGray );
   int a = 0;
-  int b = 288;
+  int b = 196;
   if(sn>0) {
-    a = 288;
-    b = 576;
+    a = 196;
+    b = 416;
   }
   for(int i=a; i!=b; ++i) drawCrystal(i);
 }
@@ -194,8 +194,8 @@ int main(int argn, char **argc) {
   cmain->SaveAs( Form("%s_disp.pdf[",file.Data()),"pdf");
 
   for(int i=0;i!=18;++i) ez[i] = geo->Si_a2();
-  ez[8] = geo->PWO4_a2();
-  ez[17] = geo->PWO4_a2();
+  ez[8] = geo->PbWO4_a2();
+  ez[17] = geo->PbWO4_a2();
   for(int i=0;i!=18;++i) z[i] = geo->RZ(i);// + 0.5*ez[i];
 
   for(int ev=0;; ++ev) {

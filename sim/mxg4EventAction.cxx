@@ -126,7 +126,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
       totalMPCEXE += miniarray[j];
     }      
   }
-  G4double mpcarray[288*2] = {0.0};
+  G4double mpcarray[416] = {0.0};
   for(G4int i=0; i<n_mpchit; i++) {
     mxg4TrackerHit* mpchit = (*mpcHC)[i];
     G4double mpceDep = mpchit->GetEdep();
@@ -141,7 +141,7 @@ void mxg4EventAction::EndOfEventAction(const G4Event* event) {
       count ++;
     }
   }
-  for(G4int j = 0; j<288*2; j++) {
+  for(G4int j = 0; j<416; j++) {
     if(mpcarray[j] > 1) { //DEFAULT should be 1!!! 0.0 1.0 10.0 100.0
        crystals.push_back(j);
        mpcenergies.push_back(mpcarray[j]);

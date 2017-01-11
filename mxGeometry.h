@@ -21,21 +21,21 @@ class mxGeometry {
   float W_a0() {return fW_a0;}
   float W_a1() {return fW_a1;}
   float W_a2() {return fW_a2;}
-  float PWO4_a0() {return fPWO4_a0;}
-  float PWO4_a1() {return fPWO4_a1;}
-  float PWO4_a2() {return fPWO4_a2;}
+  float PbWO4_a0() {return fPbWO4_a0;}
+  float PbWO4_a1() {return fPbWO4_a1;}
+  float PbWO4_a2() {return fPbWO4_a2;}
   float W_X(int sidx);
   float W_Y(int sidx);
   float W_Z(int sidx);
-  int PWO4_FindClosestIdx(int arm, float x, float y);
+  int PbWO4_FindClosestIdx(int arm, float x, float y);
   float RZ(int lyr);
 
  private:
   float Reference(int,int);
   void UpdateVars(int);
   void UpdateSiW(int);
-  void UpdatePWO4(int);
-  int PWO4_FindIdx(int,float,float);
+  void UpdatePbWO4(int);
+  int PbWO4_FindIdx(int,float,float);
 
   int fLastIdx;
   int fLyrIdx;
@@ -57,12 +57,13 @@ class mxGeometry {
   float fW_RX[24];
   float fW_RY[24];
   
-  // ==== PWO4
-  float fPWO4_a0;
-  float fPWO4_a1;
-  float fPWO4_a2;
-  float fPWO4_RX[576];
-  float fPWO4_RY[576];
-  float fPWO4_RZ[576];
+  // ==== PbWO4
+  float fPbWO4_a0;
+  float fPbWO4_a1;
+  float fPbWO4_a2;
+  int fPbWO4_IdxS;
+  float fPbWO4_RX[416];
+  float fPbWO4_RY[416];
+  float fPbWO4_RZ[416];
 };
 #endif /* __mxGeometry_H__ */

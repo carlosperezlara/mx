@@ -53,17 +53,17 @@ int main(int narg, char **carg) {
     bcmhits->GetEntry(tentry);
     bcmen->GetEntry(tentry);
     t1->GetEntry(i);
-    double energyarray[49152+288*2] = {0};
+    double energyarray[49152+416] = {0};
     for(UInt_t j=0; j!=mmxhits->size(); ++j) // EX
       energyarray[mmxhits->at(j)] += mmxen->at(j);
     for(UInt_t k = 0; k < cmhits->size(); ++k) // MPC
       energyarray[49152+cmhits->at(k)] += cmen->at(k);
     int nhits = 0;
-    for(int j=0; j!=49152+288*2; ++j) 
+    for(int j=0; j!=49152+416; ++j) 
       if(energyarray[j]>1e-6)
 	nhits++;
     fout << nhits << std::endl;
-    for(int j=0; j!=49152+288*2; ++j) 
+    for(int j=0; j!=49152+416; ++j) 
       if(energyarray[j]>1e-6)
 	fout << j << " " << energyarray[j]/1000 << std::endl; // from MeV to GeV
     pout << 1 << std::endl;
