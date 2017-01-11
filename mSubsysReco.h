@@ -37,6 +37,9 @@ class mSubsysReco: public SubsysReco {
   bool fCheckMpcRaw2;
   bool fCheckMpcExRawHit;
 
+  float fNSigmaCut;
+  bool fByPassEXCalibration;
+
   TH1F *fHstk[2];
   TH1F *fHpar[2];
   TH1F *fHsph[2];

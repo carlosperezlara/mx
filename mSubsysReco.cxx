@@ -33,6 +33,7 @@
 
 #include "mxCalibMaster.h"
 #include "mxCalibBaseSiW.h"
+#include "mxCalibBasePbWO4.h"
 #include "mxDB.cc"
 
 #include "mxReconstruction.h"
@@ -60,7 +61,9 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fQA(NULL),
   fList(NULL),
   fCheckMpcRaw2(true),
-  fCheckMpcExRawHit(true)
+  fCheckMpcExRawHit(true),
+  fNSigmaCut(0),
+  fByPassEXCalibration(false)
 {
   printf("mcReco::CTOR\n");
   fFileOut.open("dataflow.hit");

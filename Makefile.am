@@ -21,6 +21,7 @@ include_HEADERS = \
   \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
+  mxCalibBasePbWO4.h \
   PHMXData.h \
   mSubsysReco.h
 
@@ -35,6 +36,7 @@ libMXphnx_la_SOURCES = \
   \
   mxCalibMaster.cxx \
   mxCalibBaseSiW.cxx \
+  mxCalibBasePbWO4.cxx \
   mSubsysReco.cxx \
   MXphnx_Dict.C
 
@@ -58,6 +60,7 @@ MXphnx_Dict.C: \
   \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
+  mxCalibBasePbWO4.h \
   PHMXData.h \
   mSubsysReco.h \
   MXphnxLinkDef.h
