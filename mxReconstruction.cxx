@@ -337,6 +337,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     mxHit *hit = (mxHit*) fHit[lyr].at( mh );
     int idx = hit->Idx();
+    //std::cout << "  WORKING " << idx << std::endl;
     int sen = fGeo->Si_Idx2Sen(idx);
     if(cursen==-1) cursen=sen;
     //std::cout << "  > Sensor: now " << sen << "  won " << cursen << std::endl;
@@ -346,7 +347,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       //std::cout << "  > Adding hit to buffer in [" << row << "," << col << "]" << std::endl;
       buff[row][col] = hit;
     }
-    if( (sen!=cursen) || (mh==fNHit[lyr]-1) ) { //DUMP
+    if( (sen!=cursen) || (mh==(fNHit[lyr]-1)) ) { //DUMP
       //std::cout << " >> dumping buffer" << std::endl;
       //for(int r=0; r!=4; ++r) {
       //  for(int c=0; c!=32; ++c) {
@@ -428,6 +429,20 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	int col = fGeo->Si_Idx2Col(idx);
       	//std::cout << "  > Adding hit to new buffer in [" << row << "," << col << "]" << std::endl;
       	buff[row][col] = hit;
+        if(mh==(fNHit[lyr]-1)) { // dump lonely
+          mxParty *pty;
+          int nmax = fPty[lyr].size();
+          if(fNPty[lyr]>nmax-1) {
+            pty = new mxParty();
+            pty->SetDxDy(dx,dy);
+            fPty[lyr].push_back(pty);
+          } else pty = fPty[lyr].at( fNPty[lyr] );
+          fNPty[lyr]++;
+          pty->Reset();
+          float x = fGeo->X( hit->Idx() );
+          float y = fGeo->Y( hit->Idx() );
+          pty->Fill( hit, x, y);
+        } // dump lonely
       }
     }
   }
