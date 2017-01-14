@@ -15,6 +15,7 @@ include_HEADERS = \
   mxHit.h \
   mxParty.h \
   mxCoalition.h \
+  mxCoalitionCuts.h \
   mxUnion.h \
   mxReconstruction.h \
   mxQAReconstruction.h \
@@ -30,6 +31,7 @@ libMXphnx_la_SOURCES = \
   mxHit.cxx \
   mxParty.cxx \
   mxCoalition.cxx \
+  mxCoalitionCuts.cxx \
   mxUnion.cxx \
   mxReconstruction.cxx \
   mxQAReconstruction.cxx \
@@ -54,6 +56,7 @@ MXphnx_Dict.C: \
   mxHit.h \
   mxParty.h \
   mxCoalition.h \
+  mxCoalitionCuts.h \
   mxUnion.h \
   mxReconstruction.h \
   mxQAReconstruction.h \

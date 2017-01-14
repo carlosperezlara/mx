@@ -26,14 +26,13 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
   // ctor
   std::cout << "mxQAReconstruction:: ctor" << std::endl;
   fList = new TList();
-  fList->SetOwner();
+  //fList->SetOwner();
 
   fHvx = new TH1F("mxReco_vx","mxReco_vx",100,-2,+2);
-  fHvy = new TH1F("mxReco_vy","mxReco_vy",100,-2,+2);
-  fHvz = new TH1F("mxReco_vz","mxReco_vz",100,-10,+10);
-
   fList->Add( fHvx );
+  fHvy = new TH1F("mxReco_vy","mxReco_vy",100,-2,+2);
   fList->Add( fHvy );
+  fHvz = new TH1F("mxReco_vz","mxReco_vz",100,-10,+10);
   fList->Add( fHvz );
 
   for(int arm=0; arm!=2; ++arm) {
@@ -48,141 +47,127 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
       }
       //HIT
       fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;NO of HITS",arm==0?"S":"N",lyr), 800,-0.5,799.5);
-      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHhitN[arm][lyr] );
+      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHhitE[arm][lyr] );
       //PARTY
       fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;NO of PARTIES",arm==0?"S":"N",lyr), 100,-0.5,99.5);
-      fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
-      fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;X  CM",arm==0?"S":"N",lyr), 100,-22,+22);
-      fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;Y  CM",arm==0?"S":"N",lyr), 100,-22,+22);
-      fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;SPREAD X  CM",arm==0?"S":"N",lyr), 100,0,smax);
-      fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;SPREAD Y  CM",arm==0?"S":"N",lyr), 100,0,smax);
       fList->Add( fHptyN[arm][lyr] );
+      fHptyE[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHptyE[arm][lyr] );
+      fHptyX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyX;X  CM",arm==0?"S":"N",lyr), 100,-22,+22);
       fList->Add( fHptyX[arm][lyr] );
+      fHptyY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyY;Y  CM",arm==0?"S":"N",lyr), 100,-22,+22);
       fList->Add( fHptyY[arm][lyr] );
+      fHptySX[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySX;SPREAD X  CM",arm==0?"S":"N",lyr), 100,0,smax);
       fList->Add( fHptySX[arm][lyr] );
+      fHptySY[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptySY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptySY;SPREAD Y  CM",arm==0?"S":"N",lyr), 100,0,smax);
       fList->Add( fHptySY[arm][lyr] );
       //COALITION-PERLAYER
-      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyEN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyEN;COA-ENERGY  GEV;NO of HITS",arm==0?"S":"N",lyr),
-				    100,0,maxe, 60,-0.5,59.5);
-      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESX;COA-ENERGY  GEV;SPREAD X  CM",arm==0?"S":"N",lyr),
-				     100,0,maxe, 100,0,smax);
-      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESY;COA-ENERGY  GEV;SPREAD Y  CM",arm==0?"S":"N",lyr),
-				     100,0,maxe, 100,0,smax);
+      fHptyEN[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyEN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyEN;COA-ENERGY  GEV;NO of HITS",arm==0?"S":"N",lyr), 100,0,maxe, 60,-0.5,59.5);
       fList->Add( fHptyEN[arm][lyr] );
+      fHptyESX[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESX",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESX;COA-ENERGY  GEV;SPREAD X  CM",arm==0?"S":"N",lyr), 100,0,maxe, 100,0,smax);
       fList->Add( fHptyESX[arm][lyr] );
+      fHptyESY[arm][lyr] = new TH2F( Form("mxReco_%s%d_coaptyESY",arm==0?"S":"N",lyr), Form("mxReco_%s%d_coaptyESY;COA-ENERGY  GEV;SPREAD Y  CM",arm==0?"S":"N",lyr), 100,0,maxe, 100,0,smax);
       fList->Add( fHptyESY[arm][lyr] );
     }
     //COALITION
     fHHits[arm] = new TProfile( Form("mxReco_%s_HitsPerLayer",arm==0?"S":"N"), Form("mxReco_%s_HitPerLayer;LAYER;AvgHits",arm==0?"S":"N"), 9,-0.5,8.5);
-    /*
-    fHHitsx[arm] = new TH1F( Form("mxReco_%s_Hitsatx",arm==0?"S":"N"),
-		Form("mxReco_%s_Hitsatx;x;hits",arm==0?"S":"N"),
-		50,-22,22);*/
-    fHEnergy[arm] = new TProfile( Form("mxReco_%s_EnergyPerLayer",arm==0?"S":"N"), Form("mxReco_%s_EnergyPerLayer;LAYER;AvgEnergy",arm==0?"S":"N"), 8,-0.5,7.5);
-    /*
-    fHEnergyx[arm] = new TH1F( Form("mxReco_%s_Energyatx",arm==0?"S":"N"),
-    Form("mxReco_%s_Energyatx;x;energy",arm==0?"S":"N"),
-    50,-22,22);*/
-    fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
-    fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
-    fHcoaPS[arm] = new TH2F( Form("mxReco_%s_coaPS",arm==0?"S":"N"), Form("mxReco_%s_coaPS;Signal in Preshower  GEV;No Parties in PreShower",arm==0?"S":"N"), 100,0,0.5, 9,-0.5,8.5 );
-    fHcoaET[arm] = new TH1F( Form("mxReco_%s_coaET",arm==0?"S":"N"), Form("mxReco_%s_coaET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe/10);
-    fHcoaEL[arm] = new TH1F( Form("mxReco_%s_coaEL",arm==0?"S":"N"), Form("mxReco_%s_coaEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
-    fHcoaPh[arm] = new TH1F( Form("mxReco_%s_coaPh",arm==0?"S":"N"), Form("mxReco_%s_coaPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
-    fHcoaX[arm] = new TH1F( Form("mxReco_%s_coaX",arm==0?"S":"N"), Form("mxReco_%s_coaX;X",arm==0?"S":"N"), 500,-25,25);
-    fHcoaEt[arm] = new TH1F( Form("mxReco_%s_coaEt",arm==0?"S":"N"), Form("mxReco_%s_coaEt;ETA",arm==0?"S":"N"), 100,-4.2,+4.2);
-    fHcoaY[arm] = new TH1F( Form("mxReco_%s_coaY",arm==0?"S":"N"), Form("mxReco_%s_coaY;Y",arm==0?"S":"N"), 500,-25,25);
-    fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;SPREAD PHI  RAD",arm==0?"S":"N"), 100,0,0.006);
-    fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;SPREAD ETA",arm==0?"S":"N"), 100,0,0.02);
-    fHcoaPty[arm] = new TH1F( Form("mxReco_%s_coaPty",arm==0?"S":"N"), Form("mxReco_%s_coaPty;NO of PARTIES in COALITION", arm==0?"S":"N"), 9, -0.5, 9.5);
-    fHcoaEff[arm] = new TH1F( Form("mxReco_%s_coaEff",arm==0?"S":"N"), Form("mxReco_%s_coaEff;LAYER;",arm==0?"S":"N"), 9,-0.5,8.5);
-    fHcoaSla[arm] = new TH1F( Form("mxReco_%s_coaSla",arm==0?"S":"N"), Form("mxReco_%s_coaSla;Starting LAYER;",arm==0?"S":"N"), 9,-0.5,8.5);
-    fHcoaSta[arm] = new TH2F( Form("mxReco_%s_coaSta",arm==0?"S":"N"), Form("mxReco_%s_coaSta;STARTING  LAYER;ENERGY",arm==0?"S":"N"), 9,-0.5,8.5, 100,0,maxe);
-    fHcoaHit[arm] = new TProfile( Form("mxReco_%s_coaHit",arm==0?"S":"N"), Form("mxReco_%s_coaHit;LAYER;AvgHits",arm==0?"S":"N"), 9,-0.5,8.5);
-    fHcoaHitx[arm] = new TH1F( Form("mxReco_%s_coaHitx",arm==0?"S":"N"), Form("mxReco_%s_coaHitx;x;Hits",arm==0?"S":"N"), 100,-6,6);
-    fHcoaHitxTH2F[arm] = new TH2F( Form("mxReco_%s_coaHitxTH2F",arm==0?"S":"N"), Form("mxReco_%s_coaHitxTH2F;x;Hits",arm==0?"S":"N"),9,-0.5,8.5,300,-8,8);
-    fHcoaHitxProf[arm] = new TProfile( Form("mxReco_%s_coaHitxProf",arm==0?"S":"N"), Form("mxReco_%s_coaHitxProf;LAYER;Avgx",arm==0?"S":"N"), 9,-0.5,8.5);
-    fHcoaEnergy[arm] = new TProfile( Form("mxReco_%s_coaEnergy",arm==0?"S":"N"), Form("mxReco_%s_coaEnergy;LAYER;AvgEnergy",arm==0?"S":"N"), 8,-0.5,7.5);
-    fHcoaEnergyx[arm] = new TH1F( Form("mxReco_%s_coaEnergyx",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyx;x;Energy",arm==0?"S":"N"), 100,-6,6);
-    fHcoaEnergyxTH2F[arm] = new TH2F( Form("mxReco_%s_coaEnergyxTH2F",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyxTH2F;Layer;x",arm==0?"S":"N"), 9,-0.5,8.5,300,-8,8);
-    fHcoaEnergyxProf[arm] = new TProfile( Form("mxReco_%s_coaEnergyxProf",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyxProf;LAYER;Avgx",arm==0?"S":"N"), 8,-0.5,7.5);
-    fHcoaEtEn[arm] = new TH2F( Form("mxReco_%s_coaEtEn",arm==0?"S":"N"), Form("mxReco_%s_coaEtEn;Eta;Energy(GeV)",arm==0?"S":"N"),40,3.0-sn*6.8,3.8-sn*6.8,40,0,maxe);
-    fHcoaEtEnProf[arm] = new TProfile( Form("mxReco_%s_coaEtEnProf",arm==0?"S":"N"), Form("mxReco_%s_coaEtEnProf;Eta;Energy(GeV)",arm==0?"S":"N"),15,-3.9,-3.0);
-    fHcoaS[arm] = new TH1F( Form("mxReco_%s_coaS",arm==0?"S":"N"), Form("mxReco_%s_coaS;Layer",arm==0?"S":"N"),9,-0.5,8.5);
-    fHcoaExMpc[arm] = new TH2F( Form("mxReco_%s_coaExMpc",arm==0?"S":"N"), Form("mxReco_%s_coaExMpc;MPCEX Energy; MPC Energy",arm==0?"S":"N"),50,0,maxe/200.0,100,0,maxe);
-    fHcoaTruthE[arm] = new TH2F( Form("mxReco_%s_coaTruthE",arm==0?"S":"N"), Form("mxReco_%s_coaTruthE;Coa Energy; Truth Energy",arm==0?"S":"N"),50,0,maxe,50,0,maxe-4);
-    fHcoaTruthEL[arm] = new TH2F( Form("mxReco_%s_coaTruthEL",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthEL;Coa Energy Long; Truth Energy Long",arm==0?"S":"N"),50,0,maxe,50,0,maxe-4);
-    fHcoaTruthET[arm] = new TH2F( Form("mxReco_%s_coaTruthET",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthET;Coa Energy Transvers; Truth Energy Transverse",arm==0?"S":"N"),50,0,maxe/10.0,50,0,maxe/10.0);
-    fHcoaTruthdET[arm] =new TH1F( Form("mxReco_%s_coaTruthdET",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthdET;Truth Energy Transverse - Coa Energy Transverse",arm==0?"S":"N"),50,-3,3);
-    fHcoaTruthdE[arm] = new TH1F( Form("mxReco_%s_coaTruthdE",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdE;Truth Energy - Coa Energy",arm==0?"S":"N"),300,0,maxe);
-    fHcoaTruthEloc[arm] = new TH2F( Form("mxReco_%s_coaTruthEloc",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEloc;Truth Phi; Truth Eta",arm==0?"S":"N"),100,0,TMath::TwoPi(),100,-4.2,-3.0);
-    fHcoaTruthElocth[arm] = new TH2F( Form("mxReco_%s_coaTruthElocth",arm==0?"S":"N"), Form("mxReco_%s_coaTruthElocth;Truth Phi; Truth Theta",arm==0?"S":"N"),100,0,TMath::TwoPi(),200,3.0,3.2);
-    fHcoaTruthPhi[arm] = new TH2F( Form("mxReco_%s_coaTruthPhi",arm==0?"S":"N"), Form("mxReco_%s_coaTruthPhi;Coa Phi; Truth Phi",arm==0?"S":"N"),300,0,TMath::TwoPi(),300,0,TMath::TwoPi());
-    fHcoaTruthdPhi[arm] = new TH1F( Form("mxReco_%s_coaTruthdPhi",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdPhi;Truth Phi - Coa Phi",arm==0?"S":"N"),300,-(1./10.)*TMath::TwoPi(),(1./10.)*TMath::TwoPi());
-    fHcoaTruthEta[arm] = new TH2F( Form("mxReco_%s_coaTruthEta",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEta;Coa Eta; Truth Eta",arm==0?"S":"N"),1000,-4.2,+4.2,1000,-4.2,+4.2);
-    fHcoaTruthdEta[arm] = new TH1F( Form("mxReco_%s_coaTruthdEta",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdEta;Truth Eta - Coa Eta",arm==0?"S":"N"),100,-4.2*(1./10.),+4.2*(1./10.));
-    fHcoaTruthEtaRat[arm] = new TH1F( Form("mxReco_%s_coaTruthEtaRat",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEtaRat;Truth Eta/Coa Eta",arm==0?"S":"N"),100,0.9,1.15);    
     fList->Add( fHHits[arm] );
-    //    fList->Add( fHHitsx[arm] );
-    fList->Add( fHEnergy[arm] );
+    fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
     fList->Add( fHcoaN[arm] );
+    fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
     fList->Add( fHcoaEn[arm] );
+    fHcoaPS[arm] = new TH2F( Form("mxReco_%s_coaPS",arm==0?"S":"N"), Form("mxReco_%s_coaPS;Signal in Preshower  GEV;No Parties in PreShower",arm==0?"S":"N"), 100,0,0.5, 9,-0.5,8.5 );
     fList->Add( fHcoaPS[arm] );
+    fHcoaET[arm] = new TH1F( Form("mxReco_%s_coaET",arm==0?"S":"N"), Form("mxReco_%s_coaET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe/10);
     fList->Add( fHcoaET[arm] );
+    fHcoaEL[arm] = new TH1F( Form("mxReco_%s_coaEL",arm==0?"S":"N"), Form("mxReco_%s_coaEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
     fList->Add( fHcoaEL[arm] );
+    fHcoaPh[arm] = new TH1F( Form("mxReco_%s_coaPh",arm==0?"S":"N"), Form("mxReco_%s_coaPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
     fList->Add( fHcoaPh[arm] );
+    fHcoaX[arm] = new TH1F( Form("mxReco_%s_coaX",arm==0?"S":"N"), Form("mxReco_%s_coaX;X",arm==0?"S":"N"), 500,-25,25);
     fList->Add( fHcoaX[arm] );
+    fHcoaEt[arm] = new TH1F( Form("mxReco_%s_coaEt",arm==0?"S":"N"), Form("mxReco_%s_coaEt;ETA",arm==0?"S":"N"), 100,-4.2,+4.2);
     fList->Add( fHcoaEt[arm] );
+    fHcoaY[arm] = new TH1F( Form("mxReco_%s_coaY",arm==0?"S":"N"), Form("mxReco_%s_coaY;Y",arm==0?"S":"N"), 500,-25,25);
     fList->Add( fHcoaY[arm] );
+    fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;SPREAD PHI  RAD",arm==0?"S":"N"), 100,0,0.006);
     fList->Add( fHcoaSPh[arm] );
+    fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;SPREAD ETA",arm==0?"S":"N"), 100,0,0.02);
     fList->Add( fHcoaSEt[arm] );
+    fHcoaPty[arm] = new TH1F( Form("mxReco_%s_coaPty",arm==0?"S":"N"), Form("mxReco_%s_coaPty;NO of PARTIES in COALITION", arm==0?"S":"N"), 9, -0.5, 9.5);
     fList->Add( fHcoaPty[arm] );
+    fHcoaEff[arm] = new TH1F( Form("mxReco_%s_coaEff",arm==0?"S":"N"), Form("mxReco_%s_coaEff;LAYER;",arm==0?"S":"N"), 9,-0.5,8.5);
     fList->Add( fHcoaEff[arm] );
+    fHcoaSla[arm] = new TH1F( Form("mxReco_%s_coaSla",arm==0?"S":"N"), Form("mxReco_%s_coaSla;Starting LAYER;",arm==0?"S":"N"), 9,-0.5,8.5);
     fList->Add( fHcoaSla[arm] );
+    fHcoaSta[arm] = new TH2F( Form("mxReco_%s_coaSta",arm==0?"S":"N"), Form("mxReco_%s_coaSta;STARTING  LAYER;ENERGY",arm==0?"S":"N"), 9,-0.5,8.5, 100,0,maxe);
     fList->Add( fHcoaSta[arm] );
+    fHcoaHit[arm] = new TProfile( Form("mxReco_%s_coaHit",arm==0?"S":"N"), Form("mxReco_%s_coaHit;LAYER;AvgHits",arm==0?"S":"N"), 9,-0.5,8.5);
     fList->Add( fHcoaHit[arm] );
+    fHcoaHitx[arm] = new TH1F( Form("mxReco_%s_coaHitx",arm==0?"S":"N"), Form("mxReco_%s_coaHitx;x;Hits",arm==0?"S":"N"), 100,-6,6);
     fList->Add( fHcoaHitx[arm] );
+    fHcoaHitxTH2F[arm] = new TH2F( Form("mxReco_%s_coaHitxTH2F",arm==0?"S":"N"), Form("mxReco_%s_coaHitxTH2F;x;Hits",arm==0?"S":"N"),9,-0.5,8.5,300,-8,8);
     fList->Add( fHcoaHitxTH2F[arm] );
+    fHcoaHitxProf[arm] = new TProfile( Form("mxReco_%s_coaHitxProf",arm==0?"S":"N"), Form("mxReco_%s_coaHitxProf;LAYER;Avgx",arm==0?"S":"N"), 9,-0.5,8.5);
     fList->Add( fHcoaHitxProf[arm] );
+    fHcoaEnergy[arm] = new TProfile( Form("mxReco_%s_coaEnergy",arm==0?"S":"N"), Form("mxReco_%s_coaEnergy;LAYER;AvgEnergy",arm==0?"S":"N"), 8,-0.5,7.5);
     fList->Add( fHcoaEnergy[arm] );
+    fHcoaEnergyx[arm] = new TH1F( Form("mxReco_%s_coaEnergyx",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyx;x;Energy",arm==0?"S":"N"), 100,-6,6);
     fList->Add( fHcoaEnergyx[arm] );
+    fHcoaEnergyxTH2F[arm] = new TH2F( Form("mxReco_%s_coaEnergyxTH2F",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyxTH2F;Layer;x",arm==0?"S":"N"), 9,-0.5,8.5,300,-8,8);
     fList->Add( fHcoaEnergyxTH2F[arm] );
+    fHcoaEnergyxProf[arm] = new TProfile( Form("mxReco_%s_coaEnergyxProf",arm==0?"S":"N"), Form("mxReco_%s_coaEnergyxProf;LAYER;Avgx",arm==0?"S":"N"), 8,-0.5,7.5);
     fList->Add( fHcoaEnergyxProf[arm] );
+    fHcoaEtEn[arm] = new TH2F( Form("mxReco_%s_coaEtEn",arm==0?"S":"N"), Form("mxReco_%s_coaEtEn;Eta;Energy(GeV)",arm==0?"S":"N"),40,3.0-sn*6.8,3.8-sn*6.8,40,0,maxe);
     fList->Add( fHcoaEtEn[arm] );
+    fHcoaEtEnProf[arm] = new TProfile( Form("mxReco_%s_coaEtEnProf",arm==0?"S":"N"), Form("mxReco_%s_coaEtEnProf;Eta;Energy(GeV)",arm==0?"S":"N"),15,-3.9,-3.0);
     fList->Add( fHcoaEtEnProf[arm] );
+    fHcoaS[arm] = new TH1F( Form("mxReco_%s_coaS",arm==0?"S":"N"), Form("mxReco_%s_coaS;Layer",arm==0?"S":"N"),9,-0.5,8.5);
     fList->Add( fHcoaS[arm] );
+    fHcoaExMpc[arm] = new TH2F( Form("mxReco_%s_coaExMpc",arm==0?"S":"N"), Form("mxReco_%s_coaExMpc;MPCEX Energy; MPC Energy",arm==0?"S":"N"),50,0,maxe/200.0,100,0,maxe);
     fList->Add( fHcoaExMpc[arm] );
+    fHcoaTruthE[arm] = new TH2F( Form("mxReco_%s_coaTruthE",arm==0?"S":"N"), Form("mxReco_%s_coaTruthE;Coa Energy; Truth Energy",arm==0?"S":"N"),50,0,maxe,50,0,maxe-4);
     fList->Add( fHcoaTruthE[arm] );
+    fHcoaTruthEL[arm] = new TH2F( Form("mxReco_%s_coaTruthEL",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthEL;Coa Energy Long; Truth Energy Long",arm==0?"S":"N"),50,0,maxe,50,0,maxe-4);
     fList->Add( fHcoaTruthEL[arm] );
+    fHcoaTruthET[arm] = new TH2F( Form("mxReco_%s_coaTruthET",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthET;Coa Energy Transvers; Truth Energy Transverse",arm==0?"S":"N"),50,0,maxe/10.0,50,0,maxe/10.0);
     fList->Add( fHcoaTruthET[arm] );
+    fHcoaTruthdET[arm] =new TH1F( Form("mxReco_%s_coaTruthdET",arm==0?"S":"N"), Form("mxRecoa_%s_coaTruthdET;Truth Energy Transverse - Coa Energy Transverse",arm==0?"S":"N"),50,-3,3);
     fList->Add( fHcoaTruthdET[arm] );
+    fHcoaTruthdE[arm] = new TH1F( Form("mxReco_%s_coaTruthdE",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdE;Truth Energy - Coa Energy",arm==0?"S":"N"),300,0,maxe);
     fList->Add( fHcoaTruthdE[arm] );
+    fHcoaTruthEloc[arm] = new TH2F( Form("mxReco_%s_coaTruthEloc",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEloc;Truth Phi; Truth Eta",arm==0?"S":"N"),100,0,TMath::TwoPi(),100,-4.2,-3.0);
     fList->Add( fHcoaTruthEloc[arm] );
+    fHcoaTruthElocth[arm] = new TH2F( Form("mxReco_%s_coaTruthElocth",arm==0?"S":"N"), Form("mxReco_%s_coaTruthElocth;Truth Phi; Truth Theta",arm==0?"S":"N"),100,0,TMath::TwoPi(),200,3.0,3.2);
     fList->Add( fHcoaTruthElocth[arm] );
+    fHcoaTruthPhi[arm] = new TH2F( Form("mxReco_%s_coaTruthPhi",arm==0?"S":"N"), Form("mxReco_%s_coaTruthPhi;Coa Phi; Truth Phi",arm==0?"S":"N"),300,0,TMath::TwoPi(),300,0,TMath::TwoPi());
     fList->Add( fHcoaTruthPhi[arm] );
+    fHcoaTruthdPhi[arm] = new TH1F( Form("mxReco_%s_coaTruthdPhi",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdPhi;Truth Phi - Coa Phi",arm==0?"S":"N"),300,-(1./10.)*TMath::TwoPi(),(1./10.)*TMath::TwoPi());
     fList->Add( fHcoaTruthdPhi[arm] );
+    fHcoaTruthEta[arm] = new TH2F( Form("mxReco_%s_coaTruthEta",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEta;Coa Eta; Truth Eta",arm==0?"S":"N"),1000,-4.2,+4.2,1000,-4.2,+4.2);
     fList->Add( fHcoaTruthEta[arm] );
+    fHcoaTruthdEta[arm] = new TH1F( Form("mxReco_%s_coaTruthdEta",arm==0?"S":"N"), Form("mxReco_%s_coaTruthdEta;Truth Eta - Coa Eta",arm==0?"S":"N"),100,-4.2*(1./10.),+4.2*(1./10.));
     fList->Add( fHcoaTruthdEta[arm] );
+    fHcoaTruthEtaRat[arm] = new TH1F( Form("mxReco_%s_coaTruthEtaRat",arm==0?"S":"N"), Form("mxReco_%s_coaTruthEtaRat;Truth Eta/Coa Eta",arm==0?"S":"N"),100,0.9,1.15);    
     fList->Add( fHcoaTruthEtaRat[arm] );
     //UNION
     fHuniN[arm] = new TH1F( Form("mxReco_%s_uniN",arm==0?"S":"N"), Form("mxReco_%s_uniN;NO of UNIONS",arm==0?"S":"N"), 100,-0.5,99.5);
-    fHuniEn[arm] = new TH1F( Form("mxReco_%s_uniEn",arm==0?"S":"N"), Form("mxReco_%s_uniEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
-    fHuniET[arm] = new TH1F( Form("mxReco_%s_uniET",arm==0?"S":"N"), Form("mxReco_%s_uniET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,maxe);
-    fHuniEL[arm] = new TH1F( Form("mxReco_%s_uniEL",arm==0?"S":"N"), Form("mxReco_%s_uniEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
-    fHuniDP[arm] = new TH1F( Form("mxReco_%s_uniDP",arm==0?"S":"N"), Form("mxReco_%s_uniDP;THETA_{O}  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
-    fHuniMa[arm] = new TH1F( Form("mxReco_%s_uniMa",arm==0?"S":"N"), Form("mxReco_%s_uniMa;MASS  GEV C^{-2}",arm==0?"S":"N"), 100,0,0.5);
-    fHuniPh[arm] = new TH1F( Form("mxReco_%s_uniPh",arm==0?"S":"N"), Form("mxReco_%s_uniPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
-    fHuniEt[arm] = new TH1F( Form("mxReco_%s_uniEt",arm==0?"S":"N"), Form("mxReco_%s_uniEt;ETA",arm==0?"S":"N"), 100,-5,+5);
     fList->Add( fHuniN[arm] );
+    fHuniEn[arm] = new TH1F( Form("mxReco_%s_uniEn",arm==0?"S":"N"), Form("mxReco_%s_uniEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
     fList->Add( fHuniEn[arm] );
+    fHuniET[arm] = new TH1F( Form("mxReco_%s_uniET",arm==0?"S":"N"), Form("mxReco_%s_uniET;ENERGY_{T}  GEV",arm==0?"S":"N"), 100,0,1);
     fList->Add( fHuniET[arm] );
+    fHuniEL[arm] = new TH1F( Form("mxReco_%s_uniEL",arm==0?"S":"N"), Form("mxReco_%s_uniEL;ENERGY_{L}  GEV",arm==0?"S":"N"), 100,0,maxe);
     fList->Add( fHuniEL[arm] );
+    fHuniDP[arm] = new TH1F( Form("mxReco_%s_uniDP",arm==0?"S":"N"), Form("mxReco_%s_uniDP;THETA_{O}  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
     fList->Add( fHuniDP[arm] );
+    fHuniMa[arm] = new TH1F( Form("mxReco_%s_uniMa",arm==0?"S":"N"), Form("mxReco_%s_uniMa;MASS  GEV C^{-2}",arm==0?"S":"N"), 100,0,0.5);
     fList->Add( fHuniMa[arm] );
+    fHuniPh[arm] = new TH1F( Form("mxReco_%s_uniPh",arm==0?"S":"N"), Form("mxReco_%s_uniPh;PHI  RAD",arm==0?"S":"N"), 100,0,TMath::TwoPi());
     fList->Add( fHuniPh[arm] );
+    fHuniEt[arm] = new TH1F( Form("mxReco_%s_uniEta",arm==0?"S":"N"), Form("mxReco_%s_uniEt;ETA",arm==0?"S":"N"), 100,-5,+5);
     fList->Add( fHuniEt[arm] );
   }
 }
@@ -194,7 +179,9 @@ mxQAReconstruction::~mxQAReconstruction() {
 //========
 void mxQAReconstruction::Make(mxReconstruction *r) {
   // filler
-  mxGeometry *mxgeo = new mxGeometry();
+  std::cout << "mxQAReconstruction::Make " << std::endl;
+  return;
+  mxGeometry *geo = new mxGeometry();
   
   fHvx->Fill( r->GetVertexX() );
   fHvy->Fill( r->GetVertexY() );
@@ -244,39 +231,27 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       	  fHptyESX[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadX() );
       	  fHptyESY[arm][lyr]->Fill( coa[k]->GetEnergy(), mypty->GetSpreadY() );
       	  fHcoaHit[arm]->Fill( lyr, (double)mypty->N()/1000.0 );
-      	  //	  fHcoaHitxProf[arm]->Fill(lyr,1);
       	  if(lyr!=8) {
       	    for(int n=0; n!=mypty->N(); ++n) {
       	      mxHit* hit = mypty->GetHit(n);
       	      double hitx = 0.0;
       	      if(lyr%2 == 0) {
-      		      //hitx = std::abs(mypty->GetX() - mxgeo->X(hit->Idx()));
-      		      hitx = mypty->GetX() - mxgeo->X(hit->Idx()); 
+      		      hitx = mypty->GetX() - geo->X(hit->Idx()); 
               }
       	      if(lyr%2==1) {
-            		//hitx = std::abs(mypty->GetY() - mxgeo->Y(hit->Idx()));
-            		hitx = mypty->GetY() - mxgeo->Y(hit->Idx());       
+            		hitx = mypty->GetY() - geo->Y(hit->Idx());       
       	      }
-      	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal());
-      	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal());
+      	      fHcoaX[arm]->Fill(geo->X(hit->Idx()),hit->Signal());
+      	      fHcoaY[arm]->Fill(geo->Y(hit->Idx()),hit->Signal());
       	      fHcoaHitx[arm]->Fill(hitx);
       	      fHcoaHitxTH2F[arm]->Fill(lyr,hitx);
       	      fHcoaHitxProf[arm]->Fill(lyr,hitx);
-      	      //fHcoaHitxProf[arm]->Fill(lyr,1);
       	      fHcoaEnergyx[arm]->Fill(hitx,hit->Signal());
       	      fHcoaEnergyxTH2F[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
       	      fHcoaEnergyxProf[arm]->Fill(lyr, hitx, hit->Signal()/mypty->Signal());
       	      //	      std::cout << hitx << std::endl;
       	    }
       	  }
-      	  /* if (lyr == 8) {
-      	    for(int n=0; n!=mypty->N(); ++n) {
-      	      mxHit* hit = mypty->GetHit(n);
-      	      fHcoaX[arm]->Fill(mxgeo->X(hit->Idx()),hit->Signal()/10.0);
-      	      fHcoaY[arm]->Fill(mxgeo->Y(hit->Idx()),hit->Signal()/10.0);
-      	    }
-      	    }*/
-      	  //	  fHcoaHitxProf[arm]->Fill(lyr,1); 
       	  fHcoaEnergy[arm]->Fill( lyr, mypty->Signal() );
       	  if(minlyr<0) minlyr = lyr;
       	  if(lyr<8) mpcexenergy+=mypty->Signal();
@@ -318,16 +293,8 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       
       for(int k=0; k!=r->GetNHits(glyr); ++k) {
       	fHhitE[arm][lyr]->Fill( hit[k]->Signal() );
-      	/*	double hitx = 0.0;
-      	if (lyr%2 == 0){
-      	  hitx = r->GetX() - mxgeo->X(hit[k]->Idx());
-      	}
-      	if (lyr%2 == 1){
-      	  hitx = r->GetY() - mxgeo->Y(hit[k]->Idx());
-      	}
-      	fHHitsx[arm]->Fill(hitx);
-      	std::cout << hitx << std::endl;*/
       }
     }
   }
+  delete geo;
 }

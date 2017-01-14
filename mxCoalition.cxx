@@ -155,6 +155,7 @@ void mxCoalition::Reset() {
   fPhi0=0;
   fTheta0=0;
   fNParties=0;
+  fPSChi2Prob = -1;
   for(int i=0; i!=9; ++i) fParties[i] = NULL;
 }
 //========

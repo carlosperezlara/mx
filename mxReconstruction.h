@@ -11,7 +11,6 @@
 #include "mxParty.h"
 #include "mxCoalition.h"
 #include "mxUnion.h"
-#include "mxMCParticle.h"
 
 class mxGeometry;
 
@@ -66,7 +65,6 @@ class mxReconstruction {
   std::vector<mxCoalition*> fCoa[2];
   std::vector<mxUnion*> fUni[2];
   mxGeometry *fGeo;
-  mxMCParticle *fMCPart;
   int fPtyAlg;
   int fCoaAlg;
   float fPtyAlg1_thr;

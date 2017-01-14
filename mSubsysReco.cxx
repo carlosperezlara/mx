@@ -42,6 +42,8 @@
 #include "PHMXData.h"
 #include "mSubsysReco.h"
 
+#include "mxCoalitionCuts.h"
+
 using namespace std;
 using namespace findNode;
 
@@ -55,18 +57,20 @@ public:
 //====================================================
 mSubsysReco::mSubsysReco( const char* name ) : 
   SubsysReco( name ),
-  fDoQA(true),
+  fDoQA(false),
   fCal(NULL),
   fRec(NULL),
   fQA(NULL),
+  fFlush(false),
   fList(NULL),
   fCheckMpcRaw2(true),
   fCheckMpcExRawHit(true),
   fNSigmaCut(0),
-  fByPassEXCalibration(false)
+  fByPassEXCalibration(false),
+  fCalibrationCuts(NULL)
 {
   printf("mcReco::CTOR\n");
-  fFileOut.open("dataflow.hit");
+  fFileOut.open( "dataflow.hit" );
   for(int i=0; i!=2; ++i) {
     fHstk[i] = NULL;
     fHpar[i] = NULL;
@@ -74,61 +78,7 @@ mSubsysReco::mSubsysReco( const char* name ) :
     fHcid[i] = NULL;
     fHadc[i] = NULL;
     fHlhf[i] = NULL;
-  }
-  fHcry = NULL;
-  fHcrytofS = NULL;
-  fHcryeneS = NULL;
-  fHcrytofN = NULL;
-  fHcryeneN = NULL;
-}
-//====================================================
-int mSubsysReco::End(PHCompositeNode *topNode) {
-  fFileOut.close();
-  return EVENT_OK;
-}
-//====================================================
-mSubsysReco::~mSubsysReco() {
-  if(fCal) delete fCal;
-  //if(fRec) delete fRec; // deleted by Node
-  if(fQA) delete fQA;
-  if(fList) delete fList;
-}
-//====================================================
-int mSubsysReco::Init(PHCompositeNode* top_node) {
-  printf("mSubsysReco::Init\n");
-
-  Fun4AllServer *se = Fun4AllServer::instance();
-
-  if(fDoQA) {
-    fQA = new mxQAReconstruction();
-    fQA->GetList()->SetOwner(false);
-    for(int i=0; i!=fQA->GetList()->GetEntries(); ++i)
-      se->registerHisto( ((TH1F*) (fQA->GetList()->At(i))) );
-  }
-
-  fList = new TList();
-  //fList->SetOwner(); // histos passed to mannager
-  if(fCheckMpcExRawHit) {
-    for(int i=0; i!=2; ++i) {
-      fHstk[i] = new TH1F( Form("mxDet_Hstk%d",i), Form("mxDet_Hstk%d",i),  6,-0.5,5.5);
-      fHpar[i] = new TH1F( Form("mxDet_Hpar%d",i), Form("mxDet_Hpar%d",i),120,-0.5,120-0.5);
-      fHsph[i] = new TH1F( Form("mxDet_Hsph%d",i), Form("mxDet_Hsph%d",i),120,-0.5,520-0.5);
-      fHcid[i] = new TH2F( Form("mxDet_Hcid%d",i), Form("mxDet_Hcid%d",i), 16,-0.5,15.5,47,-0.5,46.5);
-      fHadc[i] = new TH2F( Form("mxDet_Hadc%d",i), Form("mxDet_Hadc%d",i),49152,-0.5,49151.5,100,-20.5,79.5 );
-      fHlhf[i] = new TH2F( Form("mxDet_Hlhf%d",i), Form("mxDet_Hlhf%d",i),49152,-0.5,49151.5,50,0.0,0.5 );
-      fList->Add(fHstk[i]);
-      fList->Add(fHpar[i]);
-      fList->Add(fHsph[i]);
-      fList->Add(fHcid[i]);
-      fList->Add(fHadc[i]);
-      fList->Add(fHlhf[i]);
-    }
-  }
-  if(fCheckMpcRaw2) {
-    for(int i=0; i!=2; ++i) {
-      fHcry[i] = new TH3F( Form("mxDet_Hcry%d",i), Form("mxDet_Hcry%d",i), 416,-0.5,415.5, 100,0,50, 100,0,15 );
-      fList->Add(fHcry[i]);
-    }
+    fHcry[i] = NULL;
   }
 
   fMPCIDX.clear();
@@ -155,6 +105,62 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
     525,526,527,533,534,535,539,540,541,542,543,546,547,548,549,550,551,553,554,555,
     556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575};
   for(int i=0; i!=416; ++i) fMPCIDX.insert( std::make_pair( mpcidx[i], i) );
+  fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
+  fCalibrationCuts->Set_HitLayer(5);
+  fCalibrationCuts->Set_HitLayer(6);
+  fCalibrationCuts->Set_HitLayer(7);
+  fCalibrationCuts->Set_PS_minChi2Prob(0.2);
+  fCalibrationCuts->Set_PS_minSignal(0.05);
+}
+//====================================================
+int mSubsysReco::End(PHCompositeNode *topNode) {
+  fFileOut.close();
+  return EVENT_OK;
+}
+//====================================================
+mSubsysReco::~mSubsysReco() {
+  if(fCal) delete fCal;
+  //if(fRec) delete fRec; // deleted by Node
+  if(fQA) delete fQA;
+  if(fList) delete fList;
+}
+//====================================================
+int mSubsysReco::Init(PHCompositeNode* top_node) {
+  printf("mSubsysReco::Init\n");
+
+  Fun4AllServer *se = Fun4AllServer::instance();
+
+  if(fDoQA) {
+    fQA = new mxQAReconstruction();
+    fQA->GetList()->SetOwner(false);
+    for(int i=0; i!=fQA->GetList()->GetEntries(); ++i)
+      se->registerHisto( ((TH1*) (fQA->GetList()->At(i))) );
+  }
+
+  fList = new TList();
+  //fList->SetOwner(); // histos passed to mannager
+  if(fCheckMpcExRawHit) {
+    for(int i=0; i!=2; ++i) {
+      fHstk[i] = new TH1F( Form("mxDet_Hstk%d",i), Form("mxDet_Hstk%d",i),  6,-0.5,5.5);
+      fHpar[i] = new TH1F( Form("mxDet_Hpar%d",i), Form("mxDet_Hpar%d",i),120,-0.5,120-0.5);
+      fHsph[i] = new TH1F( Form("mxDet_Hsph%d",i), Form("mxDet_Hsph%d",i),120,-0.5,520-0.5);
+      fHcid[i] = new TH2F( Form("mxDet_Hcid%d",i), Form("mxDet_Hcid%d",i), 16,-0.5,15.5,47,-0.5,46.5);
+      fHadc[i] = new TH2F( Form("mxDet_Hadc%d",i), Form("mxDet_Hadc%d",i),49152,-0.5,49151.5,100,-20.5,79.5 );
+      fHlhf[i] = new TH2F( Form("mxDet_Hlhf%d",i), Form("mxDet_Hlhf%d",i),49152,-0.5,49151.5,50,0.0,0.5 );
+      fList->Add(fHstk[i]);
+      fList->Add(fHpar[i]);
+      fList->Add(fHsph[i]);
+      fList->Add(fHcid[i]);
+      fList->Add(fHadc[i]);
+      fList->Add(fHlhf[i]);
+    }
+  }
+  if(fCheckMpcRaw2) {
+    for(int i=0; i!=2; ++i) {
+      fHcry[i] = new TH3F( Form("mxDet_Hcry%d",i), Form("mxDet_Hcry%d",i), 416,-0.5,415.5, 100,0,50, 100,0,15 );
+      fList->Add(fHcry[i]);
+    }
+  }
 
   for(int i=0; i!=fList->GetEntries(); ++i)
     se->registerHisto( ((TH1F*) (fList->At(i))) );
@@ -275,6 +281,10 @@ bool mSubsysReco::PassEventCuts(PHCompositeNode* top_node) {
 }
 //====================================================
 int mSubsysReco::process_event(PHCompositeNode* top_node) {
+  //Fun4AllServer *se = Fun4AllServer::instance();
+  //se->Print();
+  //exit(0);
+
   //std::cout << "mSubsysReco::process_event" << std::endl;
   static int nev = 0;
   if(nev%1000==0) {
@@ -363,64 +373,65 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     buffK[nbuff] = key;
     ++nbuff;
     if(fCheckMpcRaw2) {
-      fHcry[0]->Fill( idxmpc, adc, tof );
-      fHcry[1]->Fill( idxmpc, ene, 7+cti );
+      fHcry[0]->Fill( float(idxmpc), adc, tof );
+      fHcry[1]->Fill( float(idxmpc), ene, 7+cti );
     }
   }
   /////////////////
 
-  fFileOut << nbuff << std::endl;
-  for(int i=0; i!=nbuff; ++i) {
-    fFileOut << buffK[i] << " " << buffE[i] << std::endl;
+  if(fFlush) {
+    fFileOut << nbuff << std::endl;
+    for(int i=0; i!=nbuff; ++i) {
+      fFileOut << buffK[i] << " " << buffE[i] << std::endl;
+    }
   }
-
   fRec->Make();
   //fRec->DumpStats();
   //fRec->DumpParties();
-
-  //for(int gl=0; gl!=18; ++gl)
-  //  std::cout << fRec->GetNHits(gl) << " ";
-  //std::cout << std::endl;
 
   if(fCheckMpcExRawHit) {
     // selecting only hits that make a coalition
     bool keyfiltered[49152];
     for(int k=0; k!=49152; ++k) keyfiltered[k] = false;
+    // init buffering
+    mxCoalition *coa;
     for(int arm=0; arm!=2; ++arm) {
-      std::vector<mxCoalition*> coa = fRec->GetCoalitions(arm);
-      for(int k=0; k!=fRec->GetNCoalitions(arm); ++k) {
-      	//==> coalition cuts
-      	if( coa[k]->N() < 3 ) continue;
-      	bool failed = false;
-      	for(int hl=0; hl!=9; ++hl) {
-      	  if( coa[k]->IsHitLayer(hl) ) {
-      	    mxParty *pty = coa[k]->GetParty(hl);
-      	    if(pty->N()<5) failed = true;
-      	  }
-      	}
-      	if(failed) continue;
-      	//==<
-      	for(int hl=0; hl!=9; ++hl) {
-      	  mxParty *pty = coa[k]->GetParty(hl);
-      	  if(!pty) continue;
-      	  for(int ht=0; ht!=pty->N(); ++ht) {
-      	    mxHit *hit = pty->GetHit(ht);
-      	    if(!hit) continue;
-      	    keyfiltered[ hit->Idx() ] = true;
-      	  }
-      	}
+      int n = fRec->GetNCoalitions(arm);
+      for(int i=0; i!=n; ++i) {
+	coa = fRec->GetCoalition(arm,i);
+	if(!coa) continue;
+	if( fCalibrationCuts->PassesCuts(coa) ) {
+	  for(int hl=0; hl!=8; ++hl) { //leaving out MPC
+	    mxParty *pty = coa->GetParty(hl);
+	    if(!pty) continue;
+	    for(int ht=0; ht!=pty->N(); ++ht) {
+	      mxHit *hit = pty->GetHit(ht);
+	      if(!hit) continue;
+	      unsigned int key = hit->Idx();
+	      if(key<0 || key>49151) continue;
+	      keyfiltered[key] = true;
+	    }
+	  }
+	}
       }
     }
-    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator(); itr!=rawcontainer.end(); ++itr) {
+    // end of buffering and begining of booking
+    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator();
+	itr!=rawcontainer.end();
+	++itr) {
       TMpcExHit *raw_hit = (*itr);
       if(!raw_hit) continue;
       unsigned int key = raw_hit->key();
+      if(key<0 || key>49151) continue;
       if( !keyfiltered[key] ) continue;
       float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
       fHadc[1]->Fill(key,hi_adc);
     }
+    // done
   }
 
+  //std::cout << "Starting QA..." << std::endl;
   if(fDoQA) fQA->Make(fRec);
+  //std::cout << "mSubsysReco::EndOdProcesses" << std::endl;
   return EVENT_OK;
 }

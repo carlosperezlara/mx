@@ -27,16 +27,12 @@ class mxQAReconstruction {
   TH1F *fHvx;
   TH1F *fHvy;
   TH1F *fHvz;
-
   TProfile *fHHits[2];
   TProfile *fHEnergy[2];
-  //  TH1F *fHHitsx[2];
-
   TH1F *fHhitN[2][9];
   TH1F *fHhitE[2][9];
   TH1F *fHhitX[2][9];
   TH1F *fHhitY[2][9];
-
   TH1F *fHptyN[2][9];
   TH1F *fHptyE[2][9];
   TH2F *fHptyEN[2][9];
@@ -46,7 +42,6 @@ class mxQAReconstruction {
   TH1F *fHptySY[2][9];
   TH2F *fHptyESX[2][9];
   TH2F *fHptyESY[2][9];
-
   TH1F *fHcoaN[2];
   TH1F *fHcoaEn[2];
   TH1F *fHcoaET[2];
@@ -86,7 +81,6 @@ class mxQAReconstruction {
   TH2F *fHcoaTruthEta[2];
   TH1F *fHcoaTruthdEta[2];
   TH1F *fHcoaTruthEtaRat[2];
-  
   TH1F *fHuniN[2];
   TH1F *fHuniEn[2];
   TH1F *fHuniET[2];

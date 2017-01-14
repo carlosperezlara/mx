@@ -5,7 +5,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "mxMCParticle.h"
 #include "phMath.h"
 
 #include "mxGeometry.h"
@@ -43,7 +42,6 @@ mxReconstruction::mxReconstruction() :
     fNUni[i] = 0;
   }
   fGeo = new mxGeometry();
-  fMCPart = new mxMCParticle();
   fV[0] = 0.;
   fV[1] = 0.;
   fV[2] = 0.;
@@ -96,7 +94,6 @@ mxReconstruction::~mxReconstruction() {
       delete fUni[i].at(j);
   }
   if(fGeo) delete fGeo;
-  if(fMCPart) delete fMCPart;
 }
 //========
 void mxReconstruction::DumpHits() {
@@ -127,7 +124,6 @@ void mxReconstruction::DumpParties() {
     int n = fNPty[i];
     nn += n;
     std::cout << "  Layer " << i << " || Nparties " << n << std::endl;
-    int nhit = fNHit[i];
     for(int j=0; j!=n; ++j) {
       pty = fPty[i].at(j);
       std::cout << "    ||" << j << "|| x y "  <<pty->GetX() << " " << pty->GetY() << " || hits " << pty->N() << " || sgn " << pty->Signal();
@@ -150,7 +146,6 @@ void mxReconstruction::DumpParties() {
 void mxReconstruction::DumpCoalitions() {
   std::cout << "================================" << std::endl;
   std::cout << "mxReconstruction::DumpCoalitions" << std::endl;
-  int nn=0;
   mxCoalition *coa;
   mxParty *pty;
   mxHit *hit;
@@ -163,7 +158,6 @@ void mxReconstruction::DumpCoalitions() {
       std::cout << " || cphi ctheta cphitheta " << coa->GetCov(0) << " " << coa->GetCov(1) << " " << coa->GetCov(2);
       std::cout << " || pschi2prob " << coa->GetPSChi2Prob();
       std::cout << std::endl;
-      int m = coa->N();
       for(int k=0; k!=9; ++k) {
       	pty = coa->GetParty(k);
       	std::cout << "       ||" << k;
@@ -475,10 +469,6 @@ void mxReconstruction::Coalitions_ALG0() {
   // Build the coalition from MPC backwards
   // Parties cannot be shared among coalitions
 
-  float partenergy = fMCPart->GetEnergy();
-  float parteta = fMCPart->GetEta();
-  float partphi = fMCPart->GetPhi();
-
   // forming global coalitions
   float Z[18], dz[18];
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
@@ -545,10 +535,6 @@ void mxReconstruction::Coalitions_ALG1() {
   // then continues to last layer.
   // Parties cannot be shared among coalitions
   // Matching of MPC afterwrds in *passive* mode (used for calibration)
-
-  float partenergy = fMCPart->GetEnergy();
-  float parteta = fMCPart->GetEta();
-  float partphi = fMCPart->GetPhi();
 
   // forming global coalitions
   float Z[18], dz[18];
@@ -656,7 +642,7 @@ void mxReconstruction::Unions() {
 }
 //========
 void mxReconstruction::FillPP(float energy, float eta, float phi, int pdg) {
-  fMCPart->Fill(energy,eta,phi,pdg);
+  //fMCPart->Fill(energy,eta,phi,pdg);
 }
 //========
 mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
@@ -721,9 +707,6 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
     pty = coa->GetParty(i);
     if(!pty) continue;
     ncl++;
-    float x = pty->GetX();
-    float y = pty->GetY();
-    float z = Z[i];
     float ephi=0, ethi=0;
     float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
     float thi = _theta( pty->GetX(), pty->GetY(), Z[i], ethi, pty->GetSpreadX(), pty->GetSpreadY(), dz[i] );

@@ -2,6 +2,7 @@
 #define __mSubsysReco_HH__
 
 #include <fstream>
+#include <map>
 #include "SubsysReco.h"
 
 class TList;
@@ -13,6 +14,7 @@ class PHCompositeNode;
 class mxCalibMaster;
 class mxReconstruction;
 class mxQAReconstruction;
+class mxCoalitionCuts;
 
 class mSubsysReco: public SubsysReco {
  public:
@@ -23,6 +25,8 @@ class mSubsysReco: public SubsysReco {
   virtual int InitRun(PHCompositeNode*);
   virtual int process_event(PHCompositeNode*);
   virtual int End(PHCompositeNode *topNode);
+  void SetEnableQA() {fDoQA=true;}
+  void SetFloshToHitFile() {fFlush=true;}
 
  protected:
   void FillHistos(int,PHCompositeNode*);
@@ -32,13 +36,16 @@ class mSubsysReco: public SubsysReco {
   mxReconstruction *fRec;
   mxQAReconstruction *fQA;
   ofstream fFileOut;
+  bool fFlush;
 
   TList *fList;
   bool fCheckMpcRaw2;
   bool fCheckMpcExRawHit;
+  std::map<int,int> fMPCIDX;
 
   float fNSigmaCut;
   bool fByPassEXCalibration;
+  mxCoalitionCuts *fCalibrationCuts;
 
   TH1F *fHstk[2];
   TH1F *fHpar[2];
@@ -47,11 +54,7 @@ class mSubsysReco: public SubsysReco {
   TH2F *fHadc[2];
   TH2F *fHlhf[2];
 
-  TH3F *fHcry;
-  TH1F *fHcrytofS;
-  TH1F *fHcryeneS;
-  TH1F *fHcrytofN;
-  TH1F *fHcryeneN;
+  TH3F *fHcry[2];
 };
 
 #endif /* __mSubsysReco_H__ */ 

@@ -137,6 +137,7 @@ float mxParty::Test(float xx, float yy) {
 //========
 void mxParty::Reset() {
   // clean variables
+  fAssigned = false;
   fSgn=0;
   fSx=0;
   fSy=0;
