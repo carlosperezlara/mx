@@ -28,7 +28,7 @@ class mxCoalitionCuts {
   void InitQA();
   void FillQA( mxCoalition* );
   TList* GetList() {return fList;}
-  void SetQA() {fQA=true;}
+  void SetQA() {InitQA();}
 
  protected:
  	TString fName;
@@ -37,7 +37,6 @@ class mxCoalitionCuts {
   float fPS_minChi2Prob;
   bool fHitLayer[9];
 
- 	bool fQA;
  	TList *fList;
 	TH1F *fHEne;
 	TH1F *fHPSSgn;

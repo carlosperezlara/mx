@@ -18,7 +18,6 @@ mxCoalitionCuts::mxCoalitionCuts(TString name):
   fPS_minNHits(0),
   fPS_minSignal(0),
   fPS_minChi2Prob(0),
-  fQA(false),
   fList(NULL),
   fHEne(NULL),
   fHPSSgn(NULL),
@@ -57,7 +56,6 @@ void mxCoalitionCuts::InitQA() {
 }
 //========
 void mxCoalitionCuts::FillQA(mxCoalition *coalition) {
-  if(!fList) InitQA();
   fHEne->Fill( coalition->GetEnergy() );
   fHPSSgn->Fill( coalition->SignalPreShower() );
   fHPSChi2Prob->Fill( coalition->SignalPreShower(), coalition->GetPSChi2Prob() );
@@ -83,7 +81,6 @@ mxCoalitionCuts::mxCoalitionCuts(const mxCoalitionCuts &src) {
   fPS_minSignal = src.fPS_minSignal;
   fPS_minChi2Prob = src.fPS_minChi2Prob;
   for(int i=0; i!=9; ++i) fHitLayer[i] = src.fHitLayer[i];
-  fQA = src.fQA;
   fList = NULL;
   fHEne = NULL;
   fHPSSgn = NULL;
@@ -102,7 +99,6 @@ mxCoalitionCuts& mxCoalitionCuts::operator=(const mxCoalitionCuts &src) {
     fPS_minSignal = src.fPS_minSignal;
     fPS_minChi2Prob = src.fPS_minChi2Prob;
     for(int i=0; i!=9; ++i) fHitLayer[i] = src.fHitLayer[i];
-    fQA = src.fQA;
     fList = NULL;
     fHEne = NULL;
     fHPSSgn = NULL;
@@ -121,17 +117,22 @@ mxCoalitionCuts* mxCoalitionCuts::Clone(TString name) {
   cut->fPS_minSignal = fPS_minSignal;
   cut->fPS_minChi2Prob = fPS_minChi2Prob;
   for(int i=0; i!=9; ++i) cut->fHitLayer[i] = fHitLayer[i];
-  cut->fQA = fQA;
   return cut;
 }
 //========
 bool mxCoalitionCuts::PassesCuts(mxCoalition *coa) {
+  //std::cout << "Passes INIT" << fName.Data() << std::endl;
+  //std::cout << coa->NPreShower() << " ";
+  //std::cout << coa->SignalPreShower() << " ";
+  //std::cout << coa->GetPSChi2Prob() << " ";
+  //std::cout << std::endl;
   if(fPS_minNHits > coa->NPreShower() ) return false;
   if(fPS_minSignal > coa->SignalPreShower() ) return false;
   if(fPS_minChi2Prob > coa->GetPSChi2Prob() ) return false;
   for(int i=0; i!=9; ++i)
     if(fHitLayer[i])
       if(!coa->IsHitLayer(i)) return false;
-  if(fQA) FillQA(coa);
+  //std::cout << "Passes END" << fName.Data() << std::endl;
+  if(fList) FillQA(coa);
   return true;
 }

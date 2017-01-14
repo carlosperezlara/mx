@@ -67,6 +67,8 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fCheckMpcExRawHit(true),
   fNSigmaCut(0),
   fByPassEXCalibration(false),
+  fAlgorithmCombo(0),
+  fNoCuts(NULL),
   fCalibrationCuts(NULL)
 {
   printf("mcReco::CTOR\n");
@@ -105,12 +107,6 @@ mSubsysReco::mSubsysReco( const char* name ) :
     525,526,527,533,534,535,539,540,541,542,543,546,547,548,549,550,551,553,554,555,
     556,557,558,559,560,561,562,563,564,565,566,567,568,569,570,571,572,573,574,575};
   for(int i=0; i!=416; ++i) fMPCIDX.insert( std::make_pair( mpcidx[i], i) );
-  fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
-  fCalibrationCuts->Set_HitLayer(5);
-  fCalibrationCuts->Set_HitLayer(6);
-  fCalibrationCuts->Set_HitLayer(7);
-  fCalibrationCuts->Set_PS_minChi2Prob(0.2);
-  fCalibrationCuts->Set_PS_minSignal(0.05);
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
@@ -129,6 +125,22 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
   printf("mSubsysReco::Init\n");
 
   Fun4AllServer *se = Fun4AllServer::instance();
+
+  fNoCuts = new mxCoalitionCuts("mSRNoCuts");
+  fNoCuts->SetQA();
+  for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
+    se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
+
+  fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
+  fCalibrationCuts->SetQA();
+  fCalibrationCuts->Set_HitLayer(5);
+  fCalibrationCuts->Set_HitLayer(6);
+  fCalibrationCuts->Set_HitLayer(7);
+  fCalibrationCuts->Set_PS_minChi2Prob(0.2);
+  fCalibrationCuts->Set_PS_minSignal(0.025);
+  fCalibrationCuts->GetList()->SetOwner(false);
+  for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
+    se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
 
   if(fDoQA) {
     fQA = new mxQAReconstruction();
@@ -181,6 +193,17 @@ int mSubsysReco::InitRun(PHCompositeNode* top_node) {
   PHIODataNode<PHMXData> *hitNode = new PHIODataNode<PHMXData>(mxdata,"MX","PHMXData");
   dstNode->addNode(hitNode);
   fRec = mxdata->GetReconstruction();
+  switch(fAlgorithmCombo) {
+  case(0):
+    fRec->SetPartyAlgorithm(0);
+    fRec->SetCoalitionAlgorithm(0);
+    break;
+  case(1):
+    fRec->SetPartyAlgorithm(1);
+    fRec->SetCoalitionAlgorithm(1);
+    fRec->SetPtyAlg1_Threshold(0.15);
+    break;
+  }
 
   RunHeader *runhead = getClass<RunHeader> (top_node, "RunHeader");
   if(!runhead) { cout<<PHWHERE<<" exiting."<<endl; exit(1); }
@@ -330,10 +353,10 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     if(fByPassEXCalibration) {
       //temporal solution towards energy calibration
       int pkt = key/128*3072;
-      float lmpv = 147.0/20.0;
-      if(pkt==2||pkt==6)
-        float lmpv = 147.0/15.0;
-      float enecut = 1e-6;
+      float lmpv = 147.0/15.0;
+      if(pkt==2||pkt==6) lmpv = 147.0/15.0;
+      if(pkt==10||pkt==14) lmpv = 147.0/15.0;
+      float enecut = 1e-6; // 1 keV
     }
     float hires = (hi_adc * lmpv) * 1e-6; // in GeV
     float lores = (lo_adc * lhft * lmpv) * 1e-6; // in GeV
@@ -388,6 +411,15 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   fRec->Make();
   //fRec->DumpStats();
   //fRec->DumpParties();
+
+  for(int arm=0; arm!=2; ++arm) {
+    int n = fRec->GetNCoalitions(arm);
+    for(int i=0; i!=n; ++i) {
+      mxCoalition *coa = fRec->GetCoalition(arm,i);
+      if(!coa) continue;
+      fNoCuts->PassesCuts(coa);
+    }
+  }
 
   if(fCheckMpcExRawHit) {
     // selecting only hits that make a coalition

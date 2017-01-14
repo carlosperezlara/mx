@@ -39,7 +39,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     double sn = 0.0;
     if (arm == 0) sn = 1.0;
     for(int lyr=0; lyr!=9; ++lyr) {
-      float emax = maxe/100;
+      float emax = 5e-3; // 5 MeV
       float smax= 1;
       if(lyr==8||lyr==17) {
       	emax = maxe;
@@ -50,6 +50,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
       fList->Add( fHhitN[arm][lyr] );
       fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
       fList->Add( fHhitE[arm][lyr] );
+
       //PARTY
       fHptyN[arm][lyr] = new TH1F( Form("mxReco_%s%d_ptyN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_ptyN;NO of PARTIES",arm==0?"S":"N",lyr), 100,-0.5,99.5);
       fList->Add( fHptyN[arm][lyr] );
@@ -74,6 +75,8 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     //COALITION
     fHHits[arm] = new TProfile( Form("mxReco_%s_HitsPerLayer",arm==0?"S":"N"), Form("mxReco_%s_HitPerLayer;LAYER;AvgHits",arm==0?"S":"N"), 9,-0.5,8.5);
     fList->Add( fHHits[arm] );
+    fHEnergy[arm] = new TProfile( Form("mxReco_%s_EnergyHitsPerLayer",arm==0?"S":"N"), Form("mxReco_%s_EnergyHitPerLayer;LAYER;AvgEnergy",arm==0?"S":"N"), 9,-0.5,8.5);
+    fList->Add( fHEnergy[arm] );
     fHcoaN[arm] = new TH1F( Form("mxReco_%s_coaN",arm==0?"S":"N"), Form("mxReco_%s_coaN;NO of COALITIONS",arm==0?"S":"N"), 100,-0.5,99.5);
     fList->Add( fHcoaN[arm] );
     fHcoaEn[arm] = new TH1F( Form("mxReco_%s_coaEn",arm==0?"S":"N"), Form("mxReco_%s_coaEn;ENERGY  GEV",arm==0?"S":"N"), 100,0,maxe);
@@ -179,8 +182,6 @@ mxQAReconstruction::~mxQAReconstruction() {
 //========
 void mxQAReconstruction::Make(mxReconstruction *r) {
   // filler
-  std::cout << "mxQAReconstruction::Make " << std::endl;
-  return;
   mxGeometry *geo = new mxGeometry();
   
   fHvx->Fill( r->GetVertexX() );
@@ -189,10 +190,9 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
   
   for(int arm=0; arm!=2; ++arm) {
     //==>UNI
-    fHcoaEff[arm]->SetMinimum(0);
-    fHcoaS[arm]->SetMinimum(0);
-    //    fHcoaEnergy[arm]->SetMaximum(.1);
-    fHHits[arm]->SetMaximum(.1);
+    //fHcoaEff[arm]->SetMinimum(0);
+    //fHcoaS[arm]->SetMinimum(0);
+    //fHHits[arm]->SetMaximum(.1);
     fHuniN[arm]->Fill( r->GetNUnions(arm) );
     std::vector<mxUnion*> uni = r->GetUnions(arm);
     for(int k=0; k!=r->GetNUnions(arm); ++k) {
@@ -287,10 +287,10 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       }
       //==>HIT
       fHhitN[arm][lyr]->Fill( r->GetNHits(glyr) );
-      std::vector<mxHit*> hit = r->GetHits(glyr);
-      fHHits[arm]->Fill(lyr,(double)(r->GetNHits(glyr))/1000.0);
+      fHHits[arm]->Fill(lyr,double(r->GetNHits(glyr)));
       fHEnergy[arm]->Fill(lyr,enplay);
       
+      std::vector<mxHit*> hit = r->GetHits(glyr);
       for(int k=0; k!=r->GetNHits(glyr); ++k) {
       	fHhitE[arm][lyr]->Fill( hit[k]->Signal() );
       }

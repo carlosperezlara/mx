@@ -27,6 +27,8 @@ class mSubsysReco: public SubsysReco {
   virtual int End(PHCompositeNode *topNode);
   void SetEnableQA() {fDoQA=true;}
   void SetFloshToHitFile() {fFlush=true;}
+  void ByPassCalibration() {fByPassEXCalibration=true;}
+  void SetAlgorithmCombo(int v) {fAlgorithmCombo=v;}
 
  protected:
   void FillHistos(int,PHCompositeNode*);
@@ -45,6 +47,8 @@ class mSubsysReco: public SubsysReco {
 
   float fNSigmaCut;
   bool fByPassEXCalibration;
+  int fAlgorithmCombo;
+  mxCoalitionCuts *fNoCuts;
   mxCoalitionCuts *fCalibrationCuts;
 
   TH1F *fHstk[2];
