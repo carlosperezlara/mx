@@ -55,15 +55,19 @@ int main(int narg, char **carg) {
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
   cuts0->SetQA();
   mxCoalitionCuts *cuts1 = cuts0->Clone("Cut1");
+  cuts1->SetQA();
 	cuts1->Set_HitLayer(5);
 	cuts1->Set_HitLayer(6);
 	cuts1->Set_HitLayer(7);
   mxCoalitionCuts *cuts2 = cuts1->Clone("Cut2");
 	cuts2->Set_PS_minChi2Prob(0.2);
+  cuts2->SetQA();
   mxCoalitionCuts *cuts3 = cuts2->Clone("Cut3");
-	cuts3->Set_PS_minSignal(0.05);
+  cuts3->SetQA();
+  cuts3->Set_HitLayer(8);
   mxCoalitionCuts *cuts4 = cuts3->Clone("Cut4");
-	cuts4->Set_HitLayer(8);
+  cuts4->SetQA();
+  cuts4->Set_PS_minSignal(1e-5);
 
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::cout << "INPUT: " << Form("%s.prim",file.Data()) << std::endl;
@@ -131,7 +135,7 @@ int main(int narg, char **carg) {
       int n = reco->GetNCoalitions(arm);
       for(int i=0; i!=n; ++i) {
 	      coalition = reco->GetCoalition(arm,i);
-	      outputC << coalition->GetEnergy() << " " << coalition->GetPhi() << " " << coalition->GetTheta() << " " << coalition->GetEta() << " ";
+	      outputC << arm << " " << coalition->GetEnergy() << " " << coalition->GetPhi() << " " << coalition->GetTheta() << " " << coalition->GetEta() << " ";
 	      outputC << coalition->GetPhiVar() << " " << coalition->GetThetaVar() << " " << coalition->GetEtaVar() << " ";
 	      outputC << coalition->SignalPreShower() << " " << coalition->NPreShower();
 	      outputC << std::endl;
