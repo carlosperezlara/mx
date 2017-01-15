@@ -39,7 +39,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     double sn = 0.0;
     if (arm == 0) sn = 1.0;
     for(int lyr=0; lyr!=9; ++lyr) {
-      float emax = 5e-3; // 5 MeV
+      float emax = 1.8e-3; // 1.8 MeV
       float smax= 1;
       if(lyr==8||lyr==17) {
       	emax = maxe;
@@ -48,7 +48,7 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
       //HIT
       fHhitN[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitN",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitN;NO of HITS",arm==0?"S":"N",lyr), 800,-0.5,799.5);
       fList->Add( fHhitN[arm][lyr] );
-      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 100,0,emax);
+      fHhitE[arm][lyr] = new TH1F( Form("mxReco_%s%d_hitE",arm==0?"S":"N",lyr), Form("mxReco_%s%d_hitE;ENERGY  GEV",arm==0?"S":"N",lyr), 500,0,emax);
       fList->Add( fHhitE[arm][lyr] );
 
       //PARTY

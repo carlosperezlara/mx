@@ -136,8 +136,8 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
   fCalibrationCuts->Set_HitLayer(5);
   fCalibrationCuts->Set_HitLayer(6);
   fCalibrationCuts->Set_HitLayer(7);
+  fCalibrationCuts->Set_HitLayer(8);
   fCalibrationCuts->Set_PS_minChi2Prob(0.2);
-  fCalibrationCuts->Set_PS_minSignal(0.025);
   fCalibrationCuts->GetList()->SetOwner(false);
   for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
     se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
@@ -345,6 +345,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     TMpcExHit *raw_hit = (*itr);
     if(!raw_hit) continue;
     unsigned int key = raw_hit->key();
+    if( fCal->IsBadKey(key) ) continue;
     float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
     float lo_adc = raw_hit->low()  - fCal->GetPLMu()->Get(key);
     float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
@@ -352,14 +353,14 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
     if(fByPassEXCalibration) {
       //temporal solution towards energy calibration
-      int pkt = key/128*3072;
-      float lmpv = 147.0/15.0;
-      if(pkt==2||pkt==6) lmpv = 147.0/15.0;
-      if(pkt==10||pkt==14) lmpv = 147.0/15.0;
-      float enecut = 1e-6; // 1 keV
+      int pkt = key/3072;
+      lmpv = 147.0/15.0;
+      if(pkt==2||pkt==6) lmpv = 147.0/23.0;
+      if(pkt==10||pkt==14) lmpv = 147.0/23.0;
+      enecut = 1e-6; // 1 keV
     }
     float hires = (hi_adc * lmpv) * 1e-6; // in GeV
-    float lores = (lo_adc * lhft * lmpv) * 1e-6; // in GeV
+    float lores = (lo_adc / lhft * lmpv) * 1e-6; // in GeV
     if(fCheckMpcExRawHit) {
       fHadc[0]->Fill(key,hi_adc);
       if(hi_adc>40 && hi_adc<150)
