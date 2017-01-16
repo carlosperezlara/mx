@@ -119,6 +119,8 @@ mSubsysReco::~mSubsysReco() {
   //if(fRec) delete fRec; // deleted by Node
   if(fQA) delete fQA;
   if(fList) delete fList;
+  if(fNoCuts) delete fNoCuts;
+  if(fCalibrationCuts) delete fCalibrationCuts;
 }
 //====================================================
 int mSubsysReco::Init(PHCompositeNode* top_node) {
