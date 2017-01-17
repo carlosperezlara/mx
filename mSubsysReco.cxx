@@ -129,20 +129,21 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
   Fun4AllServer *se = Fun4AllServer::instance();
 
   fNoCuts = new mxCoalitionCuts("mSRNoCuts");
-  fNoCuts->SetQA();
-  for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
-    se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
+  //fNoCuts->SetQA();
+  //fNoCuts->GetList()->SetOwner(false);
+  //for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
+  //  se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
 
   fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
-  fCalibrationCuts->SetQA();
+  //fCalibrationCuts->SetQA();
   fCalibrationCuts->Set_HitLayer(5);
   fCalibrationCuts->Set_HitLayer(6);
   fCalibrationCuts->Set_HitLayer(7);
-  fCalibrationCuts->Set_HitLayer(8);
+  //fCalibrationCuts->Set_HitLayer(8);
   fCalibrationCuts->Set_PS_minChi2Prob(0.2);
-  fCalibrationCuts->GetList()->SetOwner(false);
-  for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
-    se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
+  //fCalibrationCuts->GetList()->SetOwner(false);
+  //for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
+  //  se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
 
   if(fDoQA) {
     fQA = new mxQAReconstruction();
@@ -312,7 +313,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
 
   //std::cout << "mSubsysReco::process_event" << std::endl;
   static int nev = 0;
-  if(nev%1000==0) {
+  if(nev%10000==0) {
     std::cout << Form("mSubsysReco::process_event %d events", nev) << std::endl;
   }
   nev++;
@@ -436,6 +437,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
 	coa = fRec->GetCoalition(arm,i);
 	if(!coa) continue;
 	if( fCalibrationCuts->PassesCuts(coa) ) {
+	//if( fNoCuts->PassesCuts(coa) ) {
 	  for(int hl=0; hl!=8; ++hl) { //leaving out MPC
 	    mxParty *pty = coa->GetParty(hl);
 	    if(!pty) continue;

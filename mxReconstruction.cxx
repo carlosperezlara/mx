@@ -51,26 +51,26 @@ void mxReconstruction::Reset() {
   for(int i=0; i!=18; ++i) {
     fNHit[i] = 0;
     fNPty[i] = 0;
-    for(int j=0; j!=int(fHit[i].size()); ++j){
-      delete fHit[i].at(j);
-    }
-    for(int j=0; j!=int(fPty[i].size()); ++j){
-      delete fPty[i].at(j);
-    }
-    fHit[i].clear();
-    fPty[i].clear();
+    //for(int j=0; j!=int(fHit[i].size()); ++j){
+    //  delete fHit[i].at(j);
+    //}
+    //for(int j=0; j!=int(fPty[i].size()); ++j){
+    //  delete fPty[i].at(j);
+    //}
+    //fHit[i].clear();
+    //fPty[i].clear();
   }
   for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
     fNUni[i] = 0;
-    for(int j=0; j!=int(fCoa[i].size()); ++j){
-      delete fCoa[i].at(j);
-    }
-    for(int j=0; j!=int(fUni[i].size()); ++j){
-      delete fUni[i].at(j);
-      }
-    fCoa[i].clear();
-    fUni[i].clear();
+    //for(int j=0; j!=int(fCoa[i].size()); ++j){
+    //  delete fCoa[i].at(j);
+    //}
+    //for(int j=0; j!=int(fUni[i].size()); ++j){
+    //  delete fUni[i].at(j);
+    //}
+    //fCoa[i].clear();
+    //fUni[i].clear();
   }
   fV[0] = 0.;
   fV[1] = 0.;

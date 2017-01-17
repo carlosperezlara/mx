@@ -31,8 +31,6 @@ class mxQAReconstruction {
   TProfile *fHEnergy[2];
   TH1F *fHhitN[2][9];
   TH1F *fHhitE[2][9];
-  TH1F *fHhitX[2][9];
-  TH1F *fHhitY[2][9];
   TH1F *fHptyN[2][9];
   TH1F *fHptyE[2][9];
   TH2F *fHptyEN[2][9];
