@@ -9,7 +9,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-
+#include "TStopwatch.h"
 #include "getClass.h"
 #include "PHCompositeNode.h"
 #include "RunHeader.h" 
@@ -27,8 +27,6 @@
 #include "mpcRawContainer.h"
 #include "mpcRawContent.h"
 #include "MpcExRawHit.h"
-#include "TMpcExHit.h"
-#include "TMpcExHitSet.h"
 #include "MpcExEventHeader.h"
 
 #include "mxCalibMaster.h"
@@ -47,21 +45,17 @@
 using namespace std;
 using namespace findNode;
 
-struct myOrder : public std::binary_function<TMpcExHit*,TMpcExHit*,bool> {
-public:
-  bool operator()(TMpcExHit* lhs, TMpcExHit* rhs){
-    return lhs->key() <= rhs->key();
-  }
-};
-
 //====================================================
 mSubsysReco::mSubsysReco( const char* name ) : 
   SubsysReco( name ),
   fDoQA(false),
+  fSkipSouth(false),
+  fSkipNorth(false),
   fCal(NULL),
   fRec(NULL),
   fQA(NULL),
   fFlush(false),
+  fStopwatch(NULL),
   fList(NULL),
   fCheckMpcRaw2(true),
   fCheckMpcExRawHit(true),
@@ -69,10 +63,10 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fByPassEXCalibration(false),
   fAlgorithmCombo(0),
   fNoCuts(NULL),
-  fCalibrationCuts(NULL)
+  fCalibrationCuts(NULL),
+  fTime(NULL)
 {
   printf("mcReco::CTOR\n");
-  fFileOut.open( "dataflow.hit" );
   for(int i=0; i!=2; ++i) {
     fHstk[i] = NULL;
     fHpar[i] = NULL;
@@ -110,7 +104,7 @@ mSubsysReco::mSubsysReco( const char* name ) :
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
-  fFileOut.close();
+  if(fFlush) fFileOut.close();
   return EVENT_OK;
 }
 //====================================================
@@ -121,29 +115,32 @@ mSubsysReco::~mSubsysReco() {
   if(fList) delete fList;
   if(fNoCuts) delete fNoCuts;
   if(fCalibrationCuts) delete fCalibrationCuts;
+  if(fStopwatch) delete fStopwatch;
 }
 //====================================================
 int mSubsysReco::Init(PHCompositeNode* top_node) {
   printf("mSubsysReco::Init\n");
+  fStopwatch = new TStopwatch();
+  if(fFlush) fFileOut.open( "dataflow.hit" );
 
   Fun4AllServer *se = Fun4AllServer::instance();
 
   fNoCuts = new mxCoalitionCuts("mSRNoCuts");
-  //fNoCuts->SetQA();
-  //fNoCuts->GetList()->SetOwner(false);
-  //for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
-  //  se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
+  fNoCuts->SetQA();
+  fNoCuts->GetList()->SetOwner(false);
+  for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
+    se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
 
   fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
-  //fCalibrationCuts->SetQA();
   fCalibrationCuts->Set_HitLayer(5);
   fCalibrationCuts->Set_HitLayer(6);
   fCalibrationCuts->Set_HitLayer(7);
   //fCalibrationCuts->Set_HitLayer(8);
   fCalibrationCuts->Set_PS_minChi2Prob(0.2);
-  //fCalibrationCuts->GetList()->SetOwner(false);
-  //for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
-  //  se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
+  fCalibrationCuts->SetQA();
+  fCalibrationCuts->GetList()->SetOwner(false);
+  for(int i=0; i!=fCalibrationCuts->GetList()->GetEntries(); ++i)
+    se->registerHisto( ((TH1*) (fCalibrationCuts->GetList()->At(i))) );
 
   if(fDoQA) {
     fQA = new mxQAReconstruction();
@@ -153,6 +150,9 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
   }
 
   fList = new TList();
+  fTime = new TH1F("mxSRTime","mxSRTime;Time spend in one event [ms/50ms]",100,0,3);
+  fList->Add( fTime );
+
   //fList->SetOwner(); // histos passed to mannager
   if(fCheckMpcExRawHit) {
     for(int i=0; i!=2; ++i) {
@@ -310,7 +310,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   //Fun4AllServer *se = Fun4AllServer::instance();
   //se->Print();
   //exit(0);
-
+  fStopwatch->Start();
   //std::cout << "mSubsysReco::process_event" << std::endl;
   static int nev = 0;
   if(nev%10000==0) {
@@ -341,16 +341,13 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   int nbuff = 0;
   MpcExRawHit *mMpcExRawHits = getClass<MpcExRawHit>(top_node, "MpcExRawHit");
   if(!mMpcExRawHits) return ABORTEVENT;
-  TMpcExHitSet<myOrder> rawcontainer(mMpcExRawHits);
-  for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator();
-      itr!=rawcontainer.end();
-      ++itr) {
-    TMpcExHit *raw_hit = (*itr);
-    if(!raw_hit) continue;
-    unsigned int key = raw_hit->key();
+  for(int ihit=0; ihit!=mMpcExRawHits->getnhits(); ++ihit) {
+    unsigned int key = mMpcExRawHits->getOnlineKey(ihit);
+    if(fSkipSouth&&key<24576) continue;
+    if(fSkipNorth&&key>24575) continue;
     if( fCal->IsBadKey(key) ) continue;
-    float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
-    float lo_adc = raw_hit->low()  - fCal->GetPLMu()->Get(key);
+    float hi_adc = mMpcExRawHits->gethadc(ihit) - fCal->GetPHMu()->Get(key);
+    float lo_adc = mMpcExRawHits->getladc(ihit)  - fCal->GetPLMu()->Get(key);
     float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
     float lhft = fCal->GetLHft()->Get(key);
     float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
@@ -412,6 +409,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
       fFileOut << buffK[i] << " " << buffE[i] << std::endl;
     }
   }
+
   fRec->Make();
   //fRec->DumpStats();
   //fRec->DumpParties();
@@ -453,15 +451,11 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
       }
     }
     // end of buffering and begining of booking
-    for(TMpcExHitSet<myOrder>::const_iterator itr=rawcontainer.get_iterator();
-	itr!=rawcontainer.end();
-	++itr) {
-      TMpcExHit *raw_hit = (*itr);
-      if(!raw_hit) continue;
-      unsigned int key = raw_hit->key();
+    for(int ihit=0; ihit!=mMpcExRawHits->getnhits(); ++ihit) {
+      unsigned int key = mMpcExRawHits->getOnlineKey(ihit);
       if(key<0 || key>49151) continue;
       if( !keyfiltered[key] ) continue;
-      float hi_adc = raw_hit->high() - fCal->GetPHMu()->Get(key);
+      float hi_adc = mMpcExRawHits->gethadc(ihit) - fCal->GetPHMu()->Get(key);
       fHadc[1]->Fill(key,hi_adc);
     }
     // done
@@ -470,5 +464,8 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   //std::cout << "Starting QA..." << std::endl;
   if(fDoQA) fQA->Make(fRec);
   //std::cout << "mSubsysReco::EndOdProcesses" << std::endl;
+
+  fStopwatch->Stop();
+  fTime->Fill( fStopwatch->CpuTime()*20 ); // 1000/50
   return EVENT_OK;
 }

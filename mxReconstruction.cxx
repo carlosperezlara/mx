@@ -80,17 +80,16 @@ void mxReconstruction::Reset() {
 mxReconstruction::~mxReconstruction() {
   // dtor
   for(int i=0; i!=18; ++i) {
-    for(int j=0; j!=fNHit[i]; ++j){
-
+    for(unsigned int j=0; j!=fHit[i].size(); ++j){
       delete fHit[i].at(j);
     }
-    for(int j=0; j!=fNPty[i]; ++j)
+    for(unsigned int j=0; j!=fPty[i].size(); ++j)
       delete fPty[i].at(j);
   }
   for(int i=0; i!=2; ++i) {
-    for(int j=0; j!=fNCoa[i]; ++j)
+    for(unsigned int j=0; j!=fCoa[i].size(); ++j)
       delete fCoa[i].at(j);
-    for(int j=0; j!=fNUni[i]; ++j)
+    for(unsigned int j=0; j!=fUni[i].size(); ++j)
       delete fUni[i].at(j);
   }
   if(fGeo) delete fGeo;
@@ -225,7 +224,7 @@ void mxReconstruction::Make() {
   //DumpParties();
   Coalitions();
   //DumpCoalitions();
-  Unions();
+  //Unions();
 }
 //========
 void mxReconstruction::Parties() {

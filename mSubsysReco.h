@@ -9,6 +9,7 @@ class TList;
 class TH1F;
 class TH2F;
 class TH3F;
+class TStopwatch;
 
 class PHCompositeNode;
 class mxCalibMaster;
@@ -29,16 +30,21 @@ class mSubsysReco: public SubsysReco {
   void SetFloshToHitFile() {fFlush=true;}
   void ByPassCalibration() {fByPassEXCalibration=true;}
   void SetAlgorithmCombo(int v) {fAlgorithmCombo=v;}
+  void SetSkipSouth() {fSkipSouth = true;}
+  void SetSkipNorth() {fSkipNorth = true;}
 
  protected:
   void FillHistos(int,PHCompositeNode*);
   bool PassEventCuts(PHCompositeNode*);
   bool fDoQA;
+  bool fSkipSouth;
+  bool fSkipNorth;
   mxCalibMaster *fCal;
   mxReconstruction *fRec;
   mxQAReconstruction *fQA;
   ofstream fFileOut;
   bool fFlush;
+  TStopwatch *fStopwatch;
 
   TList *fList;
   bool fCheckMpcRaw2;
@@ -51,6 +57,7 @@ class mSubsysReco: public SubsysReco {
   mxCoalitionCuts *fNoCuts;
   mxCoalitionCuts *fCalibrationCuts;
 
+  TH1F *fTime;
   TH1F *fHstk[2];
   TH1F *fHpar[2];
   TH1F *fHsph[2];

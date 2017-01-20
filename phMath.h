@@ -7,10 +7,34 @@ float _phi(const float x, const float y, float& ephi, const float ex=0, const fl
 float _eta(const float x, const float y, const float z, float& eeta, const float ex=0, const float ey=0, const float ez=0);
 float _theta(const float x, const float y, const float z, float& etheta, const float ex=0, const float ey=0, const float ez=0);
 
+int _octantify(float &x,  float &y) {
+  int o=0;
+  if(y<0) { // 180 rotation
+    x = -x; y = -y;
+    o += 4;
+  }
+  if(x<0) { // -90 rotation
+    x = y; y= -x;
+    o += 2;
+  }
+  if(x<y) o += 1;
+  return o;
+}
+
+
 inline
 float _phi(const float x, const float y, float& ephi, const float ex, const float ey) {
   // works only for r>0
   float phi = TMath::Pi()+TMath::ATan2(-y,-x);
+  //float xx = x;
+  //float yy = y;
+  //int oct = _octantify(xx,yy);
+  //float phi = TMath::Pi()/4.0*oct;
+  //float xy = x/y;
+  //if(xy<0.2) phi += xy;
+  //else {
+  //  phi += 0;
+  //}
   float den = x*x+y*y;
   ephi = TMath::Sqrt(ex*x*ex*x + ey*y*ey*y) / den;
   return phi;

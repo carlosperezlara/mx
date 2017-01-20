@@ -111,14 +111,14 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
 //========
 float mxParty::GetX() {
   // <x>
-  if( N()<1 ) return 0;
+  if( fN<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSx/fSgn+fX0;
 }
 //========
 float mxParty::GetY() {
   // <y>
-  if( N()<1 ) return 0;
+  if( fN<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSy/fSgn+fY0;
 }
