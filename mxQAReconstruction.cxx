@@ -95,6 +95,8 @@ mxQAReconstruction::mxQAReconstruction(float maxe) {
     fList->Add( fHcoaEt[arm] );
     fHcoaY[arm] = new TH1F( Form("mxReco_%s_coaY",arm==0?"S":"N"), Form("mxReco_%s_coaY;Y",arm==0?"S":"N"), 500,-25,25);
     fList->Add( fHcoaY[arm] );
+    fHcoaXY[arm] = new TH2F( Form("mxReco_%s_coaXY",arm==0?"S":"N"), Form("mxReco_%s_coaXY;X;Y",arm==0?"S":"N"), 100,-25,25, 100,-25,+25);
+    fList->Add( fHcoaXY[arm] );
     fHcoaSPh[arm] = new TH1F( Form("mxReco_%s_coaSPh",arm==0?"S":"N"), Form("mxReco_%s_coaSPh;SPREAD PHI  RAD",arm==0?"S":"N"), 100,0,0.006);
     fList->Add( fHcoaSPh[arm] );
     fHcoaSEt[arm] = new TH1F( Form("mxReco_%s_coaSEt",arm==0?"S":"N"), Form("mxReco_%s_coaSEt;SPREAD ETA",arm==0?"S":"N"), 100,0,0.02);
@@ -243,6 +245,7 @@ void mxQAReconstruction::Make(mxReconstruction *r) {
       	      }
       	      fHcoaX[arm]->Fill(geo->X(hit->Idx()),hit->Signal());
       	      fHcoaY[arm]->Fill(geo->Y(hit->Idx()),hit->Signal());
+	      fHcoaXY[arm]->Fill( geo->X(hit->Idx()), geo->Y(hit->Idx()), hit->Signal() );
       	      fHcoaHitx[arm]->Fill(hitx);
       	      fHcoaHitxTH2F[arm]->Fill(lyr,hitx);
       	      fHcoaHitxProf[arm]->Fill(lyr,hitx);

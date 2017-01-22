@@ -196,17 +196,7 @@ int mSubsysReco::InitRun(PHCompositeNode* top_node) {
   PHIODataNode<PHMXData> *hitNode = new PHIODataNode<PHMXData>(mxdata,"MX","PHMXData");
   dstNode->addNode(hitNode);
   fRec = mxdata->GetReconstruction();
-  switch(fAlgorithmCombo) {
-  case(0):
-    fRec->SetPartyAlgorithm(0);
-    fRec->SetCoalitionAlgorithm(0);
-    break;
-  case(1):
-    fRec->SetPartyAlgorithm(1);
-    fRec->SetCoalitionAlgorithm(1);
-    fRec->SetPtyAlg1_Threshold(0.15);
-    break;
-  }
+  fRec->SetIdentificationAlgorithm(fAlgorithmCombo);
 
   RunHeader *runhead = getClass<RunHeader> (top_node, "RunHeader");
   if(!runhead) { cout<<PHWHERE<<" exiting."<<endl; exit(1); }

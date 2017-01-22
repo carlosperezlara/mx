@@ -39,12 +39,12 @@ void mxCoalitionCuts::InitQA() {
   std::cout << "mxCoalitionCuts::QA for " << fName.Data() << std::endl;
   fList = new TList();
   fList->SetOwner();
-  fHEne = new TH1F(Form("%s_Ene",fName.Data()), Form("%s_Ene;Energy in GeV",fName.Data()), 1000,0,30);
+  fHEne = new TH1F(Form("%s_Ene",fName.Data()), Form("%s_Ene;Energy in GeV",fName.Data()), 1000,0,100);
   fHPSSgn = new TH1F(Form("%s_PS_Sgn",fName.Data()), Form("%s_PS_Sgn;Energy in GeV",fName.Data()), 100,0,0.1);
   fHN = new TH1F(Form("%s_N",fName.Data()), Form("%s_N",fName.Data()), 10,-0.5,9.5);
   fHPHits = new TProfile(Form("%s_Hits",fName.Data()), Form("%s_Hits",fName.Data()), 9,-0.5,8.5);
   fHPEne = new TProfile(Form("%s_PEne",fName.Data()), Form("%s_PEne",fName.Data()), 9,-0.5,8.5);
-  fHPSChi2Prob = new TH2F(Form("%s_PS_Chi2Pro",fName.Data()), Form("%s_PS_Chi2Pro",fName.Data()), 1001,0,7, 100,0,1);
+  fHPSChi2Prob = new TH2F(Form("%s_PS_Chi2Pro",fName.Data()), Form("%s_PS_Chi2Pro",fName.Data()), 1001,0,0.1, 100,0,1);
   fHX = new TH2F(Form("%s_X",fName.Data()), Form("%s_X",fName.Data()), 9,-0.5,8.5, 101,-5,+5);
   fList->Add( fHEne );
   fList->Add( fHPSSgn );

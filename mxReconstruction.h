@@ -43,15 +43,19 @@ class mxReconstruction {
   int GetNCoalitions(int arm) {return fNCoa[arm];}
   int GetNUnions(int arm) {return fNUni[arm];}
 
+  void SetDebug(int v) {fDebug=v;}
+  void SetIdentificationAlgorithm(int v);
+
+ private:
   void SetPartyAlgorithm(int v) {fPtyAlg=v;}
   void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
   void SetPtyAlg1_Threshold(float v) {fPtyAlg1_thr=v;}
 
- private:
   void Parties();
   void Coalitions();
   void Unions();
 
+  void OneBigParty(int);
   void Parties_ALG0(int);
   void Parties_ALG1(int);
 
@@ -65,6 +69,8 @@ class mxReconstruction {
   std::vector<mxCoalition*> fCoa[2];
   std::vector<mxUnion*> fUni[2];
   mxGeometry *fGeo;
+
+  int fDebug;
   int fPtyAlg;
   int fCoaAlg;
   float fPtyAlg1_thr;

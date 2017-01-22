@@ -34,33 +34,32 @@ int main(int narg, char **carg) {
   gErrorIgnoreLevel = kWarning;
   TString file = "input";
   float maxe = 100;
+  int combo = 1;
   if(narg>1) {
     file = carg[1];
   }
   if(narg>2) {
     TString sMaxE = carg[2];
+    combo = sMaxE.Atof();
+  }
+  if(narg>3) {
+    TString sMaxE = carg[3];
     maxe = sMaxE.Atof();
   }
   mxReconstruction *reco = new mxReconstruction();
-  if(1) {
-	  reco->SetPartyAlgorithm(1);
-  	reco->SetCoalitionAlgorithm(1);
-  	reco->SetPtyAlg1_Threshold(0.15);
-  } else {
-	  reco->SetPartyAlgorithm(0);
-  	reco->SetCoalitionAlgorithm(0);
-  }
+  //reco->SetDebug(2);
+  reco->SetIdentificationAlgorithm(combo);
   mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
 
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
   cuts0->SetQA();
   mxCoalitionCuts *cuts1 = cuts0->Clone("Cut1");
   cuts1->SetQA();
-	cuts1->Set_HitLayer(5);
-	cuts1->Set_HitLayer(6);
-	cuts1->Set_HitLayer(7);
+  cuts1->Set_HitLayer(5);
+  cuts1->Set_HitLayer(6);
+  cuts1->Set_HitLayer(7);
   mxCoalitionCuts *cuts2 = cuts1->Clone("Cut2");
-	cuts2->Set_PS_minChi2Prob(0.2);
+  cuts2->Set_PS_minChi2Prob(0.2);
   cuts2->SetQA();
   mxCoalitionCuts *cuts3 = cuts2->Clone("Cut3");
   cuts3->SetQA();
@@ -82,7 +81,7 @@ int main(int narg, char **carg) {
   float sgn;
   float penergy,peta,pphi;
   //std::cout << "INIT" << std::endl;
-  for(;;) {
+  for(int nevs=0;;++nevs) {
     input >> hits;
     inputP >> hitP;
     if(!input.good()) break;
@@ -106,6 +105,7 @@ int main(int narg, char **carg) {
     QAReco->Make(reco);
     //std::cout << "DUMPING" << std::endl;
     //reco->DumpParties();
+    //if(nevs>2) break;
 
     //dumping parties
     int ntot=0;
@@ -116,12 +116,12 @@ int main(int narg, char **carg) {
     for(int lyr=0; lyr!=18; ++lyr) {
       int n = reco->GetNParties(lyr);
       for(int i=0; i!=n; ++i) {
-				party = reco->GetParty(lyr,i);
-				outputP << lyr << " " << party->GetX() << " " << party->GetY() << " ";
-				outputP << party->Signal() << " ";
-				outputP << party->GetCov(0) << " " << party->GetCov(1) << " " << party->GetCov(2) << " ";
-				outputP << party->GetSpreadX() << " " << party->GetSpreadY() << " ";
-				outputP << std::endl;
+	party = reco->GetParty(lyr,i);
+	outputP << lyr << " " << party->GetX() << " " << party->GetY() << " ";
+	outputP << party->Signal() << " ";
+	outputP << party->GetCov(0) << " " << party->GetCov(1) << " " << party->GetCov(2) << " ";
+	outputP << party->GetSpreadX() << " " << party->GetSpreadY() << " ";
+	outputP << std::endl;
       }
     }
 
@@ -156,15 +156,16 @@ int main(int narg, char **carg) {
   std::cout << "OUTPUT: " << Form("%s.pty",file.Data()) << std::endl;
   std::cout << "OUTPUT: " << Form("%s.coa",file.Data()) << std::endl;
   //std::cout << "OUTPUT: " << Form("%s.uni",file.Data()) << std::endl;
-  std::cout << "OUTPUT: " << Form("%s_qa.root",file.Data()) << std::endl;
-  QAReco->GetList()->SaveAs( Form("%s_qa.root",file.Data()) );
-  TFile *ofile = new TFile( Form("%s_eff.root",file.Data()), "RECREATE" );
+  std::cout << "OUTPUT: " << Form("%s_%d_qa.root",file.Data(),combo) << std::endl;
+  TFile *ofile = new TFile( Form("%s_%d_qa.root",file.Data(),combo), "RECREATE" );
   gen->Write();
   recdphi->Write();
   recdeta->Write();
   seldphi->Write();
   seldeta->Write();
   TList *c;
+  c = QAReco->GetList();
+  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
   c = cuts0->GetList();
   for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
   c = cuts1->GetList();

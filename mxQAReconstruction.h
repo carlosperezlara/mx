@@ -47,6 +47,7 @@ class mxQAReconstruction {
   TH1F *fHcoaPh[2];
   TH1F *fHcoaX[2];
   TH1F *fHcoaY[2];
+  TH2F *fHcoaXY[2];
   TH1F *fHcoaEt[2];
   TH1F *fHcoaSPh[2];
   TH1F *fHcoaSEt[2];

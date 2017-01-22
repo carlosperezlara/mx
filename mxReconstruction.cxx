@@ -28,6 +28,7 @@ struct LowerKey
 
 //========
 mxReconstruction::mxReconstruction() :
+  fDebug(0),
   fPtyAlg(0),
   fCoaAlg(0),
   fPtyAlg1_thr(0.15) {
@@ -237,11 +238,17 @@ void mxReconstruction::Parties() {
     }
   }
   switch(fPtyAlg) {
-  case(0):
+  case(0): // LAYER ALLIANCE for MPC and FATBOY for EX
+    OneBigParty(8);
+    OneBigParty(17);
     for(int lyr=0; lyr!=18; ++lyr)
       Parties_ALG0(lyr);
     break;
-  case(1):
+  case(1): // FATBOY for EX and MPC
+    for(int lyr=0; lyr!=18; ++lyr)
+      Parties_ALG0(lyr);
+    break;
+  case(2): // PADROW ALLIANCE for EX nothig for MPC
     for(int lyr=0; lyr!=18; ++lyr)
       if(lyr==8||lyr==17) continue;
       else Parties_ALG1(lyr);
@@ -249,8 +256,55 @@ void mxReconstruction::Parties() {
   }
 }
 //========
+void mxReconstruction::OneBigParty(int lyr) {
+  if(fDebug>1)
+    std::cout << "> P_ONEPARTY for layer " << lyr << std::endl;
+  float dx, dy;
+  if(lyr==8||lyr==17) {
+    dx = fGeo->PbWO4_a0();
+    dy = fGeo->PbWO4_a1();
+  } else {
+    if((lyr%9)%2==0) {
+      dx = fGeo->Si_a0();
+      dy = fGeo->Si_a1();
+    } else {
+      dx = fGeo->Si_a1();
+      dy = fGeo->Si_a0();
+    }
+  }
+
+  mxParty *pty;
+  int nmax = fPty[lyr].size();
+  if(fNPty[lyr]>nmax-1) {
+    pty = new mxParty();
+    pty->SetDxDy(dx,dy);
+    fPty[lyr].push_back(pty);
+  } else pty = fPty[lyr].at( fNPty[lyr] );
+  pty->Reset();
+
+  mxHit *hit;
+  for(int mh=0; mh!=fNHit[lyr]; ++mh) {
+    hit = (mxHit*) fHit[lyr].at( mh );
+    if(hit->IsAssigned()) continue;
+    int idx = hit->Idx();
+    float x = fGeo->X( idx );
+    float y = fGeo->Y( idx );
+    pty->Fill( hit, x, y );
+    if(fDebug>1) {
+      std::cout << "  HIT x " << x << " y " << y << " sgn " << hit->Signal();
+      std::cout << " => Party x " << pty->GetX() << " y " << pty->GetY() << " sgn " << pty->Signal() << std::endl;
+    }
+  }
+  if(pty->N()>0) {
+    fNPty[lyr]++;
+    if(fDebug>1)
+      std::cout << "  PTY PUSHED" << std::endl;
+  }
+}
+//========
 void mxReconstruction::Parties_ALG0(int lyr) {
-  //std::cout << "> P_ALG0 for layer " << lyr << std::endl;
+  if(fDebug>1)
+    std::cout << "> P_ALG0 for layer " << lyr << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   // making local parties
   mxHit *hit;
@@ -269,7 +323,8 @@ void mxReconstruction::Parties_ALG0(int lyr) {
       dy = fGeo->Si_a0();
     }
   }
-  //std::cout << "Layer " << lyr << " | dx " << dx << " dy " << dy << std::endl;
+  if(fDebug>1)
+    std::cout << "Layer " << lyr << " | dx " << dx << " dy " << dy << std::endl;
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     hit = (mxHit*) fHit[lyr].at( mh );
     if(hit->IsAssigned()) continue;
@@ -277,16 +332,20 @@ void mxReconstruction::Parties_ALG0(int lyr) {
     float x = fGeo->X( idx );
     float y = fGeo->Y( idx );
     bool append = false;
-    //std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
+    if(fDebug>1)
+      std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
     for(int mp=0; mp!=fNPty[lyr]; ++mp) {
       pty = (mxParty*) fPty[lyr].at( mp );
       float test = pty->Test(x,y);
-      //std::cout << "    pty no " << mp << "|| in x y " << pty->GetX() << " " << pty->GetY();
-      //std::cout << " || hits " << pty->N() << " || spreadX " << pty->GetSpreadX();
-      //std::cout << " spreadY " << pty->GetSpreadY() << " || test " << test << std::endl;
+      if(fDebug>1) {
+	std::cout << "    pty no " << mp << "|| in x y " << pty->GetX() << " " << pty->GetY();
+	std::cout << " || hits " << pty->N() << " || spreadX " << pty->GetSpreadX();
+	std::cout << " spreadY " << pty->GetSpreadY() << " || test " << test << std::endl;
+      }
       if(test<10) {
 	append = true;
-	//std::cout << "    >>party update<< before: x=" << pty->GetX() << " y=" << pty->GetY();
+	if(fDebug>1)
+	  std::cout << "    >>party update<< before: x=" << pty->GetX() << " y=" << pty->GetY();
 	break;
       }
     }
@@ -299,17 +358,18 @@ void mxReconstruction::Parties_ALG0(int lyr) {
       } else pty = fPty[lyr].at( fNPty[lyr] );
       pty->Reset();
       fNPty[lyr]++;
-      //std::cout << "    >>NEW PARTY<<  ";
+      if(fDebug>1)
+	std::cout << "    >>NEW PARTY<<  ";
     }
     pty->Fill( hit, x, y );
-    //std::cout << " now x=" << pty->GetX() << " y=" << pty->GetY() <<" sgn=" <<pty->Signal() <<std::endl;
+    if(fDebug>1)
+      std::cout << " now x=" << pty->GetX() << " y=" << pty->GetY() <<" sgn=" <<pty->Signal() <<std::endl;
   }
 }
 //========
 void mxReconstruction::Parties_ALG1(int lyr) {
-  //Parties_ALG0(lyr);
-  //return;
-  //std::cout << "> P_ALG1 for layer " << lyr << std::endl;
+  if(fDebug>1)
+    std::cout << "> P_ALG1 for layer " << lyr << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],LowerKey());
   float dx, dy;
   if(lyr==8||lyr==17) {
@@ -330,26 +390,32 @@ void mxReconstruction::Parties_ALG1(int lyr) {
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     mxHit *hit = (mxHit*) fHit[lyr].at( mh );
     int idx = hit->Idx();
-    //std::cout << "  WORKING " << idx << std::endl;
+    if(fDebug>1)
+      std::cout << "  WORKING " << idx << std::endl;
     int sen = fGeo->Si_Idx2Sen(idx);
     if(cursen==-1) cursen=sen;
-    //std::cout << "  > Sensor: now " << sen << "  won " << cursen << std::endl;
+    if(fDebug>1)
+      std::cout << "  > Sensor: now " << sen << "  won " << cursen << std::endl;
     if(sen==cursen) {
       int row = fGeo->Si_Idx2Row(idx);
       int col = fGeo->Si_Idx2Col(idx);
-      //std::cout << "  > Adding hit to buffer in [" << row << "," << col << "]" << std::endl;
+      if(fDebug>1)
+	std::cout << "  > Adding hit to buffer in [" << row << "," << col << "]" << std::endl;
       buff[row][col] = hit;
     }
     if( (sen!=cursen) || (mh==(fNHit[lyr]-1)) ) { //DUMP
-      //std::cout << " >> dumping buffer" << std::endl;
-      //for(int r=0; r!=4; ++r) {
-      //  for(int c=0; c!=32; ++c) {
-      //    std::cout << (buff[r][c]==NULL?0:1) << "|";
-      //  }
-      //  std::cout << std::endl;
-      //}
+      if(fDebug>1) {
+	std::cout << " >> dumping buffer" << std::endl;
+	for(int r=0; r!=4; ++r) {
+	  for(int c=0; c!=32; ++c) {
+	    std::cout << (buff[r][c]==NULL?0:1) << "|";
+	  }
+	  std::cout << std::endl;
+	}
+      }
       for(int r=0; r!=4; ++r) { //per row
-      	//std::cout << "    finding leaders" << std::endl;
+	if(fDebug>1)
+	  std::cout << "    finding leaders" << std::endl;
       	//finding leaders
       	float mm=0;
       	for(int c=0; c!=32; ++c)
@@ -362,11 +428,13 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	  if( buff[r][c] )
       	    if( buff[r][c]->Signal()>mm ) lead[nlead++] = c;
       	//leaders found
-      	//std::cout << "    nleaders " << nlead << " => ";
-      	//for(int l=0; l!=nlead; ++l)
-      	//  std::cout << lead[l] << " ";
-      	//std::cout << std::endl;
-      	//std::cout << "     finding boundaries" << std::endl;
+	if(fDebug>1) {
+	  std::cout << "    nleaders " << nlead << " => ";
+	  for(int l=0; l!=nlead; ++l)
+	    std::cout << lead[l] << " ";
+	  std::cout << std::endl;
+	  std::cout << "     finding boundaries" << std::endl;
+	}
       	//finding boundaries
       	int ngroups = 0;
       	int blead[33];
@@ -387,13 +455,15 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	  blead[ngroups] = 32;
       	} //nlead
       	//boundaries found
-      	//std::cout << "     ngroups " << ngroups << " ==> boundaries ";
-      	//if(ngroups>0) {
-      	//  for(int l=0; l!=ngroups+1; ++l)
-      	//    std::cout << blead[l] << " ";
-      	//}
-      	//std::cout << std::endl;
-      	//std::cout << "    dumping into parties" << std::endl;
+	if(fDebug>1) {
+	  std::cout << "     ngroups " << ngroups << " ==> boundaries ";
+	  if(ngroups>0) {
+	    for(int l=0; l!=ngroups+1; ++l)
+	      std::cout << blead[l] << " ";
+	  }
+	  std::cout << std::endl;
+	  std::cout << "    dumping into parties" << std::endl;
+	}
       	//dumping into parties
       	mxParty *pty;
       	for(int l=0; l!=ngroups; ++l) {
@@ -413,14 +483,16 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	    }
       	  }
       	}
-      	//std::cout << "    end of damping" << std::endl;
+	if(fDebug>1)
+	  std::cout << "    end of damping" << std::endl;
       }// end of dump
       if(sen!=cursen) {
       	cursen = sen;
       	for(int r=0; r!=4; ++r) for(int c=0; c!=32; ++c) buff[r][c] = NULL; //reset
       	int row = fGeo->Si_Idx2Row(idx);
       	int col = fGeo->Si_Idx2Col(idx);
-      	//std::cout << "  > Adding hit to new buffer in [" << row << "," << col << "]" << std::endl;
+	if(fDebug>1)
+	  std::cout << "  > Adding hit to new buffer in [" << row << "," << col << "]" << std::endl;
       	buff[row][col] = hit;
         if(mh==(fNHit[lyr]-1)) { // dump lonely
           mxParty *pty;
@@ -453,10 +525,10 @@ void mxReconstruction::Coalitions() {
     }
   switch(fCoaAlg) {
   case(0):
-    Coalitions_ALG0();
+    Coalitions_ALG0(); // MPC ==> EX0
     break;
   case(1):
-    Coalitions_ALG1();
+    Coalitions_ALG1(); // EX6 ==> EX0 ==> EX7 | MPC
     break;
   }
 }
@@ -651,8 +723,6 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
   float x = r*TMath::Cos(phi);
   float y = r*TMath::Sin(phi);
   //std::cout << "x y " << x << " " << y << std::endl;
-  std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
-  mxHit *hit;
   mxParty *pty;
   float dx = fGeo->PbWO4_a0();
   float dy = fGeo->PbWO4_a1();
@@ -666,10 +736,12 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
     return pty;
   }
   //try to build one
+  std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
+  mxHit *hit;
   pty = NULL;
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     hit = (mxHit*) fHit[lyr].at( mh );
-    //if(hit->IsAssigned()) continue;
+    if(hit->IsAssigned()) continue;
     int idx = hit->Idx();
     float xh = fGeo->X( idx );
     float yh = fGeo->Y( idx );
@@ -712,4 +784,24 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
     chi2 += (phi-ph0)/ephi*(phi-ph0)/ephi + (thi-th0)/ethi*(thi-th0)/ethi;
   }
   return TMath::Prob(chi2,ncl*2.0);
+}
+//========
+void mxReconstruction::SetIdentificationAlgorithm(int combo) {
+  switch(combo) {
+  case(0):
+    SetPartyAlgorithm(1); // FATBOY for EX and MPC
+    SetCoalitionAlgorithm(0); // MPC ==> EX0
+    break;
+  case(1):
+    SetPartyAlgorithm(2); // PADROW ALLIANCE for EX nothig for MPC
+    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetPtyAlg1_Threshold(0.15);
+    break;
+  case(2):
+    SetPartyAlgorithm(0);// LAYER ALLIANCE for MPC and FATBOY for EX
+    //SetCoalitionAlgorithm(0); // MPC ==> EX0
+    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetPtyAlg1_Threshold(0.15);
+    break;
+  }
 }
