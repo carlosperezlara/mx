@@ -29,21 +29,26 @@ class mxCoalitionCuts {
   void FillQA( mxCoalition* );
   TList* GetList() {return fList;}
   void SetQA() {InitQA();}
+  void SetEneMax(float v) {fEneMax=v;}
+  void SetPSEneMax(float v) {fPSEneMax=v;}
 
  protected:
- 	TString fName;
+  TString fName;
   int fPS_minNHits;
   float fPS_minSignal;
   float fPS_minChi2Prob;
   bool fHitLayer[9];
 
- 	TList *fList;
-	TH1F *fHEne;
-	TH1F *fHPSSgn;
-	TH1F *fHN;
-	TProfile *fHPHits;
-	TProfile *fHPEne;
-	TH2F *fHPSChi2Prob;
-	TH2F *fHX;
+  float fEneMax;
+  float fPSEneMax;
+
+  TList *fList;
+  TH1F *fHEne;
+  TH1F *fHPSSgn;
+  TH1F *fHN;
+  TProfile *fHPHits;
+  TProfile *fHPEne;
+  TH2F *fHPSChi2Prob;
+  TH2F *fHX;
 };
 #endif /* __mxCoalitionCuts_H__ */

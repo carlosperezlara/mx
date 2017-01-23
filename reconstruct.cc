@@ -52,21 +52,22 @@ int main(int narg, char **carg) {
   mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
 
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
+  cuts0->SetEneMax( maxe );
   cuts0->SetQA();
   mxCoalitionCuts *cuts1 = cuts0->Clone("Cut1");
+  cuts1->SetEneMax( maxe );
   cuts1->SetQA();
   cuts1->Set_HitLayer(5);
   cuts1->Set_HitLayer(6);
   cuts1->Set_HitLayer(7);
   mxCoalitionCuts *cuts2 = cuts1->Clone("Cut2");
-  cuts2->Set_PS_minChi2Prob(0.2);
+  cuts2->SetEneMax( maxe );
   cuts2->SetQA();
+  cuts2->Set_PS_minChi2Prob(0.2);
   mxCoalitionCuts *cuts3 = cuts2->Clone("Cut3");
+  cuts3->SetEneMax( maxe );
   cuts3->SetQA();
   cuts3->Set_HitLayer(8);
-  mxCoalitionCuts *cuts4 = cuts3->Clone("Cut4");
-  cuts4->SetQA();
-  cuts4->Set_PS_minSignal(1e-5);
 
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::cout << "INPUT: " << Form("%s.prim",file.Data()) << std::endl;
@@ -143,7 +144,6 @@ int main(int narg, char **carg) {
 	      cuts1->PassesCuts(coalition);
 	      cuts2->PassesCuts(coalition);
 	      cuts3->PassesCuts(coalition);
-	      cuts4->PassesCuts(coalition);
       }
     }
 
@@ -173,8 +173,6 @@ int main(int narg, char **carg) {
   c = cuts2->GetList();
   for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
   c = cuts3->GetList();
-  for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
-  c = cuts4->GetList();
   for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
   ofile->Close();
   return 0;

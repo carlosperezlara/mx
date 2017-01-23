@@ -238,13 +238,13 @@ void mxReconstruction::Parties() {
     }
   }
   switch(fPtyAlg) {
-  case(0): // LAYER ALLIANCE for MPC and FATBOY for EX
+  case(0): // LAYER ALLIANCE for MPC and PADROW ALLIANCE for EX
     OneBigParty(8);
     OneBigParty(17);
     for(int lyr=0; lyr!=18; ++lyr)
-      Parties_ALG0(lyr);
+      Parties_ALG1(lyr);
     break;
-  case(1): // FATBOY for EX and MPC
+  case(1): // FOCAL ALLIANCE for EX and MPC
     for(int lyr=0; lyr!=18; ++lyr)
       Parties_ALG0(lyr);
     break;
@@ -252,6 +252,12 @@ void mxReconstruction::Parties() {
     for(int lyr=0; lyr!=18; ++lyr)
       if(lyr==8||lyr==17) continue;
       else Parties_ALG1(lyr);
+    break;
+  case(3): // LAYER ALLIANCE for MPC and FOCAL ALLIANCE for EX
+    OneBigParty(8);
+    OneBigParty(17);
+    for(int lyr=0; lyr!=18; ++lyr)
+      Parties_ALG0(lyr);
     break;
   }
 }
@@ -789,7 +795,7 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
 void mxReconstruction::SetIdentificationAlgorithm(int combo) {
   switch(combo) {
   case(0):
-    SetPartyAlgorithm(1); // FATBOY for EX and MPC
+    SetPartyAlgorithm(1); // FOCAL ALLIANCE for EX and MPC
     SetCoalitionAlgorithm(0); // MPC ==> EX0
     break;
   case(1):
@@ -798,10 +804,13 @@ void mxReconstruction::SetIdentificationAlgorithm(int combo) {
     SetPtyAlg1_Threshold(0.15);
     break;
   case(2):
-    SetPartyAlgorithm(0);// LAYER ALLIANCE for MPC and FATBOY for EX
-    //SetCoalitionAlgorithm(0); // MPC ==> EX0
+    SetPartyAlgorithm(0);// LAYER ALLIANCE for MPC and PADROW ALLIANCE for EX
     SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlg1_Threshold(0.15);
+    break;
+  case(3):
+    SetPartyAlgorithm(3);// LAYER ALLIANCE for MPC and FOCAL ALLIANCE for EX
+    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     break;
   }
 }

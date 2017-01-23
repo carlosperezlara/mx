@@ -136,9 +136,8 @@ float mxGeometry::W_Z(int sidx) {
 }
 //========
 int mxGeometry::RefKey(int lyridx, int tb) {
-  int ret=-1;
-  if(tb<0||tb>1) return ret;
-  if(lyridx<0||lyridx>16||lyridx==8) return ret;
+  if(tb<0||tb>1) return -1;
+  if(lyridx<0||lyridx>16||lyridx==8) return -1;
   int lyr = lyridx;
   if(lyr>7) lyr--;
   int arm = lyr/8;
@@ -154,6 +153,7 @@ int mxGeometry::RefKey(int lyridx, int tb) {
   if(arm==0 && tb==1) return keyA;
   if(arm==1 && tb==0) return keyA;
   if(arm==1 && tb==1) return keyB;
+  return -1;
 }
 //========
 int mxGeometry::Adjacent_Si_0(int idx) {
