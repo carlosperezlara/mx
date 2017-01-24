@@ -26,12 +26,19 @@ struct LowerKey
   bool operator()(T const &a, T const &b) const { return a->Idx() < b->Idx(); }
 };
 
+struct MostContributors
+{
+  template<class T>
+  bool operator()(T const &a, T const &b) const { return a->N() > b->N(); }
+};
+
 //========
 mxReconstruction::mxReconstruction() :
   fDebug(0),
   fPtyAlg(0),
   fCoaAlg(0),
-  fPtyAlg1_thr(0.15) {
+  fPtyAlgPadRow_thr(0.15),
+  fCoaAlgSeed6_nc(1) {
   // ctor
   std::cout << "mxReconstruction:: ctor" << std::endl;
   for(int i=0; i!=18; ++i) {
@@ -52,26 +59,10 @@ void mxReconstruction::Reset() {
   for(int i=0; i!=18; ++i) {
     fNHit[i] = 0;
     fNPty[i] = 0;
-    //for(int j=0; j!=int(fHit[i].size()); ++j){
-    //  delete fHit[i].at(j);
-    //}
-    //for(int j=0; j!=int(fPty[i].size()); ++j){
-    //  delete fPty[i].at(j);
-    //}
-    //fHit[i].clear();
-    //fPty[i].clear();
   }
   for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
     fNUni[i] = 0;
-    //for(int j=0; j!=int(fCoa[i].size()); ++j){
-    //  delete fCoa[i].at(j);
-    //}
-    //for(int j=0; j!=int(fUni[i].size()); ++j){
-    //  delete fUni[i].at(j);
-    //}
-    //fCoa[i].clear();
-    //fUni[i].clear();
   }
   fV[0] = 0.;
   fV[1] = 0.;
@@ -238,33 +229,33 @@ void mxReconstruction::Parties() {
     }
   }
   switch(fPtyAlg) {
-  case(0): // LAYER ALLIANCE for MPC and PADROW ALLIANCE for EX
-    OneBigParty(8);
-    OneBigParty(17);
+  case(0): // FOCAL ALLIANCE for EX and MPC
     for(int lyr=0; lyr!=18; ++lyr)
-      Parties_ALG1(lyr);
+      Parties_ALGFocal(lyr);
     break;
-  case(1): // FOCAL ALLIANCE for EX and MPC
-    for(int lyr=0; lyr!=18; ++lyr)
-      Parties_ALG0(lyr);
-    break;
-  case(2): // PADROW ALLIANCE for EX nothig for MPC
+  case(1): // PADROW ALLIANCE for EX nothig for MPC
     for(int lyr=0; lyr!=18; ++lyr)
       if(lyr==8||lyr==17) continue;
-      else Parties_ALG1(lyr);
+      else Parties_ALGPadRow(lyr);
     break;
-  case(3): // LAYER ALLIANCE for MPC and FOCAL ALLIANCE for EX
-    OneBigParty(8);
-    OneBigParty(17);
+  case(2): // PADROW ALLIANCE for EX and LAYER ALLIANCE for MPC
+    Parties_ALGLayer(8);
+    Parties_ALGLayer(17);
     for(int lyr=0; lyr!=18; ++lyr)
-      Parties_ALG0(lyr);
+      Parties_ALGPadRow(lyr);
+    break;
+  case(3): // FOCAL ALLIANCE for EX and LAYER ALLIANCE for MPC
+    Parties_ALGLayer(8);
+    Parties_ALGLayer(17);
+    for(int lyr=0; lyr!=18; ++lyr)
+      Parties_ALGFocal(lyr);
     break;
   }
 }
 //========
-void mxReconstruction::OneBigParty(int lyr) {
-  if(fDebug>1)
-    std::cout << "> P_ONEPARTY for layer " << lyr << std::endl;
+void mxReconstruction::Parties_ALGLayer(int lyr) {
+  if(fDebug>20)
+    std::cout << "> P_ALGLayer for layer " << lyr << std::endl;
   float dx, dy;
   if(lyr==8||lyr==17) {
     dx = fGeo->PbWO4_a0();
@@ -296,21 +287,21 @@ void mxReconstruction::OneBigParty(int lyr) {
     float x = fGeo->X( idx );
     float y = fGeo->Y( idx );
     pty->Fill( hit, x, y );
-    if(fDebug>1) {
+    if(fDebug>20) {
       std::cout << "  HIT x " << x << " y " << y << " sgn " << hit->Signal();
       std::cout << " => Party x " << pty->GetX() << " y " << pty->GetY() << " sgn " << pty->Signal() << std::endl;
     }
   }
   if(pty->N()>0) {
     fNPty[lyr]++;
-    if(fDebug>1)
+    if(fDebug>20)
       std::cout << "  PTY PUSHED" << std::endl;
   }
 }
 //========
-void mxReconstruction::Parties_ALG0(int lyr) {
-  if(fDebug>1)
-    std::cout << "> P_ALG0 for layer " << lyr << std::endl;
+void mxReconstruction::Parties_ALGFocal(int lyr) {
+  if(fDebug>20)
+    std::cout << "> P_ALGFocal for layer " << lyr << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   // making local parties
   mxHit *hit;
@@ -329,7 +320,7 @@ void mxReconstruction::Parties_ALG0(int lyr) {
       dy = fGeo->Si_a0();
     }
   }
-  if(fDebug>1)
+  if(fDebug>20)
     std::cout << "Layer " << lyr << " | dx " << dx << " dy " << dy << std::endl;
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     hit = (mxHit*) fHit[lyr].at( mh );
@@ -338,19 +329,19 @@ void mxReconstruction::Parties_ALG0(int lyr) {
     float x = fGeo->X( idx );
     float y = fGeo->Y( idx );
     bool append = false;
-    if(fDebug>1)
+    if(fDebug>20)
       std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
     for(int mp=0; mp!=fNPty[lyr]; ++mp) {
       pty = (mxParty*) fPty[lyr].at( mp );
       float test = pty->Test(x,y);
-      if(fDebug>1) {
+      if(fDebug>20) {
 	std::cout << "    pty no " << mp << "|| in x y " << pty->GetX() << " " << pty->GetY();
 	std::cout << " || hits " << pty->N() << " || spreadX " << pty->GetSpreadX();
 	std::cout << " spreadY " << pty->GetSpreadY() << " || test " << test << std::endl;
       }
       if(test<10) {
 	append = true;
-	if(fDebug>1)
+	if(fDebug>20)
 	  std::cout << "    >>party update<< before: x=" << pty->GetX() << " y=" << pty->GetY();
 	break;
       }
@@ -364,18 +355,18 @@ void mxReconstruction::Parties_ALG0(int lyr) {
       } else pty = fPty[lyr].at( fNPty[lyr] );
       pty->Reset();
       fNPty[lyr]++;
-      if(fDebug>1)
+      if(fDebug>20)
 	std::cout << "    >>NEW PARTY<<  ";
     }
     pty->Fill( hit, x, y );
-    if(fDebug>1)
+    if(fDebug>20)
       std::cout << " now x=" << pty->GetX() << " y=" << pty->GetY() <<" sgn=" <<pty->Signal() <<std::endl;
   }
 }
 //========
-void mxReconstruction::Parties_ALG1(int lyr) {
-  if(fDebug>1)
-    std::cout << "> P_ALG1 for layer " << lyr << std::endl;
+void mxReconstruction::Parties_ALGPadRow(int lyr) {
+  if(fDebug>20)
+    std::cout << "> P_ALGPadRow for layer " << lyr << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],LowerKey());
   float dx, dy;
   if(lyr==8||lyr==17) {
@@ -396,21 +387,21 @@ void mxReconstruction::Parties_ALG1(int lyr) {
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     mxHit *hit = (mxHit*) fHit[lyr].at( mh );
     int idx = hit->Idx();
-    if(fDebug>1)
+    if(fDebug>20)
       std::cout << "  WORKING " << idx << std::endl;
     int sen = fGeo->Si_Idx2Sen(idx);
     if(cursen==-1) cursen=sen;
-    if(fDebug>1)
+    if(fDebug>20)
       std::cout << "  > Sensor: now " << sen << "  won " << cursen << std::endl;
     if(sen==cursen) {
       int row = fGeo->Si_Idx2Row(idx);
       int col = fGeo->Si_Idx2Col(idx);
-      if(fDebug>1)
+      if(fDebug>20)
 	std::cout << "  > Adding hit to buffer in [" << row << "," << col << "]" << std::endl;
       buff[row][col] = hit;
     }
     if( (sen!=cursen) || (mh==(fNHit[lyr]-1)) ) { //DUMP
-      if(fDebug>1) {
+      if(fDebug>20) {
 	std::cout << " >> dumping buffer" << std::endl;
 	for(int r=0; r!=4; ++r) {
 	  for(int c=0; c!=32; ++c) {
@@ -420,21 +411,21 @@ void mxReconstruction::Parties_ALG1(int lyr) {
 	}
       }
       for(int r=0; r!=4; ++r) { //per row
-	if(fDebug>1)
+	if(fDebug>20)
 	  std::cout << "    finding leaders" << std::endl;
       	//finding leaders
       	float mm=0;
       	for(int c=0; c!=32; ++c)
       	  if( buff[r][c] )
       	    if( buff[r][c]->Signal()>mm ) mm = buff[r][c]->Signal();
-      	mm = mm * fPtyAlg1_thr; // set threshold
+      	mm = mm * fPtyAlgPadRow_thr; // set threshold
       	int nlead = 0;
       	int lead[32];
       	for(int c=0; c!=32; ++c)
       	  if( buff[r][c] )
       	    if( buff[r][c]->Signal()>mm ) lead[nlead++] = c;
       	//leaders found
-	if(fDebug>1) {
+	if(fDebug>20) {
 	  std::cout << "    nleaders " << nlead << " => ";
 	  for(int l=0; l!=nlead; ++l)
 	    std::cout << lead[l] << " ";
@@ -461,7 +452,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	  blead[ngroups] = 32;
       	} //nlead
       	//boundaries found
-	if(fDebug>1) {
+	if(fDebug>20) {
 	  std::cout << "     ngroups " << ngroups << " ==> boundaries ";
 	  if(ngroups>0) {
 	    for(int l=0; l!=ngroups+1; ++l)
@@ -489,7 +480,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	    }
       	  }
       	}
-	if(fDebug>1)
+	if(fDebug>20)
 	  std::cout << "    end of damping" << std::endl;
       }// end of dump
       if(sen!=cursen) {
@@ -497,7 +488,7 @@ void mxReconstruction::Parties_ALG1(int lyr) {
       	for(int r=0; r!=4; ++r) for(int c=0; c!=32; ++c) buff[r][c] = NULL; //reset
       	int row = fGeo->Si_Idx2Row(idx);
       	int col = fGeo->Si_Idx2Col(idx);
-	if(fDebug>1)
+	if(fDebug>20)
 	  std::cout << "  > Adding hit to new buffer in [" << row << "," << col << "]" << std::endl;
       	buff[row][col] = hit;
         if(mh==(fNHit[lyr]-1)) { // dump lonely
@@ -531,16 +522,17 @@ void mxReconstruction::Coalitions() {
     }
   switch(fCoaAlg) {
   case(0):
-    Coalitions_ALG0(); // MPC ==> EX0
+    Coalitions_ALGSeedMPC(); // MPC ==> EX0
     break;
   case(1):
-    Coalitions_ALG1(); // EX6 ==> EX0 ==> EX7 | MPC
+    Coalitions_ALGSeed6(); // EX6 ==> EX0 ==> EX7 | MPC
     break;
   }
 }
 //========
-void mxReconstruction::Coalitions_ALG0() {
-  //std::cout << "C_ALG0" << std::endl;
+void mxReconstruction::Coalitions_ALGSeedMPC() {
+  if(fDebug>10)
+    std::cout << "C_ALGSeedMPC" << std::endl;
   // 0 1 2 3 4 5 6 7 || 8
   // O<=================O
   // Build the coalition from MPC backwards
@@ -558,7 +550,8 @@ void mxReconstruction::Coalitions_ALG0() {
   for(int arm=0; arm!=2; ++arm) {
     // call for coalition formation
     for(int lyr=arm*9+8; lyr!=arm*9+7; --lyr) {
-      //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
+      if(fDebug>10)
+	std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
       for(int mp=0; mp!=fNPty[lyr]; ++mp) {
       	pty = fPty[lyr].at(mp);
         if(pty->IsAssigned()) continue;
@@ -573,37 +566,47 @@ void mxReconstruction::Coalitions_ALG0() {
       	float ephi=0, etheta=0;
       	float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
       	float theta = _theta( pty->GetX(), pty->GetY(), Z[lyr], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
-      	//std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta  << " || ephi etheta " << ephi << " " << etheta << std::endl;
+	if(fDebug>10) {
+	  std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta;
+	  std::cout << " || ephi etheta " << ephi << " " << etheta << std::endl;
+	}
       	int coalyr = lyr%9;
         coa->Fill( coalyr, pty, phi, theta );
-      	//std::cout << " >>>NEW COALITION<<< with phi theta " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
+	if(fDebug>10)
+	  std::cout << " >>>NEW COALITION<<< with phi theta " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
       	++fNCoa[arm];
         // check for allignments
         for(int inc=lyr-1; inc!=arm*9-1; --inc) {
-      	  //std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	  if(fDebug>10)
+	    std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
       	  for(int np=0; np!=fNPty[inc]; ++np) {
             pty = fPty[inc].at(np);
       	    if(pty->IsAssigned()) continue;
       	    phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
       	    theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	    float test = coa->Test( phi, theta, ephi, etheta );
-      	    //std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
-            //std::cout << ephi << " " << etheta << " || test " << test << std::endl;
+	    if(fDebug>10) {
+	      std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
+	      std::cout << ephi << " " << etheta << " || test " << test << std::endl;
+	    }
             if( test < 3) {
-      	      //std::cout << "    [compatible]  saving..." << std::endl;
+	      if(fDebug>10)
+		std::cout << "    [compatible]  saving..." << std::endl;
               coa->Fill( inc, pty, phi, theta );
       	      break;
       	    }
           } // np
-    	    //std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
+	  if(fDebug>10)
+    	    std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
         } //inc
       } //mp
     } //lyr
   } //arm
 }
 //========
-void mxReconstruction::Coalitions_ALG1() {
-  //std::cout << "C_ALG1" << std::endl;
+void mxReconstruction::Coalitions_ALGSeed6() {
+  if(fDebug>10)
+    std::cout << "C_ALGSeed6" << std::endl;
   // 0 1 2 3 4 5 6 7 || 8
   // O<==========O   ||
   //             =>O || X
@@ -619,13 +622,13 @@ void mxReconstruction::Coalitions_ALG1() {
   dz[8] = fGeo->PbWO4_a2();
   dz[17] = fGeo->PbWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
-
   mxParty *pty;
   mxCoalition *coa;
   for(int arm=0; arm!=2; ++arm) {
     // call for coalition formation
     int lyr=arm*9+6;
-    //std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
+    if(fDebug>10)
+      std::cout << "lyr " << lyr << " | npty " << fNPty[lyr] << std::endl;
     for(int mp=0; mp!=fNPty[lyr]; ++mp) {
       pty = fPty[lyr].at(mp);
       if(pty->IsAssigned()) continue;
@@ -641,56 +644,78 @@ void mxReconstruction::Coalitions_ALG1() {
       float spreadxy = TMath::Max( pty->GetSpreadX(), pty->GetSpreadY() );
       float phi = _phi( pty->GetX(), pty->GetY(), ephi, spreadxy, spreadxy );
       float theta = _theta( pty->GetX(), pty->GetY(), Z[lyr], etheta, spreadxy, spreadxy, dz[lyr] );
-      //std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta  << " || ephi etheta " << ephi << " " << etheta << std::endl;
+      if(fDebug>10) {
+	std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta;
+	std::cout << " || ephi etheta " << ephi << " " << etheta << std::endl;
+      }
       int coalyr = lyr%9;
       coa->Fill( coalyr, pty, phi, theta );
-      //std::cout << " >>>NEW COALITION<<< with phi theta " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
+      if(fDebug>10)
+	std::cout << " >>>NEW COALITION<<< with phi theta " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
       ++fNCoa[arm];
       // check for allignments backwards
       for(int inc=lyr-1; inc!=arm*9-1; --inc) {
-      	//std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	if(fDebug>10)
+	  std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
       	for(int np=0; np!=fNPty[inc]; ++np) {
       	  pty = fPty[inc].at(np);
       	  if(pty->IsAssigned()) continue;
       	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
       	  theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	  float test = coa->Test( phi, theta, ephi, etheta );
-      	  //std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
-          //std::cout << ephi << " " << etheta << " || test " << test << std::endl;
+	  if(fDebug>10) {
+	    std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
+	    std::cout << ephi << " " << etheta << " || test " << test << std::endl;
+	  }
       	  int coainc = inc%9;
       	  if( test < 3 ) {
-      	    //std::cout << "    [compatible]  saving..." << std::endl;
+	    if(fDebug>10)
+	      std::cout << "    [compatible]  saving..." << std::endl;
       	    coa->Fill( coainc, pty, phi, theta );
       	    break;
       	  }
       	} //np
-      	//std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
+	if(fDebug>10)
+	  std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
       } //inc
       // check for allignments forward
       for(int inc=lyr+1; inc!=(arm+1)*9-1; ++inc) {
-  	    //std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
+	if(fDebug>10)
+	  std::cout << "  checking lyr " << inc << " | npty " << fNPty[inc] << std::endl;
       	for(int np=0; np!=fNPty[inc]; ++np) {
       	  pty = fPty[inc].at(np);
       	  if(pty->IsAssigned()) continue;
       	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
       	  theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	  float test = coa->Test( phi, theta, ephi, etheta );
-      	  //std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta " << ephi;
-          //std::cout << " " << etheta << " || test " << test << std::endl;
-                int coainc = inc%9;
+	  if(fDebug>10) {
+	    std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta " << ephi;
+	    std::cout << " " << etheta << " || test " << test << std::endl;
+	  }
+	  int coainc = inc%9;
       	  if( test < 3 ) {
-      	    //std::cout << "    [compatible]  saving..." << std::endl;
+	    if(fDebug>10)
+	      std::cout << "    [compatible]  saving..." << std::endl;
       	    coa->Fill( coainc, pty, phi, theta );
       	    break;
       	  }
       	} //np
-      	//std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
+	if(fDebug>10)
+	  std::cout << " >update< " << coa->GetPhi() << " " << coa->GetTheta() << std::endl;
       } //inc
-      mxParty *mpc = SeekHitInEM(coa->GetPhi(), coa->GetTheta(), arm);
-      if(mpc) coa->Fill( arm*9+8, mpc, coa->GetPhi(), coa->GetTheta() );
+    } //mp
+    std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],MostContributors());
+    for(int icoa=0; icoa!=fNCoa[arm]; ++icoa) {
+      coa = fCoa[arm].at(icoa);
+      mxParty *mpc = SeekHitInEM(coa->GetPhi(), coa->GetTheta(), arm, fCoaAlgSeed6_nc);
+      if(mpc) {
+	coa->Fill( arm*9+8, mpc, coa->GetPhi(), coa->GetTheta() );
+	if(fDebug>5)
+	  std::cout << " >attach mpc< with " << mpc->N() << " hits" << std::endl;
+      }
       float pp = ComputePSChi2Prob(arm,coa);
       coa->SetPSChi2Prob(pp);
-    } //mp
+    } //icoa
   } //arm
 }
 //========
@@ -722,26 +747,32 @@ void mxReconstruction::FillPP(float energy, float eta, float phi, int pdg) {
   //fMCPart->Fill(energy,eta,phi,pdg);
 }
 //========
-mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
+mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int group) {
+  if(fDebug>5)
+    std::cout << "SeekHitInEM" << std::endl;
   int lyr = arm*9+8;
   float z = fGeo->RZ(lyr);
   float r = z*TMath::Tan(theta);
   float x = r*TMath::Cos(phi);
   float y = r*TMath::Sin(phi);
-  //std::cout << "x y " << x << " " << y << std::endl;
+  if(fDebug>5)
+    std::cout << " x y " << x << " " << y << std::endl;
   mxParty *pty;
   float dx = fGeo->PbWO4_a0();
   float dy = fGeo->PbWO4_a1();
-  //look if party is already created and attached to it
+  if(fDebug>5)
+    std::cout << " look if party is already created and attached to it" << std::endl;
   for(int mp=0; mp!=fNPty[lyr]; ++mp) {
     pty = (mxParty*) fPty[lyr].at(mp);
+    if(pty->IsAssigned()) continue;
     float xp = pty->GetX();
     float yp = pty->GetY();
     if( TMath::Abs(xp-x) > (dx/2+0.5) ) continue;
     if( TMath::Abs(yp-y) > (dy/2+0.5) ) continue;
     return pty;
   }
-  //try to build one
+  if(fDebug>5)
+    std::cout << " try to build one" << std::endl;
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   mxHit *hit;
   pty = NULL;
@@ -753,7 +784,8 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
     float yh = fGeo->Y( idx );
     if( TMath::Abs(xh-x) > (dx/2+0.5) ) continue;
     if( TMath::Abs(yh-y) > (dy/2+0.5) ) continue;
-    //std::cout << "FOUND " << hit->Idx() << std::endl;
+    if(fDebug>5)
+      std::cout << " FOUND " << hit->Idx() << std::endl;
     int nmax = fPty[lyr].size();
     if(fNPty[lyr]>nmax-1) {
       pty = new mxParty();
@@ -763,6 +795,54 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm) {
     pty->Reset();
     fNPty[lyr]++;
     pty->Fill( hit, xh, yh );
+    if(group>2) { // find two best neighbors
+      if(fDebug>5)
+	std::cout << " attempt to find threesome" << std::endl;
+      int nn[2] = {0,0};
+      int idn[2][2] = { {-1,-1}, {-1,-1} };
+      float sgnn[2][2] = { {0,0}, {0,0} };
+      float xn[2][2] = { {0,0}, {0,0} };
+      float yn[2][2] = { {0,0}, {0,0} };
+      mxHit *ohit;
+      for(int nh=mh; nh!=fNHit[lyr]; ++nh) { //loop over less energetic ones
+	//for(int nh=0; nh!=fNHit[lyr]; ++nh) { //loop over less energetic ones
+	ohit = (mxHit*) fHit[lyr].at( nh );
+	if(ohit->IsAssigned()) continue;
+	int oidx = ohit->Idx();
+	float ox = fGeo->X( oidx );
+	float oy = fGeo->Y( oidx );
+	if(fDebug>5)
+	  std::cout << " found one crystal with dx " << (xh-ox) << " dy " << (yh-oy) << " idx " << oidx << std::endl;
+	if( (TMath::Abs(xh-ox)<(dx+0.5)) && 
+	    (TMath::Abs(yh-oy)<0.1) ) { // horizontal neighbor
+	  if(fDebug>5)
+	    std::cout << " found neighbour in H" << std::endl;
+	  idn[0][ nn[0] ] = nh;
+	  xn[0][ nn[0] ] = ox;
+	  yn[0][ nn[0] ] = oy;
+	  sgnn[0][ nn[0]++ ] = ohit->Signal();
+	} else
+	if( (TMath::Abs(yh-oy)<(dy+0.5)) && 
+	    (TMath::Abs(xh-ox)<0.1) ) { // vertical neighbor
+	  if(fDebug>5)
+	    std::cout << " found neighbour in V" << std::endl;
+	  idn[1][ nn[1] ] = nh;
+	  xn[1][ nn[1] ] = ox;
+	  yn[1][ nn[1] ] = oy;
+	  sgnn[1][ nn[1]++ ] = ohit->Signal();
+	}
+      }
+      if(nn[0]>0) {
+	int ij = 0;
+	if( sgnn[0][1] > sgnn[0][0] ) ij = 1;
+	pty->Fill( fHit[lyr].at( idn[0][ij] ), xn[0][ij], yn[0][ij] );
+      }
+      if(nn[1]>0) {
+	int ij = 0;
+	if( sgnn[1][1] > sgnn[1][0] ) ij = 1;
+	pty->Fill( fHit[lyr].at( idn[1][ij] ), xn[1][ij], yn[1][ij] );
+      }
+    }
     break;
   }
   return pty;
@@ -795,22 +875,32 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
 void mxReconstruction::SetIdentificationAlgorithm(int combo) {
   switch(combo) {
   case(0):
-    SetPartyAlgorithm(1); // FOCAL ALLIANCE for EX and MPC
+    SetPartyAlgorithm(0); // FOCAL ALLIANCE for EX and MPC
     SetCoalitionAlgorithm(0); // MPC ==> EX0
     break;
   case(1):
-    SetPartyAlgorithm(2); // PADROW ALLIANCE for EX nothig for MPC
+    SetPartyAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
     SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
-    SetPtyAlg1_Threshold(0.15);
+    SetPtyAlgPadRow_Threshold(0.15);
+    SetCoaAlgSeed6_NCrystals(1); // MATCH MPC to ONE crystal
     break;
   case(2):
-    SetPartyAlgorithm(0);// LAYER ALLIANCE for MPC and PADROW ALLIANCE for EX
+    SetPartyAlgorithm(2);// PADROW ALLIANCE for EX and LAYER ALLIANCE for MPC
     SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
-    SetPtyAlg1_Threshold(0.15);
+    SetPtyAlgPadRow_Threshold(0.15);
+    SetCoaAlgSeed6_NCrystals(1); // IRRELEVANT, WILL MATCH TO FULL MPC
     break;
   case(3):
-    SetPartyAlgorithm(3);// LAYER ALLIANCE for MPC and FOCAL ALLIANCE for EX
+    SetPartyAlgorithm(3);// FOCAL ALLIANCE for EX  and LAYER ALLIANCE for MPC
     SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetPtyAlgPadRow_Threshold(0.15);
+    SetCoaAlgSeed6_NCrystals(1); // IRRELEVANT, WILL MATCH TO FULL MPC
+    break;
+  case(4):
+    SetPartyAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
+    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetPtyAlgPadRow_Threshold(0.15);
+    SetCoaAlgSeed6_NCrystals(3); // MATCH MPC to THREE crystals
     break;
   }
 }

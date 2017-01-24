@@ -49,19 +49,20 @@ class mxReconstruction {
  private:
   void SetPartyAlgorithm(int v) {fPtyAlg=v;}
   void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
-  void SetPtyAlg1_Threshold(float v) {fPtyAlg1_thr=v;}
+  void SetPtyAlgPadRow_Threshold(float v) {fPtyAlgPadRow_thr=v;}
+  void SetCoaAlgSeed6_NCrystals(int v) {fCoaAlgSeed6_nc=v;}
 
   void Parties();
   void Coalitions();
   void Unions();
 
-  void OneBigParty(int);
-  void Parties_ALG0(int);
-  void Parties_ALG1(int);
+  void Parties_ALGFocal(int);
+  void Parties_ALGPadRow(int);
+  void Parties_ALGLayer(int);
 
-  void Coalitions_ALG0();
-  void Coalitions_ALG1();
-  mxParty* SeekHitInEM(float, float, int);
+  void Coalitions_ALGSeedMPC();
+  void Coalitions_ALGSeed6();
+  mxParty* SeekHitInEM(float, float, int, int);
   float ComputePSChi2Prob(int, mxCoalition*);
 
   std::vector<mxHit*> fHit[18];
@@ -73,7 +74,8 @@ class mxReconstruction {
   int fDebug;
   int fPtyAlg;
   int fCoaAlg;
-  float fPtyAlg1_thr;
+  float fPtyAlgPadRow_thr;
+  float fCoaAlgSeed6_nc;
   int fNHit[18];
   int fNPty[18];
   int fNCoa[2];

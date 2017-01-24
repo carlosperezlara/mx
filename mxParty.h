@@ -30,6 +30,7 @@ class mxParty {
   bool IsAssigned() {return fAssigned;}
   void SetAssigned(bool val=true) {fAssigned=val;}
   void SetDxDy(float dx, float dy) {fDx=dx; fDy=dy;}
+  int GetSizeUmbral(float);
 
  protected:
   mxHit *fHits[128];

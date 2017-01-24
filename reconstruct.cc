@@ -47,7 +47,7 @@ int main(int narg, char **carg) {
     maxe = sMaxE.Atof();
   }
   mxReconstruction *reco = new mxReconstruction();
-  //reco->SetDebug(2);
+  //reco->SetDebug(6);
   reco->SetIdentificationAlgorithm(combo);
   mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
 
@@ -102,7 +102,9 @@ int main(int narg, char **carg) {
       //std::cout << penergy << std::endl;
 
     }
+    //std::cout << "MAKING" << std::endl;
     reco->Make();
+    //std::cout << "QAING" << std::endl;
     QAReco->Make(reco);
     //std::cout << "DUMPING" << std::endl;
     //reco->DumpParties();

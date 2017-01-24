@@ -7,6 +7,9 @@
 #include "mxHit.h"
 #include "mxParty.h"
 
+#include <vector>
+#include <algorithm>
+
 //========
 mxParty::mxParty():
   fAssigned(false),
@@ -149,6 +152,24 @@ void mxParty::Reset() {
   fNy=0;
   fX0=0;
   fY0=0;
+}
+//========
+int mxParty::GetSizeUmbral(float per) {
+  if(per>1) return N();
+  if(per<0.0) return 0;
+  float um = Signal()*(1-per);
+  std::vector<float> enes;
+  for(int i=0; i!=N(); ++i)
+    enes.push_back( fHits[i]->Signal() );
+  std::sort(enes.begin(),enes.end());
+  int nex=0;
+  float sum=0;
+  for(unsigned int i=0; i!=enes.size(); ++i) {
+    sum += enes[i];
+    if(sum>um) break;
+    nex--;
+  }
+  return N()-nex;
 }
 //========
 float mxParty::GetCov(int dim) {

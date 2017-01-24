@@ -47,7 +47,7 @@ void mxCoalitionCuts::InitQA() {
   fHPHits = new TProfile(Form("%s_Hits",fName.Data()), Form("%s_Hits;Layer Idx",fName.Data()), 9,-0.5,8.5);
   fHPEne = new TProfile(Form("%s_PEne",fName.Data()), Form("%s_PEne;Layer Idx",fName.Data()), 9,-0.5,8.5);
   fHPSChi2Prob = new TH2F(Form("%s_PS_Chi2Pro",fName.Data()), Form("%s_PS_Chi2Pro;Energy in GeV;Prob",fName.Data()), 100,0,fPSEneMax, 100,0,1);
-  fHX = new TH2F(Form("%s_X",fName.Data()), Form("%s_X",fName.Data()), 9,-0.5,8.5, 101,-5,+5);
+  fHX = new TProfile(Form("%s_X",fName.Data()), Form("%s_X;Layer Idx;Party Width in mm",fName.Data()), 9,-0.5,8.5);
   fList->Add( fHEne );
   fList->Add( fHPSSgn );
   fList->Add( fHN );
@@ -68,11 +68,11 @@ void mxCoalitionCuts::FillQA(mxCoalition *coalition) {
     fHPHits->Fill(j,pty->N());
     fHPEne->Fill(j,pty->Signal());
     if(j==8) continue;
-    for(int k=0; k!=pty->N(); ++k) {
-      mxHit *hit = pty->GetHit(k);
-      //if(j%2==0) fHX->Fill(j, geo->X(hit->Idx()) - pty->GetX() );
-      //if(j%2==1) fHX->Fill(j, geo->Y(hit->Idx()) - pty->GetY() );
-    }
+    int nh = pty->GetSizeUmbral(0.7);
+    float dx;
+    if(j%2==0) dx = pty->GetDx();
+    if(j%2==1) dx = pty->GetDy();
+    fHX->Fill(j, nh*dx );
   }
 }
 //========

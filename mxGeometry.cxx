@@ -245,7 +245,7 @@ void mxGeometry::UpdatePbWO4(int k) {
   fY = fPbWO4_RY[k];
   if(k<fPbWO4_IdxS) fZ = fPbWO4_RZ[0];
   else fZ = fPbWO4_RZ[1];
-  int arm = k/288;
+  int arm = k/fPbWO4_IdxS;
   fLyrIdx = arm*9+8;
   fLastIdx = k;
 }
