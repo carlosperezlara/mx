@@ -27,6 +27,7 @@ mxCoalitionCuts::mxCoalitionCuts(TString name):
   fHPHits(NULL),
   fHPEne(NULL),
   fHPSChi2Prob(NULL),
+  fHEnePSEne(NULL),
   fHX(NULL) {
   // ctor
   for(int i=0; i!=9; ++i) fHitLayer[i] = false;
@@ -47,6 +48,7 @@ void mxCoalitionCuts::InitQA() {
   fHPHits = new TProfile(Form("%s_Hits",fName.Data()), Form("%s_Hits;Layer Idx",fName.Data()), 9,-0.5,8.5);
   fHPEne = new TProfile(Form("%s_PEne",fName.Data()), Form("%s_PEne;Layer Idx",fName.Data()), 9,-0.5,8.5);
   fHPSChi2Prob = new TH2F(Form("%s_PS_Chi2Pro",fName.Data()), Form("%s_PS_Chi2Pro;Energy in GeV;Prob",fName.Data()), 100,0,fPSEneMax, 100,0,1);
+  fHEnePSEne = new TH2F(Form("%s_Ene_PSEne",fName.Data()), Form("%s_Ene_PSEne;Energy in GeV;Energy in GeV",fName.Data()), 100,0,fPSEneMax, 100,0,fEneMax);
   fHX = new TProfile(Form("%s_X",fName.Data()), Form("%s_X;Layer Idx;Party Width in mm",fName.Data()), 9,-0.5,8.5);
   fList->Add( fHEne );
   fList->Add( fHPSSgn );
@@ -54,6 +56,7 @@ void mxCoalitionCuts::InitQA() {
   fList->Add( fHPHits );
   fList->Add( fHPEne );
   fList->Add( fHPSChi2Prob );
+  fList->Add( fHEnePSEne );
   fList->Add( fHX );
 }
 //========
@@ -61,6 +64,7 @@ void mxCoalitionCuts::FillQA(mxCoalition *coalition) {
   fHEne->Fill( coalition->GetEnergy() );
   fHPSSgn->Fill( coalition->SignalPreShower() );
   fHPSChi2Prob->Fill( coalition->SignalPreShower(), coalition->GetPSChi2Prob() );
+  fHEnePSEne->Fill( coalition->SignalPreShower(), coalition->SignalPbWO4() );
   fHN->Fill( coalition->N() );
   for(int j=0; j!=9; ++j) {
     mxParty *pty = coalition->GetParty(j);

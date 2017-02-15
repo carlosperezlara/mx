@@ -96,6 +96,14 @@ float mxCoalition::SignalPreShower() {
   return sgn;
 }
 //========
+float mxCoalition::SignalPbWO4() {
+  float sgn = 0;
+  mxParty *pty;
+  pty = GetParty(8);
+  if(pty) sgn += pty->Signal();
+  return sgn;
+}
+//========
 int mxCoalition::NPreShower() {
   int hts = 0;
   for(int l=0; l!=8; ++l) {

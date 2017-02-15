@@ -49,6 +49,7 @@ class mxCoalitionCuts {
   TProfile *fHPHits;
   TProfile *fHPEne;
   TH2F *fHPSChi2Prob;
+  TH2F *fHEnePSEne;
   TProfile *fHX;
 };
 #endif /* __mxCoalitionCuts_H__ */

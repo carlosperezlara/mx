@@ -845,6 +845,9 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int grou
     }
     break;
   }
+  //if(group>3) { // increase mpc cluster by proximity
+  //  std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
+  //}
   return pty;
 }
 //========

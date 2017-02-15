@@ -53,19 +53,23 @@ int main(int narg, char **carg) {
 
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
   cuts0->SetEneMax( maxe );
+  cuts0->SetPSEneMax( maxe*0.015 );
   cuts0->SetQA();
   mxCoalitionCuts *cuts1 = cuts0->Clone("Cut1");
   cuts1->SetEneMax( maxe );
+  cuts1->SetPSEneMax( maxe*0.015 );
   cuts1->SetQA();
   cuts1->Set_HitLayer(5);
   cuts1->Set_HitLayer(6);
   cuts1->Set_HitLayer(7);
   mxCoalitionCuts *cuts2 = cuts1->Clone("Cut2");
   cuts2->SetEneMax( maxe );
+  cuts2->SetPSEneMax( maxe*0.015 );
   cuts2->SetQA();
   cuts2->Set_PS_minChi2Prob(0.2);
   mxCoalitionCuts *cuts3 = cuts2->Clone("Cut3");
   cuts3->SetEneMax( maxe );
+  cuts3->SetPSEneMax( maxe*0.015 );
   cuts3->SetQA();
   cuts3->Set_HitLayer(8);
 
