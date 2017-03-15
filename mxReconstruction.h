@@ -59,6 +59,7 @@ class mxReconstruction {
   void Parties_ALGFocal(int);
   void Parties_ALGPadRow(int);
   void Parties_ALGLayer(int);
+  void Parties_ALGMPCBreaker(int);
 
   void Coalitions_ALGSeedMPC();
   void Coalitions_ALGSeed6();

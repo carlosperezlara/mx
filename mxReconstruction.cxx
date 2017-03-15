@@ -253,6 +253,71 @@ void mxReconstruction::Parties() {
   }
 }
 //========
+void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
+  if(fDebug>20)
+    std::cout << "> P_ALGMPCBraker for layer " << lyr << std::endl;
+  if(lyr!=8||lyr!=17) return; //do nothing
+  float dx = fGeo->PbWO4_a0();
+  float dy = fGeo->PbWO4_a1();
+  // sort by energy
+  std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
+  // start loop from most energetic, then attach neighbours below threshold
+  for(int mh=0; mh!=fNHit[lyr]; ++mh) {
+    mxHit *hit = (mxHit*) fHit[lyr].at( mh );
+    if(hit->IsAssigned()) continue;
+    int idx = hit->Idx();
+    float peak = hit->Signal();
+    // create new party
+    int nmax = fPty[lyr].size();
+    mxParty *pty;
+    if(fNPty[lyr]>nmax-1) {
+      pty = new mxParty();
+      pty->SetDxDy(dx,dy);
+      fPty[lyr].push_back(pty);
+    } else pty = fPty[lyr].at( fNPty[lyr] );
+    pty->Reset();
+    fNPty[lyr]++;
+    float x = fGeo->X( idx );
+    float y = fGeo->Y( idx );
+    if(fDebug>20)
+      std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
+    float thr = peak*0.1;
+    pty->Fill( hit, x, y );
+    int fourn[4];
+    bool added = true;
+    while(added) { // unnecesarily slow TODO
+      if(fDebug>20)
+	std::cout << " scanning party " << std::endl;
+      added = false;
+      for(int nhp=0; nhp!=pty->N(); ++nhp) { // loop over party members
+	mxHit *hitp = (mxHit*) pty->GetHit(nhp);
+	int idxp = hitp->Idx();
+	fGeo->PbWO4_GetNeighbours( idxp, fourn );
+	if(fDebug>20)
+	  std::cout << "  scanning neighbours " << std::endl;
+	for(int nn=0; nn!=4; ++nn) { // loop over neighbours
+	  if( fourn[nn] < 0 ) continue;
+	  if(fDebug>20)
+	    std::cout << "   scanning hit collection " << std::endl;
+	  for(int mi=0; mi!=fNHit[lyr]; ++mi) { // check if hit is neightbour
+	    mxHit *hitn = (mxHit*) fHit[lyr].at( mi );
+	    int idxn = hitn->Idx();
+	    if(idxn != fourn[nn]) continue;
+	    if(hitn->IsAssigned()) continue;
+	    if(hitn->Signal()<thr) continue;
+	    float xn = fGeo->X( idxn );
+	    float yn = fGeo->Y( idxn );
+	    if(fDebug>20)
+	      std::cout << "    new member at x y " << xn << " " << yn << std::endl;
+	    pty->Fill( hitn, xn, yn );
+	    added = true;
+	  } // end of check
+	} // end of loop neighbours
+      } // end of loop pty members
+    } // recursive while
+  }  
+}
+//========
 void mxReconstruction::Parties_ALGLayer(int lyr) {
   if(fDebug>20)
     std::cout << "> P_ALGLayer for layer " << lyr << std::endl;
