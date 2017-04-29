@@ -36,6 +36,7 @@ void mxg4EventAction::BeginOfEventAction(const G4Event*) {
   if (fMPCEXHCID==-1) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     mxg4DetectorConstruction det;
+    sdManager->ListTree();
     if (!det.IsMinis()) {
       std::cout << "I didn't want to enter this loop" << std::endl;
       fMPCEXHCID = sdManager->GetCollectionID("TrackerChamberSD/TrackerHitsCollection");
@@ -50,7 +51,13 @@ void mxg4EventAction::BeginOfEventAction(const G4Event*) {
 void mxg4EventAction::EndOfEventAction(const G4Event* event) {
   G4HCofThisEvent* hce = event->GetHCofThisEvent();
   G4PrimaryVertex* primaryVertex = event->GetPrimaryVertex();
-  G4PrimaryParticle* primaryParticle = primaryVertex->GetPrimary();
+  G4int npart = primaryVertex->GetNumberOfParticle();
+  std::cout << "******** PRIMARIES " << npart << " *******" << std::endl;
+  for(int i=0; i!=npart; ++i) {
+    G4PrimaryParticle* primaryParticle = primaryVertex->GetPrimary(i);
+    std::cout << "PART => " << primaryParticle->GetPDGcode() << std::endl;
+  }
+  G4PrimaryParticle* primaryParticle = primaryVertex->GetPrimary(0);
   G4double ke = primaryParticle->GetKineticEnergy();
   // G4double px = primaryParticle->GetMomentum().getX();
   // G4double py = primaryParticle->GetMomentum().getY();

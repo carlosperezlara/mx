@@ -28,7 +28,11 @@ class mxGeometry {
   float W_Y(int sidx);
   float W_Z(int sidx);
   int PbWO4_FindClosestIdx(int arm, float x, float y);
-  int PbWO4_GetNeighbours(int idx, int en[4]) {en[0] = fPbWO4_4N[idx][0]; en[1] = fPbWO4_4N[idx][1]; en[2] = fPbWO4_4N[idx][2]; en[3] = fPbWO4_4N[idx][3]; }
+  void PbWO4_GetNeighbours(int idx, int en[4]) {
+    en[0] = 49152+fPbWO4_4N[idx-49152][0];
+    en[1] = 49152+fPbWO4_4N[idx-49152][1];
+    en[2] = 49152+fPbWO4_4N[idx-49152][2];
+    en[3] = 49152+fPbWO4_4N[idx-49152][3]; }
   float RZ(int lyr);
 
  private:

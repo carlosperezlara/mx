@@ -250,13 +250,16 @@ void mxReconstruction::Parties() {
     for(int lyr=0; lyr!=18; ++lyr)
       Parties_ALGFocal(lyr);
     break;
+  case(4): // MPCBreaker for MPC only
+    Parties_ALGMPCBreaker(8);
+    Parties_ALGMPCBreaker(17);
+    break;
   }
 }
 //========
 void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
   if(fDebug>20)
     std::cout << "> P_ALGMPCBraker for layer " << lyr << std::endl;
-  if(lyr!=8||lyr!=17) return; //do nothing
   float dx = fGeo->PbWO4_a0();
   float dy = fGeo->PbWO4_a1();
   // sort by energy
@@ -293,8 +296,11 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
 	mxHit *hitp = (mxHit*) pty->GetHit(nhp);
 	int idxp = hitp->Idx();
 	fGeo->PbWO4_GetNeighbours( idxp, fourn );
-	if(fDebug>20)
+	if(fDebug>20) {
+	  std::cout << "  HIT " << idxp << " | NEIG ";
+	  std::cout << fourn[0] << " " << fourn[1] << " " << fourn[2] << " " << fourn[3] << std::endl;
 	  std::cout << "  scanning neighbours " << std::endl;
+	}
 	for(int nn=0; nn!=4; ++nn) { // loop over neighbours
 	  if( fourn[nn] < 0 ) continue;
 	  if(fDebug>20)
@@ -969,6 +975,10 @@ void mxReconstruction::SetIdentificationAlgorithm(int combo) {
     SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlgPadRow_Threshold(0.15);
     SetCoaAlgSeed6_NCrystals(3); // MATCH MPC to THREE crystals
+    break;
+  case(5):
+    SetPartyAlgorithm(4); // MPCBreaker for MPC only
+    SetCoalitionAlgorithm(0); // MPC ==> EX0
     break;
   }
 }

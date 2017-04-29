@@ -23,34 +23,28 @@
 #include "mxCoalitionCuts.h"
 
 int main(int narg, char **carg) {
-	mxGeometry *geo = new mxGeometry();
 
-	TH1F *gen = new TH1F("gen","gen",100,0,101);
-	TH1F *recdphi = new TH1F("recdphi","recdphi",101,-0.5,+0.5);
-	TH1F *recdeta = new TH1F("recdeta","recdeta",101,-0.5,+0.5);
-	TH1F *seldphi = new TH1F("seldphi","seldphi",101,-0.5,+0.5);
-	TH1F *seldeta = new TH1F("seldeta","seldeta",101,-0.5,+0.5);
+  // load geometry
+  mxGeometry *geo = new mxGeometry();
 
+  // loading parameters
   gErrorIgnoreLevel = kWarning;
   TString file = "input";
   float maxe = 100;
   int combo = 1;
   if(narg>1) {
-    file = carg[1];
+    file = carg[1]; // arg1: FILENAME
   }
   if(narg>2) {
-    TString sMaxE = carg[2];
+    TString sMaxE = carg[2]; // arg2: ALGORITHM
     combo = sMaxE.Atof();
   }
   if(narg>3) {
-    TString sMaxE = carg[3];
+    TString sMaxE = carg[3]; // arg3: MAXENERGY
     maxe = sMaxE.Atof();
   }
-  mxReconstruction *reco = new mxReconstruction();
-  //reco->SetDebug(6);
-  reco->SetIdentificationAlgorithm(combo);
-  mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
 
+  // loading cuts
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
   cuts0->SetEneMax( maxe );
   cuts0->SetPSEneMax( maxe*0.015 );
@@ -73,6 +67,13 @@ int main(int narg, char **carg) {
   cuts3->SetQA();
   cuts3->Set_HitLayer(8);
 
+  // loading identificator
+  mxReconstruction *reco = new mxReconstruction();
+  reco->SetDebug(30);
+  reco->SetIdentificationAlgorithm(combo);
+  mxQAReconstruction *QAReco = new mxQAReconstruction(maxe);
+
+  // connecting to input - output
   std::cout << "INPUT: " << Form("%s.hit",file.Data()) << std::endl;
   std::cout << "INPUT: " << Form("%s.prim",file.Data()) << std::endl;
   std::ifstream input( Form("%s.hit",file.Data()));
@@ -85,12 +86,12 @@ int main(int narg, char **carg) {
   int hits, idx;
   float sgn;
   float penergy,peta,pphi;
-  //std::cout << "INIT" << std::endl;
+  std::cout << "INIT" << std::endl;
   for(int nevs=0;;++nevs) {
+
+    //reading input hits
     input >> hits;
-    inputP >> hitP;
     if(!input.good()) break;
-    //if(!inputP.good()) break;
     reco->Reset();
     for(int i=0; i!=hits; ++i) {
       input >> idx >> sgn;
@@ -98,23 +99,29 @@ int main(int narg, char **carg) {
       //if(idx>49152 && sgn<0.3) continue;
       reco->Fill(idx,sgn);
     }
-    for(int l=0; l!=hitP; ++l) {
-      inputP >> ppdg >> penergy >> pphi >> peta;
-      penergy /= 1000;
-      gen->Fill(penergy);
-      reco->FillPP(penergy,peta,pphi,ppdg);
-      //std::cout << penergy << std::endl;
 
+    //reading truths
+    inputP >> hitP;
+    if(inputP.good()) {
+      for(int l=0; l!=hitP; ++l) {
+	inputP >> ppdg >> penergy >> pphi >> peta;
+	penergy /= 1000;
+	reco->FillPP(penergy,peta,pphi,ppdg);
+	//std::cout << penergy << std::endl;
+      }
     }
+
     //std::cout << "MAKING" << std::endl;
     reco->Make();
+
     //std::cout << "QAING" << std::endl;
     QAReco->Make(reco);
+
     //std::cout << "DUMPING" << std::endl;
-    //reco->DumpParties();
+    reco->DumpParties();
     //if(nevs>2) break;
 
-    //dumping parties
+    //writing parties
     int ntot=0;
     for(int lyr=0; lyr!=18; ++lyr)
       ntot += reco->GetNParties(lyr);
@@ -131,8 +138,8 @@ int main(int narg, char **carg) {
 	outputP << std::endl;
       }
     }
-
-    //dumping coalitions
+    
+    //writing coalitions
     ntot=0;
     for(int arm=0; arm!=2; ++arm)
       ntot += reco->GetNCoalitions(arm);
@@ -141,15 +148,15 @@ int main(int narg, char **carg) {
     for(int arm=0; arm!=2; ++arm) {
       int n = reco->GetNCoalitions(arm);
       for(int i=0; i!=n; ++i) {
-	      coalition = reco->GetCoalition(arm,i);
-	      outputC << arm << " " << coalition->GetEnergy() << " " << coalition->GetPhi() << " " << coalition->GetTheta() << " " << coalition->GetEta() << " ";
-	      outputC << coalition->GetPhiVar() << " " << coalition->GetThetaVar() << " " << coalition->GetEtaVar() << " ";
-	      outputC << coalition->SignalPreShower() << " " << coalition->NPreShower();
-	      outputC << std::endl;
-	      cuts0->PassesCuts(coalition);
-	      cuts1->PassesCuts(coalition);
-	      cuts2->PassesCuts(coalition);
-	      cuts3->PassesCuts(coalition);
+	coalition = reco->GetCoalition(arm,i);
+	outputC << arm << " " << coalition->GetEnergy() << " " << coalition->GetPhi() << " " << coalition->GetTheta() << " " << coalition->GetEta() << " ";
+	outputC << coalition->GetPhiVar() << " " << coalition->GetThetaVar() << " " << coalition->GetEtaVar() << " ";
+	outputC << coalition->SignalPreShower() << " " << coalition->NPreShower();
+	outputC << std::endl;
+	cuts0->PassesCuts(coalition);
+	cuts1->PassesCuts(coalition);
+	cuts2->PassesCuts(coalition);
+	cuts3->PassesCuts(coalition);
       }
     }
 
@@ -162,13 +169,9 @@ int main(int narg, char **carg) {
   std::cout << "OUTPUT: " << Form("%s.pty",file.Data()) << std::endl;
   std::cout << "OUTPUT: " << Form("%s.coa",file.Data()) << std::endl;
   //std::cout << "OUTPUT: " << Form("%s.uni",file.Data()) << std::endl;
+
   std::cout << "OUTPUT: " << Form("%s_%d_qa.root",file.Data(),combo) << std::endl;
   TFile *ofile = new TFile( Form("%s_%d_qa.root",file.Data(),combo), "RECREATE" );
-  gen->Write();
-  recdphi->Write();
-  recdeta->Write();
-  seldphi->Write();
-  seldeta->Write();
   TList *c;
   c = QAReco->GetList();
   for(int i=0; i!=c->GetEntries(); ++i) (c->At(i))->Write();
