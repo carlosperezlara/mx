@@ -125,7 +125,7 @@ void drawPtyLayer(int lyridx) {
     int ll = pty_ll[i];
     if(ll!=lyridx) continue;
     lips->SetLineColor( kRed-3 );
-    lips->SetFillColorAlpha(kRed-3,0.1);
+    //lips->SetFillColorAlpha(kRed-3,0.1);
     lips->DrawEllipse(pty_xx[i], pty_yy[i], pty_spx[i], pty_spy[i], 0, 360, 0);
   }
 }

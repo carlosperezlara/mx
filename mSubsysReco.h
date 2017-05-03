@@ -3,9 +3,12 @@
 
 #include <fstream>
 #include <map>
+#include "TMath.h"
 #include "SubsysReco.h"
 
 class TList;
+class TFile;
+class TTree;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -34,6 +37,9 @@ class mSubsysReco: public SubsysReco {
   void SetSkipNorth() {fSkipNorth = true;}
 
  protected:
+  void PrepareTree(TString name);
+  void WriteTree();
+
   void FillHistos(int,PHCompositeNode*);
   bool PassEventCuts(PHCompositeNode*);
   bool fDoQA;
@@ -56,6 +62,10 @@ class mSubsysReco: public SubsysReco {
   int fAlgorithmCombo;
   mxCoalitionCuts *fNoCuts;
   mxCoalitionCuts *fCalibrationCuts;
+
+  TFile *fDSTfile;
+  TTree *fTree;
+  Float_t fMPCRegister[416];
 
   TH1F *fTime;
   TH1F *fHstk[2];

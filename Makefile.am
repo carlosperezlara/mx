@@ -19,12 +19,14 @@ include_HEADERS = \
   mxUnion.h \
   mxReconstruction.h \
   mxQAReconstruction.h \
+  mxEventCuts.h \
   \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h \
   PHMXData.h \
-  mSubsysReco.h
+  mSubsysReco.h \
+  mMPCTunner.h
 
 libMXphnx_la_SOURCES = \
   mxGeometry.cxx \
@@ -35,11 +37,13 @@ libMXphnx_la_SOURCES = \
   mxUnion.cxx \
   mxReconstruction.cxx \
   mxQAReconstruction.cxx \
+  mxEventCuts.cxx \
   \
   mxCalibMaster.cxx \
   mxCalibBaseSiW.cxx \
   mxCalibBasePbWO4.cxx \
   mSubsysReco.cxx \
+  mMPCTunner.cxx \
   MXphnx_Dict.C
 
 libMXphnx_la_LIBADD = \
@@ -60,12 +64,14 @@ MXphnx_Dict.C: \
   mxUnion.h \
   mxReconstruction.h \
   mxQAReconstruction.h \
+  mxEventCuts.h \
   \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h \
   PHMXData.h \
   mSubsysReco.h \
+  mMPCTunner.h \
   MXphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 

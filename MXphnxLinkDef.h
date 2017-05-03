@@ -9,5 +9,6 @@
 #pragma link C++ class mxUnion+;
 #pragma link C++ class PHMXData+;
 #pragma link C++ class mSubsysReco+;
+#pragma link C++ class mMPCTunner+;
 
 #endif /* __CINT__ */

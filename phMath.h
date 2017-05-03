@@ -60,10 +60,10 @@ float _theta(const float x, const float y, const float z, float& etheta, const f
   float y2 = y*y;
   float z2 = z*z;
   float r2 = x2 + y2 + z2;
-  float rt2 = x2 + y2;
   float r = TMath::Sqrt(r2);
-  float rt = TMath::Sqrt(rt2);
   theta = TMath::ACos(z/r);
+  float rt2 = x2 + y2;
+  float rt = TMath::Sqrt(rt2);
   float den = rt*r2;
   etheta = TMath::Sqrt( ez*rt2*ez*rt2 + z2*(ex*ex*x2 + ey*ey*y2) ) / den;
   return theta;

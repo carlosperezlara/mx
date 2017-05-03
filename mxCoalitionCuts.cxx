@@ -73,7 +73,7 @@ void mxCoalitionCuts::FillQA(mxCoalition *coalition) {
     fHPEne->Fill(j,pty->Signal());
     if(j==8) continue;
     int nh = pty->GetSizeUmbral(0.7);
-    float dx;
+    float dx=0;
     if(j%2==0) dx = pty->GetDx();
     if(j%2==1) dx = pty->GetDy();
     fHX->Fill(j, nh*dx );
@@ -86,6 +86,8 @@ mxCoalitionCuts::mxCoalitionCuts(const mxCoalitionCuts &src) {
   fPS_minNHits = src.fPS_minNHits;
   fPS_minSignal = src.fPS_minSignal;
   fPS_minChi2Prob = src.fPS_minChi2Prob;
+  fEneMax = src.fEneMax;
+  fPSEneMax = src.fPSEneMax;
   for(int i=0; i!=9; ++i) fHitLayer[i] = src.fHitLayer[i];
   fList = NULL;
   fHEne = NULL;
@@ -94,6 +96,7 @@ mxCoalitionCuts::mxCoalitionCuts(const mxCoalitionCuts &src) {
   fHPHits = NULL;
   fHPEne = NULL;
   fHPSChi2Prob = NULL;
+  fHEnePSEne = NULL;
   fHX = NULL;
 }
 //========
@@ -104,6 +107,8 @@ mxCoalitionCuts& mxCoalitionCuts::operator=(const mxCoalitionCuts &src) {
     fPS_minNHits = src.fPS_minNHits;
     fPS_minSignal = src.fPS_minSignal;
     fPS_minChi2Prob = src.fPS_minChi2Prob;
+    fEneMax = src.fEneMax;
+    fPSEneMax = src.fPSEneMax;
     for(int i=0; i!=9; ++i) fHitLayer[i] = src.fHitLayer[i];
     fList = NULL;
     fHEne = NULL;
@@ -112,6 +117,7 @@ mxCoalitionCuts& mxCoalitionCuts::operator=(const mxCoalitionCuts &src) {
     fHPHits = NULL;
     fHPEne = NULL;
     fHPSChi2Prob = NULL;
+    fHEnePSEne = NULL;
     fHX = NULL;
   }
   return *this;

@@ -38,6 +38,8 @@ mxReconstruction::mxReconstruction() :
   fPtyAlg(0),
   fCoaAlg(0),
   fPtyAlgPadRow_thr(0.15),
+  fPtyAlgMPCBreaker_thr(0.10),
+  fPtyAlgMPCBreaker_MaxCrystals(1),
   fCoaAlgSeed6_nc(1) {
   // ctor
   std::cout << "mxReconstruction:: ctor" << std::endl;
@@ -174,6 +176,25 @@ void mxReconstruction::DumpCoalitions() {
   std::cout << "=============================" << std::endl;
 }
 //========
+void mxReconstruction::DumpUnions() {
+  std::cout << "============================" << std::endl;
+  std::cout << "mxReconstruction::DumpUnions" << std::endl;
+  mxUnion *uni;
+  mxCoalition *coa1, *coa2;
+  for(int i=0; i!=2; ++i) {
+    int n = fNUni[i];
+    std::cout << "  Arm " << i << " || Nunions " << n << std::endl;
+    for(int j=0; j!=n; ++j) {
+      uni = fUni[i].at(j);
+      std::cout << "    ||" << j << "|| ene asym mass "  << uni->GetEnergy() << " " << uni->GetEnergyAsymmetry() << " " << uni->GetMass() << std::endl;
+      coa1 = uni->GetCoalition(0);
+      coa2 = uni->GetCoalition(1);
+      std::cout << "       | ene1 ene2 " << coa1->GetEnergy() << " " << coa2->GetEnergy() << std::endl;
+    }
+  }
+  std::cout << "=============================" << std::endl;
+}
+//========
 void mxReconstruction::DumpStats() {
   int n;
   std::cout << "===========================" << std::endl;
@@ -216,7 +237,7 @@ void mxReconstruction::Make() {
   //DumpParties();
   Coalitions();
   //DumpCoalitions();
-  //Unions();
+  Unions();
 }
 //========
 void mxReconstruction::Parties() {
@@ -260,11 +281,13 @@ void mxReconstruction::Parties() {
 void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
   if(fDebug>20)
     std::cout << "> P_ALGMPCBraker for layer " << lyr << std::endl;
+  if(lyr!=8&&lyr!=17) return; //do nothing
   float dx = fGeo->PbWO4_a0();
   float dy = fGeo->PbWO4_a1();
   // sort by energy
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   // start loop from most energetic, then attach neighbours below threshold
+  //std::cout << "  starting with parties " << fNPty[lyr] << std::endl;
   for(int mh=0; mh!=fNHit[lyr]; ++mh) {
     mxHit *hit = (mxHit*) fHit[lyr].at( mh );
     if(hit->IsAssigned()) continue;
@@ -278,22 +301,29 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
       pty->SetDxDy(dx,dy);
       fPty[lyr].push_back(pty);
     } else pty = fPty[lyr].at( fNPty[lyr] );
-    pty->Reset();
     fNPty[lyr]++;
+    pty->Reset();
     float x = fGeo->X( idx );
     float y = fGeo->Y( idx );
+    pty->Fill( hit, x, y );
     if(fDebug>20)
       std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
-    float thr = peak*0.1;
-    pty->Fill( hit, x, y );
+    if(fPtyAlgMPCBreaker_MaxCrystals<2) continue;
+    float thr = peak*fPtyAlgMPCBreaker_thr;
     int fourn[4];
+    bool forceexit = false;
+    /*
     bool added = true;
-    while(added) { // unnecesarily slow TODO
+    while(added) { // unnecesarily slow (TODO: speed it up)
       if(fDebug>20)
 	std::cout << " scanning party " << std::endl;
       added = false;
+      if(forceexit) break;
       for(int nhp=0; nhp!=pty->N(); ++nhp) { // loop over party members
+	if(forceexit) break;
 	mxHit *hitp = (mxHit*) pty->GetHit(nhp);
+    */
+	mxHit *hitp = (mxHit*) pty->GetHit(0);
 	int idxp = hitp->Idx();
 	fGeo->PbWO4_GetNeighbours( idxp, fourn );
 	if(fDebug>20) {
@@ -302,6 +332,7 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
 	  std::cout << "  scanning neighbours " << std::endl;
 	}
 	for(int nn=0; nn!=4; ++nn) { // loop over neighbours
+	  if(forceexit) break;
 	  if( fourn[nn] < 0 ) continue;
 	  if(fDebug>20)
 	    std::cout << "   scanning hit collection " << std::endl;
@@ -316,11 +347,14 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
 	    if(fDebug>20)
 	      std::cout << "    new member at x y " << xn << " " << yn << std::endl;
 	    pty->Fill( hitn, xn, yn );
-	    added = true;
+	    //added = true;
+	    if(pty->N()>=fPtyAlgMPCBreaker_MaxCrystals) forceexit = true;
 	  } // end of check
 	} // end of loop neighbours
+	/*
       } // end of loop pty members
     } // recursive while
+	*/
   }  
 }
 //========
@@ -614,7 +648,8 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
   for(int i=0;i!=18;++i) dz[i] = fGeo->Si_a2();
   dz[8] = fGeo->PbWO4_a2();
   dz[17] = fGeo->PbWO4_a2();
-  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
+  //for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
+  for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i) + 0.5*dz[i];
 
   mxParty *pty;
   mxCoalition *coa;
@@ -635,8 +670,8 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
       	  coa = fCoa[arm].at( fNCoa[arm] );
       	coa->Reset();
       	float ephi=0, etheta=0;
-      	float phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
-      	float theta = _theta( pty->GetX(), pty->GetY(), Z[lyr], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
+      	float phi = _phi( pty->GetX()-fV[0], pty->GetY()-fV[1], ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+      	float theta = _theta( pty->GetX()-fV[0], pty->GetY()-fV[1], Z[lyr]-fV[2], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[lyr] );
 	if(fDebug>10) {
 	  std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta;
 	  std::cout << " || ephi etheta " << ephi << " " << etheta << std::endl;
@@ -653,8 +688,8 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
       	  for(int np=0; np!=fNPty[inc]; ++np) {
             pty = fPty[inc].at(np);
       	    if(pty->IsAssigned()) continue;
-      	    phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
-      	    theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+      	    phi = _phi( pty->GetX()-fV[0], pty->GetY()-fV[1], ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+      	    theta = _theta( pty->GetX()-fV[0], pty->GetY()-fV[1], Z[inc]-fV[2], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	    float test = coa->Test( phi, theta, ephi, etheta );
 	    if(fDebug>10) {
 	      std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
@@ -713,8 +748,8 @@ void mxReconstruction::Coalitions_ALGSeed6() {
       coa->Reset();
       float ephi=0, etheta=0;
       float spreadxy = TMath::Max( pty->GetSpreadX(), pty->GetSpreadY() );
-      float phi = _phi( pty->GetX(), pty->GetY(), ephi, spreadxy, spreadxy );
-      float theta = _theta( pty->GetX(), pty->GetY(), Z[lyr], etheta, spreadxy, spreadxy, dz[lyr] );
+      float phi = _phi( pty->GetX()-fV[0], pty->GetY()-fV[1], ephi, spreadxy, spreadxy );
+      float theta = _theta( pty->GetX()-fV[0], pty->GetY()-fV[1], Z[lyr]-fV[2], etheta, spreadxy, spreadxy, dz[lyr] );
       if(fDebug>10) {
 	std::cout << " seeding pty " << mp << " with phi theta " << phi << " " << theta;
 	std::cout << " || ephi etheta " << ephi << " " << etheta << std::endl;
@@ -731,8 +766,8 @@ void mxReconstruction::Coalitions_ALGSeed6() {
       	for(int np=0; np!=fNPty[inc]; ++np) {
       	  pty = fPty[inc].at(np);
       	  if(pty->IsAssigned()) continue;
-      	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
-      	  theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+      	  phi = _phi( pty->GetX()-fV[0], pty->GetY()-fV[1], ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+      	  theta = _theta( pty->GetX()-fV[0], pty->GetY()-fV[1], Z[inc]-fV[2], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	  float test = coa->Test( phi, theta, ephi, etheta );
 	  if(fDebug>10) {
 	    std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta ";
@@ -756,8 +791,8 @@ void mxReconstruction::Coalitions_ALGSeed6() {
       	for(int np=0; np!=fNPty[inc]; ++np) {
       	  pty = fPty[inc].at(np);
       	  if(pty->IsAssigned()) continue;
-      	  phi = _phi( pty->GetX(), pty->GetY(), ephi, pty->GetSpreadX(), pty->GetSpreadY() );
-      	  theta = _theta( pty->GetX(), pty->GetY(), Z[inc], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
+      	  phi = _phi( pty->GetX()-fV[0], pty->GetY()-fV[1], ephi, pty->GetSpreadX(), pty->GetSpreadY() );
+      	  theta = _theta( pty->GetX()-fV[0], pty->GetY()-fV[1], Z[inc]-fV[2], etheta, pty->GetSpreadX(), pty->GetSpreadY(), dz[inc]  );
       	  float test = coa->Test( phi, theta, ephi, etheta );
 	  if(fDebug>10) {
 	    std::cout << "    ptyno " << np << " with phi theta " << phi << " " << theta << " || ephi etheta " << ephi;
@@ -792,22 +827,22 @@ void mxReconstruction::Coalitions_ALGSeed6() {
 //========
 void mxReconstruction::Unions() {
   // forming global unions
-  for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],GreaterSignal());
+  //for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],GreaterSignal());
   mxCoalition *coaI, *coaJ;
   mxUnion *un;
   for(int arm=0; arm!=2; ++arm) {
     // call for union formation
     if(fNCoa[arm]<2) continue;
-    for(int mi=0; mi!=fNCoa[arm]-1; ++mi) {
+    for(int mi=0; mi<fNCoa[arm]-1; ++mi) {
       coaI = (mxCoalition*) fCoa[arm].at( mi );
-      for(int mj=mi+1; mj!=fNCoa[arm]; ++mj) {
+      for(int mj=mi+1; mj<fNCoa[arm]; ++mj) {
       	coaJ = (mxCoalition*) fCoa[arm].at( mj );
         int nmax = fUni[arm].size();
         if(fNUni[arm]>nmax-1) {
           un = new mxUnion();
           fUni[arm].push_back(un);
         } else un = fUni[arm].at( fNUni[arm] );
-        	un->Make(coaI,coaJ);
+	un->Make(coaI,coaJ);
         ++fNUni[arm];
       }
     }

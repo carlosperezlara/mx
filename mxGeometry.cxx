@@ -168,8 +168,8 @@ float mxGeometry::Reference(int k, int r) {
 //========
 void mxGeometry::UpdateVars(int k) {
   // first 49152 correspond to key for SiW
-  // next 576 correspond to chn for PbWO4
-  if(k<49152) UpdateSiW(k);
+  // next 416 correspond to chn for PbWO4
+  if(k<49152) UpdateSiW(k%49152);
   else UpdatePbWO4(k-49152);
 }
 //========
@@ -300,7 +300,8 @@ void mxGeometry::UpdatePbWO4(int k) {
   fY = fPbWO4_RY[k];
   if(k<fPbWO4_IdxS) fZ = fPbWO4_RZ[0];
   else fZ = fPbWO4_RZ[1];
-  int arm = k/fPbWO4_IdxS;
+  int arm = 0;
+  if(k>fPbWO4_IdxS) arm = 1;
   fLyrIdx = arm*9+8;
   fLastIdx = k;
 }
@@ -353,4 +354,13 @@ int mxGeometry::PbWO4_FindClosestIdx(int arm, float x0, float y0) {
     if(ret>0) return ret;
   }
   return -3;
+}
+//========
+void mxGeometry::PbWO4_GetNeighbours(int idx, int en[4]) {
+  en[0] = fPbWO4_4N[idx-49152][0];
+  en[1] = fPbWO4_4N[idx-49152][1];
+  en[2] = fPbWO4_4N[idx-49152][2];
+  en[3] = fPbWO4_4N[idx-49152][3];
+  for(int i=0; i!=4; ++i)
+    if(en[i]!=-1) en[i] += 49152;
 }

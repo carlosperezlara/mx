@@ -14,10 +14,8 @@
 mxUnion::mxUnion():
   fPhi(0),
   fEta(0),
-  fDPhi(0),
+  fEnergyAsymmetry(0),
   fEnergy(0),
-  fEnergyT(0),
-  fEnergyL(0),
   fMass(0) {
   // ctor
   fCoalitions[0] = 0;
@@ -32,10 +30,8 @@ mxUnion::mxUnion(const mxUnion &src) {
   // copy ctor
   fPhi = src.fPhi;
   fEta = src.fEta;
-  fDPhi = src.fDPhi;
+  fEnergyAsymmetry = src.fEnergyAsymmetry;
   fEnergy = src.fEnergy;
-  fEnergyT = src.fEnergyT;
-  fEnergyL = src.fEnergyL;
   fMass = src.fMass;
   fCoalitions[0] = src.fCoalitions[0];
   fCoalitions[1] = src.fCoalitions[1];
@@ -46,10 +42,8 @@ mxUnion& mxUnion::operator=(const mxUnion &src) {
   if(&src!=this) {
     fPhi = src.fPhi;
     fEta = src.fEta;
-    fDPhi = src.fDPhi;
+    fEnergyAsymmetry = src.fEnergyAsymmetry;
     fEnergy = src.fEnergy;
-    fEnergyT = src.fEnergyT;
-    fEnergyL = src.fEnergyL;
     fMass = src.fMass;
     fCoalitions[0] = src.fCoalitions[0];
     fCoalitions[1] = src.fCoalitions[1];
@@ -60,29 +54,21 @@ mxUnion& mxUnion::operator=(const mxUnion &src) {
 void mxUnion::Make(mxCoalition *un, mxCoalition *tu) {
   fCoalitions[0] = un;
   fCoalitions[1] = tu;
-  fPhi = 0.5*(un->GetPhi() + tu->GetPhi());
-  fEta = 0.5*(un->GetEta() + tu->GetEta());
   fEnergy = un->GetEnergy() + tu->GetEnergy();
-  fEnergyT = fEnergy/TMath::CosH(fEta);
-  fEnergyL = fEnergy*TMath::Abs(TMath::TanH(fEta));
-  float cosdphi = TMath::Cos(un->GetPhi() - tu->GetPhi());
-  //float cosheta = TMath::CosH(un->GetEta())*TMath::CosH(tu->GetEta());
-  //float etet = un->GetEnergy()*tu->GetEnergy()/cosheta;
-  //float ee = un->GetEnergy()*tu->GetEnergy();
-  //fDPhi = TMath::ACos( etet/ee*(cosdphi+cosheta) );
-  //std::cout << fDPhi << " ";
-  //
-  float t1 = 2*TMath::ATan(TMath::Exp(-un->GetEta()));
-  float t2 = 2*TMath::ATan(TMath::Exp(-tu->GetEta()));
-  float sinsin = TMath::Sin(t1)*TMath::Sin(t2);
-  float coscos = TMath::Cos(t1)*TMath::Cos(t2);
-  fDPhi = TMath::ACos( coscos+cosdphi*sinsin );
-  //std::cout << fDPhi << " ";
-  //
-  //float sinhsinh = TMath::SinH(un->GetEta())*TMath::SinH(tu->GetEta());
-  //fDPhi = TMath::ACos( cosdphi + sinhsinh );
-  //std::cout << fDPhi << std::endl;
-
-  //std::cout << fDPhi << std::endl;
-  fMass = un->GetEnergy()*tu->GetEnergy()*(1-TMath::Cos(fDPhi));
+  fEnergyAsymmetry = (un->GetEnergy() - tu->GetEnergy())/fEnergy;
+  float ex1 = un->GetEx();
+  float ey1 = un->GetEy();
+  float ez1 = un->GetEz();
+  float ex2 = tu->GetEx();
+  float ey2 = tu->GetEy();
+  float ez2 = tu->GetEz();
+  float ex = ex1 + ex2;
+  float ey = ey1 + ey2;
+  float ez = ez1 + ez2;
+  fPhi = TMath::ATan2(-ey,-ex)+TMath::Pi();
+  fEta = 0.5*TMath::Log((fEnergy+ez)/(fEnergy-ez));
+  //float et = TMath::Sqrt(ex*ex+ey*ey);
+  float unxtu = ex1*ex2 + ey1*ey2 + ez1*ez2;
+  float cosdphi = unxtu / (un->GetEnergy()*tu->GetEnergy());
+  fMass = TMath::Sqrt( 2*un->GetEnergy()*tu->GetEnergy()*(1-cosdphi) );
 }

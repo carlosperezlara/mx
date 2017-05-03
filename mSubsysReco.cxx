@@ -6,6 +6,8 @@
 
 #include "TMath.h"
 #include "TList.h"
+#include "TFile.h"
+#include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -64,6 +66,8 @@ mSubsysReco::mSubsysReco( const char* name ) :
   fAlgorithmCombo(0),
   fNoCuts(NULL),
   fCalibrationCuts(NULL),
+  fDSTfile(NULL),
+  fTree(NULL),
   fTime(NULL)
 {
   printf("mcReco::CTOR\n");
@@ -104,6 +108,7 @@ mSubsysReco::mSubsysReco( const char* name ) :
 }
 //====================================================
 int mSubsysReco::End(PHCompositeNode *topNode) {
+  WriteTree();
   if(fFlush) fFileOut.close();
   return EVENT_OK;
 }
@@ -180,7 +185,21 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
   for(int i=0; i!=fList->GetEntries(); ++i)
     se->registerHisto( ((TH1F*) (fList->At(i))) );
 
+  PrepareTree("aa.root");
   return EVENT_OK;
+}
+//====================================================
+void mSubsysReco::PrepareTree(TString name) {
+  fDSTfile = new TFile(name.Data(),"RECREATE");
+  fTree = new TTree("T","quickanalysis");
+  fTree->SetAutoSave(10000);
+  fTree->Branch("mpc",fMPCRegister,"mpc[416]/F");
+}
+//====================================================
+void mSubsysReco::WriteTree() {
+  fDSTfile->cd();
+  fDSTfile->Write();
+  fDSTfile->Close();
 }
 //====================================================
 int mSubsysReco::InitRun(PHCompositeNode* top_node) {
@@ -371,6 +390,7 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   // reading mpc data
   mpcRawContainer *mpcraw2 = findNode::getClass<mpcRawContainer>(top_node,"MpcRaw2");
   if(!mpcraw2) return ABORTEVENT;
+  for(int i=0; i!=416; ++i) fMPCRegister[i] = 0;
   for(unsigned int i=0; i!=mpcraw2->size(); ++i) {
     mpcRawContent *raw = mpcraw2->getTower(i);
     int chnmpc = raw->get_ch();
@@ -390,8 +410,10 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
       fHcry[0]->Fill( float(idxmpc), adc, tof );
       fHcry[1]->Fill( float(idxmpc), ene, 7+cti );
     }
+    fMPCRegister[i] = ene;
   }
   /////////////////
+  fTree->Fill();
 
   if(fFlush) {
     fFileOut << nbuff << std::endl;
