@@ -39,7 +39,7 @@ mxReconstruction::mxReconstruction() :
   fCoaAlg(0),
   fPtyAlgPadRow_thr(0.15),
   fPtyAlgMPCBreaker_thr(0.10),
-  fPtyAlgMPCBreaker_MaxCrystals(1),
+  fPtyAlgMPCBreaker_NCrystals(1),
   fCoaAlgSeed6_nc(1) {
   // ctor
   std::cout << "mxReconstruction:: ctor" << std::endl;
@@ -49,6 +49,7 @@ mxReconstruction::mxReconstruction() :
   }
   for(int i=0; i!=2; ++i) {
     fNCoa[i] = 0;
+    fNCoaPreEvent[i] = 0;
     fNUni[i] = 0;
   }
   fGeo = new mxGeometry();
@@ -136,7 +137,7 @@ void mxReconstruction::DumpParties() {
   std::cout << "=============================" << std::endl;
 }
 //========
-void mxReconstruction::DumpCoalitions() {
+void mxReconstruction::DumpCoalitions(int lvl) {
   std::cout << "================================" << std::endl;
   std::cout << "mxReconstruction::DumpCoalitions" << std::endl;
   mxCoalition *coa;
@@ -151,6 +152,7 @@ void mxReconstruction::DumpCoalitions() {
       std::cout << " || cphi ctheta cphitheta " << coa->GetCov(0) << " " << coa->GetCov(1) << " " << coa->GetCov(2);
       std::cout << " || pschi2prob " << coa->GetPSChi2Prob();
       std::cout << std::endl;
+      if(lvl<2) continue;
       for(int k=0; k!=9; ++k) {
       	pty = coa->GetParty(k);
       	std::cout << "       ||" << k;
@@ -161,6 +163,7 @@ void mxReconstruction::DumpCoalitions() {
       	float x = pty->GetX();
       	float y = pty->GetY();
       	std::cout << "|| x y " << x << " " << y << " || sgn " << pty->Signal() << " || hits " << pty->N() << std::endl;
+	if(lvl<3) continue;
         for(int l=0; l!=pty->N(); ++l) {
           hit = pty->GetHit(l);
           std::cout << "         ||" << l;
@@ -171,6 +174,26 @@ void mxReconstruction::DumpCoalitions() {
           std::cout << "|| idx sgn " << hit->Idx() << " " << hit->Signal() << std::endl;
         }
       }
+    }
+  }
+  std::cout << "=============================" << std::endl;
+}
+//========
+void mxReconstruction::DumpPreEventCoalitions(int lvl) {
+  std::cout << "========================================" << std::endl;
+  std::cout << "mxReconstruction::DumpPreEventCoalitions" << std::endl;
+  mxCoalition *coa;
+  mxParty *pty;
+  mxHit *hit;
+  for(int i=0; i!=2; ++i) {
+    int n = fNCoaPreEvent[i];
+    std::cout << "  Arm " << i << " || Ncoalitions " << n << std::endl;
+    for(int j=0; j!=n; ++j) {
+      coa = fCoaPreEvent[i].at(j);
+      std::cout << "    ||" << j << "|| phi theta "  << coa->GetPhi() << " " << coa->GetTheta() << " || pties " << coa->N() << " || sgn " << coa->Signal();
+      std::cout << " || cphi ctheta cphitheta " << coa->GetCov(0) << " " << coa->GetCov(1) << " " << coa->GetCov(2);
+      std::cout << " || pschi2prob " << coa->GetPSChi2Prob();
+      std::cout << std::endl;
     }
   }
   std::cout << "=============================" << std::endl;
@@ -215,6 +238,15 @@ void mxReconstruction::DumpStats() {
     std::cout << " " << fNCoa[i];
   }  std::cout << " || Tot: " << n << std::endl;
   std::cout << "===========================" << std::endl;
+}
+//========
+float mxReconstruction::GetMultiplicity(int lyr) {
+  float mult = 0;
+  for(int mh=0; mh!=fNHit[lyr]; ++mh) {
+    mxHit *hit = (mxHit*) fHit[lyr].at( mh );
+    mult += hit->Signal();
+  }
+  return mult;
 }
 //========
 void mxReconstruction::Fill(int idx, float sgn) {
@@ -306,9 +338,11 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
     float x = fGeo->X( idx );
     float y = fGeo->Y( idx );
     pty->Fill( hit, x, y );
-    if(fDebug>20)
-      std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
-    if(fPtyAlgMPCBreaker_MaxCrystals<2) continue;
+    if(fDebug>20) {
+      std::cout << "  hit no " << mh << " in x y " << x;
+      std::cout << " " << y << " || signal " << hit->Signal()<< std::endl;
+    }
+    if(fPtyAlgMPCBreaker_NCrystals<2) continue;
     float thr = peak*fPtyAlgMPCBreaker_thr;
     int fourn[4];
     bool forceexit = false;
@@ -323,39 +357,49 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
 	if(forceexit) break;
 	mxHit *hitp = (mxHit*) pty->GetHit(nhp);
     */
-	mxHit *hitp = (mxHit*) pty->GetHit(0);
-	int idxp = hitp->Idx();
-	fGeo->PbWO4_GetNeighbours( idxp, fourn );
-	if(fDebug>20) {
-	  std::cout << "  HIT " << idxp << " | NEIG ";
-	  std::cout << fourn[0] << " " << fourn[1] << " " << fourn[2] << " " << fourn[3] << std::endl;
-	  std::cout << "  scanning neighbours " << std::endl;
-	}
-	for(int nn=0; nn!=4; ++nn) { // loop over neighbours
-	  if(forceexit) break;
-	  if( fourn[nn] < 0 ) continue;
-	  if(fDebug>20)
-	    std::cout << "   scanning hit collection " << std::endl;
-	  for(int mi=0; mi!=fNHit[lyr]; ++mi) { // check if hit is neightbour
-	    mxHit *hitn = (mxHit*) fHit[lyr].at( mi );
-	    int idxn = hitn->Idx();
-	    if(idxn != fourn[nn]) continue;
-	    if(hitn->IsAssigned()) continue;
-	    if(hitn->Signal()<thr) continue;
-	    float xn = fGeo->X( idxn );
-	    float yn = fGeo->Y( idxn );
-	    if(fDebug>20)
-	      std::cout << "    new member at x y " << xn << " " << yn << std::endl;
-	    pty->Fill( hitn, xn, yn );
-	    //added = true;
-	    if(pty->N()>=fPtyAlgMPCBreaker_MaxCrystals) forceexit = true;
-	  } // end of check
-	} // end of loop neighbours
-	/*
+    mxHit *hitp = (mxHit*) pty->GetHit(0);
+    int idxp = hitp->Idx();
+    fGeo->PbWO4_GetNeighbours( idxp, fourn );
+    if(fDebug>20) {
+      std::cout << "  HIT " << idxp << " | NEIG ";
+      std::cout << fourn[0] << " " << fourn[1] << " " << fourn[2];
+      std::cout << " " << fourn[3] << std::endl;
+      std::cout << "  scanning neighbours " << std::endl;
+    }
+    for(int mi=0; mi!=fNHit[lyr]; ++mi) { // loop over hits
+      if(forceexit) break;
+      if(fDebug>20) std::cout << "   scanning hit collection " << std::endl;
+      mxHit *hitn = (mxHit*) fHit[lyr].at( mi );
+      if(hitn->IsAssigned()) continue;
+      if(hitn->Signal()<thr) continue;
+      int idxn = hitn->Idx();
+      float xn = fGeo->X( idxn );
+      float yn = fGeo->Y( idxn );
+      for(int nn=0; nn!=4; ++nn) { // loop over neighbours
+	if( fourn[nn] < 0 ) continue;
+	if(idxn != fourn[nn]) continue;
+	if(fDebug>20)
+	  std::cout << "    new member at x y " << xn << " " << yn << std::endl;
+	pty->Fill( hitn, xn, yn );
+	//added = true;
+	if(pty->N()==fPtyAlgMPCBreaker_NCrystals) forceexit = true;
+	fourn[nn] = -1;
+	break; // break loop when found
+      } // end of loop neighbours
+    } // end of loop hits
+    /*
       } // end of loop pty members
-    } // recursive while
-	*/
-  }  
+      } // recursive while
+    */
+    if(pty->N()!=fPtyAlgMPCBreaker_NCrystals) {
+      // failure, discarting
+      for(int rb=0; rb!=pty->N(); ++rb) {
+	mxHit *hhh = pty->GetHit(rb);
+	hhh->SetAssigned( false ); // freeing hit
+      }
+      fNPty[lyr]--;
+    }
+  }
 }
 //========
 void mxReconstruction::Parties_ALGLayer(int lyr) {
@@ -825,12 +869,58 @@ void mxReconstruction::Coalitions_ALGSeed6() {
   } //arm
 }
 //========
+void mxReconstruction::FillPreEvent() {
+  if(fDebug>10)
+    std::cout << "FillPreEvent" << std::endl;
+  mxCoalition *coaI, *coaJ;
+  for(int arm=0; arm!=2; ++arm) {
+    // call for union formation
+    fNCoaPreEvent[arm] = fNCoa[arm];
+    for(int mi=0; mi!=fNCoa[arm]; ++mi) {
+      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      if(mi<fCoaPreEvent[arm].size())
+	coaJ = (mxCoalition*) fCoaPreEvent[arm].at( mi );
+      else {
+	coaJ = new mxCoalition();
+	fCoaPreEvent[arm].push_back( coaJ );
+      }
+      coaJ->CopyFrom( coaI );
+    }
+  }
+}
+//========
+void mxReconstruction::MixUnions() {
+  // forming mixed unions
+  mxCoalition *coaI, *coaJ;
+  mxUnion *un;
+  for(int arm=0; arm!=2; ++arm) {
+    fNUni[arm] = 0;
+    // call for union formation
+    for(int mi=0; mi<fNCoa[arm]-1; ++mi) {
+      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      //std::cout << coaI->GetEnergy() << " this_event" << std::endl;
+      for(int mj=mi+1; mj<fNCoaPreEvent[arm]; ++mj) {
+      	coaJ = (mxCoalition*) fCoaPreEvent[arm].at( mj );
+	//std::cout << coaJ->GetEnergy() << " previous_event" << std::endl;
+        int nmax = fUni[arm].size();
+        if(fNUni[arm]>nmax-1) {
+          un = new mxUnion();
+          fUni[arm].push_back(un);
+        } else un = fUni[arm].at( fNUni[arm] );
+	un->Make(coaI,coaJ);
+        ++fNUni[arm];
+      }
+    }
+  }
+}
+//========
 void mxReconstruction::Unions() {
   // forming global unions
   //for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],GreaterSignal());
   mxCoalition *coaI, *coaJ;
   mxUnion *un;
   for(int arm=0; arm!=2; ++arm) {
+    fNUni[arm] = 0;
     // call for union formation
     if(fNCoa[arm]<2) continue;
     for(int mi=0; mi<fNCoa[arm]-1; ++mi) {

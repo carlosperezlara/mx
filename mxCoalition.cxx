@@ -65,6 +65,21 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
   return *this;
 }
 //========
+void mxCoalition::CopyFrom(mxCoalition *src) {
+  // copy only persistent
+  fNParties = src->fNParties;
+  fSgn = src->fSgn;
+  fSgnE = src->fSgnE;
+  fSphi = src->fSphi;
+  fStheta = src->fStheta;
+  fSphiphi = src->fSphiphi;
+  fSthetatheta = src->fSthetatheta;
+  fSphitheta = src->fSphitheta;
+  fPhi0 = src->fPhi0;
+  fTheta0 = src->fTheta0;
+  fPSChi2Prob = src->fPSChi2Prob;
+}
+//========
 float mxCoalition::GetPhi() {
   // <phi>
   if( fNParties<1 ) return 0;

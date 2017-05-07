@@ -25,12 +25,14 @@ class mxUnion {
   float GetEx() {return GetEnergyT()*TMath::Cos(fPhi);}
   float GetEy() {return GetEnergyT()*TMath::Sin(fPhi);}
   float GetEz() {return GetEnergyL();}
+  float GetD8() {return fD8;}
   float GetMass() {return fMass;}
 
  protected:
   mxCoalition* fCoalitions[2];
   float fPhi;
   float fEta;
+  float fD8;
   float fEnergyAsymmetry;
   float fEnergy;
   float fMass;

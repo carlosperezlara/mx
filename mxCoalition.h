@@ -14,6 +14,7 @@ class mxCoalition {
   mxCoalition(const mxCoalition&);
   mxCoalition& operator=(const mxCoalition&);
   virtual ~mxCoalition();
+  void CopyFrom(mxCoalition*);
   void Fill(int,mxParty*,float,float);
   float Test(float,float,float,float);
   int N() {return fNParties;}
@@ -31,7 +32,8 @@ class mxCoalition {
   float GetPSChi2Prob() {return fPSChi2Prob;}
   void SetPSChi2Prob(float v) {fPSChi2Prob = v;}
   int NPreShower();
-  float GetEnergy() {return SignalPbWO4();} //{return fSgn*fSgnE;}
+  //float GetEnergy() {return SignalPbWO4();} //{return fSgn*fSgnE;}
+  float GetEnergy() {return fSgn*fSgnE;}
   float GetEx() {return GetEnergy()*TMath::Cos(GetPhi())*TMath::Sin(GetTheta());}
   float GetEy() {return GetEnergy()*TMath::Sin(GetPhi())*TMath::Sin(GetTheta());}
   float GetEz() {return GetEnergy()*TMath::Cos(GetTheta());}

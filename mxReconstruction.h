@@ -33,9 +33,18 @@ class mxReconstruction {
   void DumpStats();
   void DumpHits();
   void DumpParties();
-  void DumpCoalitions();
+  void DumpCoalitions(int lvl=1);
+  void DumpPreEventCoalitions(int lvl=1);
   void DumpUnions();
   void FillPP( float energy, float eta, float phi, int pdg);
+  float GetMultiplicity(int lyr);
+
+  void Parties();
+  void Coalitions();
+  void Unions();
+
+  void FillPreEvent();
+  void MixUnions();
 
   float GetVertexX() {return fV[0];}
   float GetVertexY() {return fV[1];}
@@ -50,15 +59,11 @@ class mxReconstruction {
 
   void SetPtyAlgPadRow_Threshold(float v) {fPtyAlgPadRow_thr=v;}
   void SetCoaAlgSeed6_NCrystals(int v) {fCoaAlgSeed6_nc=v;}
-  void SetPtyAlgMPCBreaker_MaxCrystals(int v) {fPtyAlgMPCBreaker_MaxCrystals = v;}
+  void SetPtyAlgMPCBreaker_NCrystals(int v) {fPtyAlgMPCBreaker_NCrystals = v;}
 
  private:
   void SetPartyAlgorithm(int v) {fPtyAlg=v;}
   void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
-
-  void Parties();
-  void Coalitions();
-  void Unions();
 
   void Parties_ALGFocal(int);
   void Parties_ALGPadRow(int);
@@ -74,6 +79,7 @@ class mxReconstruction {
   std::vector<mxParty*> fPty[18];
   std::vector<mxCoalition*> fCoa[2];
   std::vector<mxUnion*> fUni[2];
+  std::vector<mxCoalition*> fCoaPreEvent[2];
   mxGeometry *fGeo;
 
   int fDebug;
@@ -81,11 +87,12 @@ class mxReconstruction {
   int fCoaAlg;
   float fPtyAlgPadRow_thr;
   float fPtyAlgMPCBreaker_thr;
-  int fPtyAlgMPCBreaker_MaxCrystals;
+  int fPtyAlgMPCBreaker_NCrystals;
   float fCoaAlgSeed6_nc;
   int fNHit[18];
   int fNPty[18];
   int fNCoa[2];
+  int fNCoaPreEvent[2];
   int fNUni[2];
   float fV[3];
 };

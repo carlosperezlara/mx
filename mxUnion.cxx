@@ -14,6 +14,7 @@
 mxUnion::mxUnion():
   fPhi(0),
   fEta(0),
+  fD8(-1),
   fEnergyAsymmetry(0),
   fEnergy(0),
   fMass(0) {
@@ -65,6 +66,15 @@ void mxUnion::Make(mxCoalition *un, mxCoalition *tu) {
   float ex = ex1 + ex2;
   float ey = ey1 + ey2;
   float ez = ez1 + ez2;
+  mxParty *pty1 = un->GetParty(8);
+  mxParty *pty2 = tu->GetParty(8);
+  if(pty1&&pty2) {
+    float x1 = pty1->GetX();
+    float y1 = pty1->GetY();
+    float x2 = pty2->GetX();
+    float y2 = pty2->GetY();
+    fD8 = TMath::Sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) );
+  }
   fPhi = TMath::ATan2(-ey,-ex)+TMath::Pi();
   fEta = 0.5*TMath::Log((fEnergy+ez)/(fEnergy-ez));
   //float et = TMath::Sqrt(ex*ex+ey*ey);
