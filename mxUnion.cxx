@@ -31,6 +31,7 @@ mxUnion::mxUnion(const mxUnion &src) {
   // copy ctor
   fPhi = src.fPhi;
   fEta = src.fEta;
+  fD8 = src.fD8;
   fEnergyAsymmetry = src.fEnergyAsymmetry;
   fEnergy = src.fEnergy;
   fMass = src.fMass;
@@ -43,6 +44,7 @@ mxUnion& mxUnion::operator=(const mxUnion &src) {
   if(&src!=this) {
     fPhi = src.fPhi;
     fEta = src.fEta;
+    fD8 = src.fD8;
     fEnergyAsymmetry = src.fEnergyAsymmetry;
     fEnergy = src.fEnergy;
     fMass = src.fMass;

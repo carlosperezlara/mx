@@ -32,7 +32,7 @@ class mxCoalition {
   float GetPSChi2Prob() {return fPSChi2Prob;}
   void SetPSChi2Prob(float v) {fPSChi2Prob = v;}
   int NPreShower();
-  //float GetEnergy() {return SignalPbWO4();} //{return fSgn*fSgnE;}
+  float GetEnergyMPC() {return SignalPbWO4();}
   float GetEnergy() {return fSgn*fSgnE;}
   float GetEx() {return GetEnergy()*TMath::Cos(GetPhi())*TMath::Sin(GetTheta());}
   float GetEy() {return GetEnergy()*TMath::Sin(GetPhi())*TMath::Sin(GetTheta());}
@@ -45,8 +45,10 @@ class mxCoalition {
  protected:
   mxParty* fParties[9];
   int fNParties;
+
   float fSgn;
   float fSgnE;
+
   float fSphi;
   float fStheta;
   float fSphiphi;
@@ -54,6 +56,7 @@ class mxCoalition {
   float fSphitheta;
   float fPhi0;
   float fTheta0;
+
   float fPSChi2Prob;
 };
 #endif /* __mxCoalition_H__ */
