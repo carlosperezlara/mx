@@ -238,6 +238,10 @@ void mSubsysReco::FillHistos(int lev, PHCompositeNode* top_node) {
   fHsph[lev]->Fill( mMpcExEventHeader->getStatephase(0) ); // 0-15
 
   int myCHPMap[2][8][48];
+  for(int ia=0; ia!=2; ++ia)
+    for(int ib=0; ib!=2; ++ib)
+      for(int ic=0; ic!=2; ++ic)
+	myCHPMap[ia][ib][ic] = 0;
   for(unsigned int i=0; i!=mMpcExEventHeader->getCellIDsSize(); ++i) {
     int arm = mMpcExEventHeader->getCellIDsArm(i);
     int pkt = mMpcExEventHeader->getCellIDsPkt(i);
