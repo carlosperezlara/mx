@@ -7,6 +7,8 @@
 #include <algorithm>
 #include "phMath.h"
 
+#include "TString.h"
+
 #include "mxGeometry.h"
 #include "mxHit.h"
 #include "mxParty.h"
@@ -106,6 +108,57 @@ void mxReconstruction::DumpHits() {
   }
   std::cout << "Total Hits: " << nn << std::endl;
   std::cout << "=============================" << std::endl;
+}
+//========
+void mxReconstruction::DumpMPCLayer(int lyr) {
+  int inikey = 0;
+  int finkey = 196;
+  if(lyr>0) {
+    inikey = 196;
+    finkey = 416;
+  }
+  float asgn[416] = {0};
+  int nn;
+  mxHit *hit;
+  nn = fNHit[8+lyr*9];
+  for(int i=0; i!=nn; ++i) {
+    hit = fHit[8+lyr*9].at(i);
+    //std::cout << hit->Idx() << " ";
+    //std::cout << hit->Signal() << std::endl;
+    asgn[ hit->Idx()-49152 ] = hit->Signal();
+  }
+
+  int idx[18][18];
+  float sgn[18][18];
+  for(int iy=0; iy!=18; ++iy) {
+    for(int ix=0; ix!=18; ++ix) {
+      idx[ix][iy] = -1;
+      sgn[ix][iy] = -1;
+    }
+  }
+
+  for(int i=inikey; i!=finkey; ++i) {
+    float x = fGeo->X(49152 + i);
+    float y = fGeo->Y(49152 + i);
+    // works for south, not for north
+    int ix = (x+19.7)/2.2;
+    int iy = (y+19.5)/2.2;
+    idx[ix][17-iy] = i;
+    sgn[ix][17-iy] = asgn[i];
+  }
+  for(int iy=0; iy!=18; ++iy) {
+    std::cout << std::endl;
+    for(int ix=0; ix!=18; ++ix) {
+      if(idx[ix][iy]<0) {
+	std::cout << "|##########|";
+      } else {
+	std::cout << Form("|%03d: ",idx[ix][iy]);
+	if(sgn[ix][iy]>0.00) std::cout << Form(" %4.2f|",sgn[ix][iy]);
+	else std::cout << "     |";
+      }
+    }
+  }
+  std::cout << std::endl;
 }
 //========
 void mxReconstruction::DumpParties() {
@@ -372,6 +425,7 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
       mxHit *hitn = (mxHit*) fHit[lyr].at( mi );
       if(hitn->IsAssigned()) continue;
       if(hitn->Signal()<thr) continue;
+      if(hitn->Signal()>peak) continue;
       int idxn = hitn->Idx();
       float xn = fGeo->X( idxn );
       float yn = fGeo->Y( idxn );

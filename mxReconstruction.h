@@ -30,6 +30,7 @@ class mxReconstruction {
   mxParty* GetParty(int lyr, int idx) {return fPty[lyr].at(idx);}
   mxCoalition* GetCoalition(int arm, int idx) {return fCoa[arm].at(idx);}
   mxUnion* GetUnion(int arm, int idx) {return fUni[arm].at(idx);}
+  void DumpMPCLayer(int);
   void DumpStats();
   void DumpHits();
   void DumpParties();
@@ -60,6 +61,7 @@ class mxReconstruction {
   void SetPtyAlgPadRow_Threshold(float v) {fPtyAlgPadRow_thr=v;}
   void SetCoaAlgSeed6_NCrystals(int v) {fCoaAlgSeed6_nc=v;}
   void SetPtyAlgMPCBreaker_NCrystals(int v) {fPtyAlgMPCBreaker_NCrystals = v;}
+  void SetPtyAlgMPCBreaker_Threshold(float v) {fPtyAlgMPCBreaker_thr = v;}
 
  private:
   void SetPartyAlgorithm(int v) {fPtyAlg=v;}

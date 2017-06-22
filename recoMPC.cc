@@ -50,6 +50,7 @@ int main(int narg, char **carg) {
   //reco->SetDebug(6);
   reco->SetIdentificationAlgorithm(combo);
   reco->SetPtyAlgMPCBreaker_NCrystals(5);
+  reco->SetPtyAlgMPCBreaker_Threshold(0.01);
   mxCoalitionCuts *cuts0 = new mxCoalitionCuts("Cut0");
   //cuts0->SetEneMax( maxe );
   cuts0->SetQA();
@@ -92,6 +93,7 @@ int main(int narg, char **carg) {
   TH2F *hmult = new TH2F("multMPCS","multMPCS",1000,0.1,150000,100,0,300);
   TH1F *hmult2 = new TH1F("multMPCS2","multMPCS2",1000,0.1,500);
   int nTot = chain->GetEntries();
+  //for(int nevs=0;nevs!=100;++nevs) {
   for(int nevs=0;nevs!=nTot;++nevs) {
   //for(int nevs=5312;nevs!=5313;++nevs) {
     chain->GetEntry(nevs);
@@ -122,6 +124,8 @@ int main(int narg, char **carg) {
 
     reco->Parties();
     //reco->DumpParties();
+    //reco->DumpMPCLayer(0);
+    //continue;
 
     reco->Coalitions();
 
@@ -200,6 +204,8 @@ int main(int narg, char **carg) {
       //std::cout << qt << std::endl;
       */
     }
+
+    //continue;
 
     reco->MixUnions();
     int nfakepi0s = reco->GetNUnions(0);
