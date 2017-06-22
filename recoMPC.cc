@@ -23,6 +23,12 @@
 #include "mxQAReconstruction.h"
 #include "mxCoalitionCuts.h"
 
+float mpcSF(float ene) {
+  //float fr = 0.881-0.304*TMath::Exp(-0.124*ene);
+  float fr = 0.651-0.452*TMath::Exp(-0.141*ene);
+  return fr;
+}
+
 int main(int narg, char **carg) {
   TString dirr = "taxi/mb/step1/";
   TString dirs = "taxi/mb/step2/";
