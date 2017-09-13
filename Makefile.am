@@ -26,7 +26,11 @@ include_HEADERS = \
   mxCalibBasePbWO4.h \
   PHMXData.h \
   mSubsysReco.h \
-  mMPCTunner.h
+  mMPCTunner.h \
+  mMPCEXCounter.h \
+  mMPCEXQ.h \
+  \
+  qc/qcQ.h
 
 libMXphnx_la_SOURCES = \
   mxGeometry.cxx \
@@ -44,6 +48,11 @@ libMXphnx_la_SOURCES = \
   mxCalibBasePbWO4.cxx \
   mSubsysReco.cxx \
   mMPCTunner.cxx \
+  mMPCEXCounter.cxx \
+  mMPCEXQ.cxx \
+  \
+  qc/qcQ.cxx \
+  \
   MXphnx_Dict.C
 
 libMXphnx_la_LIBADD = \
@@ -72,6 +81,10 @@ MXphnx_Dict.C: \
   PHMXData.h \
   mSubsysReco.h \
   mMPCTunner.h \
+  mMPCEXCounter.h \
+  mMPCEXQ.h \
+  \
+  qc/qcQ.h \
   MXphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 
