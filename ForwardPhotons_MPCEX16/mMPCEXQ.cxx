@@ -33,7 +33,7 @@
 #include "BbcGeo.hh"
 
 #include "mxGeometry.h"
-#include "qc/qcQ.h"
+#include <qcQ.h>
 
 #include "TMpcExHitContainer.h"
 #include "TMpcExHit.h"
@@ -56,9 +56,25 @@ mMPCEXQ::mMPCEXQ( const char* name ) :
   fEvents( NULL ),
   fEnergy( NULL ),
   fVertex( NULL ),
-  fCentrality( NULL )
+  fCentrality( NULL ),
+  fEXRejectedByEnergy( NULL ),
+  fMPCRejectedByEnergy( NULL )
 {
   printf("mcReco::CTOR\n");
+
+  for(int i=0; i!=9; ++i) {
+    fQ[i] = NULL;
+    fEneLyr[i] = NULL;
+    fXYhits[i] = NULL;
+    fQxDist[i] = NULL;
+    fQyDist[i] = NULL;
+    fPsi2[i] = NULL;
+    if(i>1) continue;
+    fQbbc[i] = NULL;
+    fBbcEneTim[i] = NULL;
+    fBbcXY[i] = NULL;
+  }
+
   fMPCIDX.clear();
   fBBCcalib = new BbcCalib();
   fBBCgeo = new BbcGeo();
@@ -101,25 +117,35 @@ int mMPCEXQ::Init(PHCompositeNode* top_node) {
   printf("mMPCEXQ::Init\n");
   Fun4AllServer *se = Fun4AllServer::instance();
 
-  fEvents = new TH1F(Form("Events_%s",fName.Data()),"Events",7,-0.5,+6.5);
+  fEvents = new TH1F(Form("%s_Events",fName.Data()),"Events",7,-0.5,+6.5);
   se->registerHisto( ((TH1*) (fEvents) ) );
 
-  fEnergy = new TH2F(Form("Energy_%s",fName.Data()),"Energy",49152,-0.5,+49151.5,100,0,10000);
+  fEnergy = new TH2F(Form("%s_Energy",fName.Data()),"Energy",49152,-0.5,+49151.5,100,0,10000);
   se->registerHisto( ((TH2F*) (fEnergy) ) );
+  fEnergy->GetXaxis()->SetBinLabel(1,"All Raw");
+  fEnergy->GetXaxis()->SetBinLabel(2,"Triggered");
+  fEnergy->GetXaxis()->SetBinLabel(3,"Detector Integrity");
+  fEnergy->GetXaxis()->SetBinLabel(4,"Selected");
 
-  fVertex = new TH1F(Form("Vertex_%s",fName.Data()),"Vertex",100,-100,+100);
+  fVertex = new TH1F(Form("%s_Vertex",fName.Data()),"Vertex",100,-100,+100);
   se->registerHisto( ((TH1F*) (fVertex) ) );
 
-  fCentrality = new TH1F(Form("Centrality_%s",fName.Data()),"Centrality",100,-0.5,99.5);
+  fCentrality = new TH1F(Form("%s_Centrality",fName.Data()),"Centrality",100,-0.5,99.5);
   se->registerHisto( ((TH1F*) (fCentrality) ) );
+
+  fMPCRejectedByEnergy = new TH1F(Form("%s_MPCRejectedByEnergy",fName.Data()),"MPCRejectedByEnergy",  416,-0.5,  415.5);
+  se->registerHisto( ((TH1F*) (fMPCRejectedByEnergy) ) );
+
+  fEXRejectedByEnergy  = new TH1F(Form("%s_EXRejectedByEnergy",fName.Data()), "EXRejectedByEnergy", 49152,-0.5,49151.5);
+  se->registerHisto( ((TH1F*) (fEXRejectedByEnergy) ) );
 
   for(int i=0; i!=2; ++i) {
     fQbbc[i] = new qcQ(2);
-    fBbcEneTim[i] = new TH2F(Form("bbcET_%d_%s",i,fName.Data()),
+    fBbcEneTim[i] = new TH2F(Form("%s_bbcET_%d",fName.Data(),i),
 			 Form("bbcET_%d",i),
 			 1000,-1,30,1000,-1,+30);
     se->registerHisto( ((TH2F*) (fBbcEneTim[i]) ) );
-    fBbcXY[i] = new TH2F(Form("bbcXY_%d_%s",i,fName.Data()),
+    fBbcXY[i] = new TH2F(Form("%s_bbcXY_%d",fName.Data(),i),
 			 Form("bbcXY_%d",i),
 			 100,-230,+230,100,-230,+230);
     se->registerHisto( ((TH2F*) (fBbcXY[i]) ) );
@@ -127,24 +153,24 @@ int mMPCEXQ::Init(PHCompositeNode* top_node) {
 
   for(int i=0; i!=9; ++i) {
     fQ[i] = new qcQ(2);
-    fXYhits[i] = new TH2F(Form("XYhits_%d_%s",i,fName.Data()),
+    fXYhits[i] = new TH2F(Form("%s_XYhits_%d",fName.Data(),i),
 			  Form("XYhits_%d",i),
 			  100,-23,+23,100,-23,+23);
     se->registerHisto( ((TH2F*) (fXYhits[i]) ) );
-    fQxDist[i] = new TH1F(Form("QxDist_%d_%s",i,fName.Data()),
+    fQxDist[i] = new TH1F(Form("%s_QxDist_%d",fName.Data(),i),
 			  Form("QxDist_%d",i),1000,-1,1);
     se->registerHisto( ((TH1F*) (fQxDist[i]) ) );
-    fQyDist[i] = new TH1F(Form("QyDist_%d_%s",i,fName.Data()),
+    fQyDist[i] = new TH1F(Form("%s_QyDist_%d",fName.Data(),i),
 			  Form("QyDist_%d",i),1000,-1,1);
     se->registerHisto( ((TH1F*) (fQyDist[i]) ) );
     float energ = 30000;
     if(i==8) energ = 100;
-    fEneLyr[i] = new TH1F(Form("EneLyr_%d_%s",i,fName.Data()),
+    fEneLyr[i] = new TH1F(Form("%s_EneLyr_%d",fName.Data(),i),
 			  Form("EneLyr_%d",i),1000,0,energ);
     se->registerHisto( ((TH1F*) (fEneLyr[i]) ) );
   }
   for(int i=0; i!=9; ++i) {
-    fPsi2[i] = new TH2F( Form("Psi2_%d_%s",i,fName.Data()),
+    fPsi2[i] = new TH2F( Form("%s_Psi2_%d",fName.Data(),i),
 			 Form("Psi2_%d",i),
 			 300, 0, TMath::Pi(), 300, 0, TMath::Pi() );
     se->registerHisto( ((TH2F*) (fPsi2[i]) ) );
@@ -237,7 +263,7 @@ int mMPCEXQ::process_event(PHCompositeNode* top_node) {
   fEvents->Fill(0); // all raw
   TriggerHelper *myTH = new TriggerHelper(top_node);
   bool trig = myTH->trigScaled("BBCLL1(>0 tubes) novertex"); //CHANGE TO NARROW VERTEX
-  //bool trig = myTH->trigScaled("BBCLL1(>0 tubes)_central_narrowvtx"); //CHANGE TO NARROW VERTEX
+  trig = trig || myTH->trigScaled("BBCLL1(>0 tubes)_central_narrowvtx"); //CHANGE TO NARROW VERTEX
   delete myTH;
   if( !trig ) return ABORTEVENT;
   fEvents->Fill(1); // all triggered
@@ -301,15 +327,21 @@ int mMPCEXQ::process_event(PHCompositeNode* top_node) {
   float enelimit[8] = {2000,2000,2500,2500,3000,3000,3500,3500};
 
   //cout << mMpcExHits->size() << endl;
-  for(int ihit=0; ihit!=mMpcExHits->size(); ++ihit) {
+  for(unsigned int ihit=0; ihit!=mMpcExHits->size(); ++ihit) {
     TMpcExHit *hit = mMpcExHits->getHit(ihit);
     unsigned int key = hit->key();
     float energy = hit->combined();
-    fEnergy->Fill(key,energy);
     if(key>=24576) continue;
     int layer = fGeo->LyrIdx(key);
-    if(energy<100) continue;
-    if(energy>enelimit[layer]) continue;
+    if(energy<100) {
+      fEXRejectedByEnergy->Fill( key );
+      continue;
+    }
+    if(energy>enelimit[layer]) {
+      fEXRejectedByEnergy->Fill( key );
+      continue;
+    }
+    fEnergy->Fill(key,energy);
     fEneLyr[layer]->Fill( energy );
     fXYhits[layer]->Fill( fGeo->X(key), fGeo->Y(key), energy );
     float phi = TMath::Pi() + TMath::ATan2(-fGeo->Y(key),-fGeo->X(key));
@@ -326,8 +358,14 @@ int mMPCEXQ::process_event(PHCompositeNode* top_node) {
     float ene = adc;
     int layer = fGeo->LyrIdx(key);
     if(layer!=8) continue;
-    if(ene<0.5) continue;
-    if(ene>30) continue;
+    if(ene<0.5) {
+      fMPCRejectedByEnergy->Fill( idxmpc );
+      continue;
+    }
+    if(ene>30) {
+      fMPCRejectedByEnergy->Fill( idxmpc );
+      continue;
+    }
     fEneLyr[layer]->Fill( ene );
     fXYhits[layer]->Fill( fGeo->X(key), fGeo->Y(key), ene );
     float phi = TMath::Pi() + TMath::ATan2(-fGeo->Y(key),-fGeo->X(key));

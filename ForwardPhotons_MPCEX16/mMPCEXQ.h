@@ -45,6 +45,8 @@ class mMPCEXQ: public SubsysReco {
   TH2F *fEnergy;
   TH1F *fVertex;
   TH1F *fCentrality;
+  TH1F *fEXRejectedByEnergy;
+  TH1F *fMPCRejectedByEnergy;
   TH1F *fEneLyr[9];
   TH2F *fXYhits[9];
   TH2F *fBbcEneTim[2];
