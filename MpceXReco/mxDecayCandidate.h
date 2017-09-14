@@ -6,7 +6,7 @@
 #define __mxDecayCandidate_HH__
 #include "TMath.h"
 
-class mxCoalition;
+class mxCandidate;
 
 class mxDecayCandidate {
  public:
@@ -14,8 +14,8 @@ class mxDecayCandidate {
   mxDecayCandidate(const mxDecayCandidate&);
   mxDecayCandidate& operator=(const mxDecayCandidate&);
   virtual ~mxDecayCandidate();
-  void Make(mxCoalition*,mxCoalition*);
-  mxCoalition* GetCoalition(int val) {return val<2?fCoalitions[val]:NULL;}
+  void Make(mxCandidate*,mxCandidate*);
+  mxCandidate* GetCandidate(int val) {return val<2?fCandidates[val]:NULL;}
   float GetEta() {return fEta;}
   float GetPhi() {return fPhi;}
   float GetEnergyAsymmetry() {return fEnergyAsymmetry;}
@@ -29,7 +29,7 @@ class mxDecayCandidate {
   float GetMass() {return fMass;}
 
  protected:
-  mxCoalition* fCoalitions[2];
+  mxCandidate* fCandidates[2];
   float fPhi;
   float fEta;
   float fD8;

@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "mxHit.h"
-#include "mxParty.h"
-#include "mxCoalition.h"
-#include "mxUnion.h"
+#include "mxCluster.h"
+#include "mxCandidate.h"
+#include "mxDecayCandidate.h"
 
 class mxGeometry;
 
@@ -24,24 +24,24 @@ class mxReconstruction {
   void Make();
   void SetVertex(float x, float y, float z) {fV[0]=x; fV[1]=y; fV[2]=z;}
   std::vector<mxHit*> GetHits(int lyr) {return fHit[lyr];}
-  std::vector<mxParty*> GetParties(int lyr) {return fPty[lyr];}
-  std::vector<mxCoalition*> GetCoalitions(int arm) {return fCoa[arm];}
-  std::vector<mxUnion*> GetUnions(int arm) {return fUni[arm];}
-  mxParty* GetParty(int lyr, int idx) {return fPty[lyr].at(idx);}
-  mxCoalition* GetCoalition(int arm, int idx) {return fCoa[arm].at(idx);}
-  mxUnion* GetUnion(int arm, int idx) {return fUni[arm].at(idx);}
+  std::vector<mxCluster*> GetParties(int lyr) {return fPty[lyr];}
+  std::vector<mxCandidate*> GetCandidates(int arm) {return fCoa[arm];}
+  std::vector<mxDecayCandidate*> GetUnions(int arm) {return fUni[arm];}
+  mxCluster* GetCluster(int lyr, int idx) {return fPty[lyr].at(idx);}
+  mxCandidate* GetCandidate(int arm, int idx) {return fCoa[arm].at(idx);}
+  mxDecayCandidate* GetUnion(int arm, int idx) {return fUni[arm].at(idx);}
   void DumpMPCLayer(int);
   void DumpStats();
   void DumpHits();
   void DumpParties();
-  void DumpCoalitions(int lvl=1);
-  void DumpPreEventCoalitions(int lvl=1);
+  void DumpCandidates(int lvl=1);
+  void DumpPreEventCandidates(int lvl=1);
   void DumpUnions();
   void FillPP( float energy, float eta, float phi, int pdg);
   float GetMultiplicity(int lyr);
 
   void Parties();
-  void Coalitions();
+  void Candidates();
   void Unions();
 
   void FillPreEvent();
@@ -52,7 +52,7 @@ class mxReconstruction {
   float GetVertexZ() {return fV[2];}
   int GetNHits(int lyr) {return fNHit[lyr];}
   int GetNParties(int lyr) {return fNPty[lyr];}
-  int GetNCoalitions(int arm) {return fNCoa[arm];}
+  int GetNCandidates(int arm) {return fNCoa[arm];}
   int GetNUnions(int arm) {return fNUni[arm];}
 
   void SetDebug(int v) {fDebug=v;}
@@ -64,24 +64,24 @@ class mxReconstruction {
   void SetPtyAlgMPCBreaker_Threshold(float v) {fPtyAlgMPCBreaker_thr = v;}
 
  private:
-  void SetPartyAlgorithm(int v) {fPtyAlg=v;}
-  void SetCoalitionAlgorithm(int v) {fCoaAlg=v;}
+  void SetClusterAlgorithm(int v) {fPtyAlg=v;}
+  void SetCandidateAlgorithm(int v) {fCoaAlg=v;}
 
   void Parties_ALGFocal(int);
   void Parties_ALGPadRow(int);
   void Parties_ALGLayer(int);
   void Parties_ALGMPCBreaker(int);
 
-  void Coalitions_ALGSeedMPC();
-  void Coalitions_ALGSeed6();
-  mxParty* SeekHitInEM(float, float, int, int);
-  float ComputePSChi2Prob(int, mxCoalition*);
+  void Candidates_ALGSeedMPC();
+  void Candidates_ALGSeed6();
+  mxCluster* SeekHitInEM(float, float, int, int);
+  float ComputePSChi2Prob(int, mxCandidate*);
 
   std::vector<mxHit*> fHit[18];
-  std::vector<mxParty*> fPty[18];
-  std::vector<mxCoalition*> fCoa[2];
-  std::vector<mxUnion*> fUni[2];
-  std::vector<mxCoalition*> fCoaPreEvent[2];
+  std::vector<mxCluster*> fPty[18];
+  std::vector<mxCandidate*> fCoa[2];
+  std::vector<mxDecayCandidate*> fUni[2];
+  std::vector<mxCandidate*> fCoaPreEvent[2];
   mxGeometry *fGeo;
 
   int fDebug;

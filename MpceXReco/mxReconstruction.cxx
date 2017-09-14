@@ -11,9 +11,9 @@
 
 #include "mxGeometry.h"
 #include "mxHit.h"
-#include "mxParty.h"
-#include "mxCoalition.h"
-#include "mxUnion.h"
+#include "mxCluster.h"
+#include "mxCandidate.h"
+#include "mxDecayCandidate.h"
 #include "mxReconstruction.h"
 
 struct GreaterSignal
@@ -165,7 +165,7 @@ void mxReconstruction::DumpParties() {
   std::cout << "=============================" << std::endl;
   std::cout << "mxReconstruction::DumpParties" << std::endl;
   int nn=0;
-  mxParty *pty;
+  mxCluster *pty;
   mxHit *hit;
   for(int i=0; i!=18; ++i) {
     int n = fNPty[i];
@@ -190,11 +190,11 @@ void mxReconstruction::DumpParties() {
   std::cout << "=============================" << std::endl;
 }
 //========
-void mxReconstruction::DumpCoalitions(int lvl) {
+void mxReconstruction::DumpCandidates(int lvl) {
   std::cout << "================================" << std::endl;
-  std::cout << "mxReconstruction::DumpCoalitions" << std::endl;
-  mxCoalition *coa;
-  mxParty *pty;
+  std::cout << "mxReconstruction::DumpCandidates" << std::endl;
+  mxCandidate *coa;
+  mxCluster *pty;
   mxHit *hit;
   for(int i=0; i!=2; ++i) {
     int n = fNCoa[i];
@@ -207,7 +207,7 @@ void mxReconstruction::DumpCoalitions(int lvl) {
       std::cout << std::endl;
       if(lvl<2) continue;
       for(int k=0; k!=9; ++k) {
-      	pty = coa->GetParty(k);
+      	pty = coa->GetCluster(k);
       	std::cout << "       ||" << k;
       	if(!pty) {
       	  std::cout << std::endl;
@@ -232,11 +232,11 @@ void mxReconstruction::DumpCoalitions(int lvl) {
   std::cout << "=============================" << std::endl;
 }
 //========
-void mxReconstruction::DumpPreEventCoalitions(int lvl) {
+void mxReconstruction::DumpPreEventCandidates(int lvl) {
   std::cout << "========================================" << std::endl;
-  std::cout << "mxReconstruction::DumpPreEventCoalitions" << std::endl;
-  mxCoalition *coa;
-  mxParty *pty;
+  std::cout << "mxReconstruction::DumpPreEventCandidates" << std::endl;
+  mxCandidate *coa;
+  mxCluster *pty;
   mxHit *hit;
   for(int i=0; i!=2; ++i) {
     int n = fNCoaPreEvent[i];
@@ -255,16 +255,16 @@ void mxReconstruction::DumpPreEventCoalitions(int lvl) {
 void mxReconstruction::DumpUnions() {
   std::cout << "============================" << std::endl;
   std::cout << "mxReconstruction::DumpUnions" << std::endl;
-  mxUnion *uni;
-  mxCoalition *coa1, *coa2;
+  mxDecayCandidate *uni;
+  mxCandidate *coa1, *coa2;
   for(int i=0; i!=2; ++i) {
     int n = fNUni[i];
     std::cout << "  Arm " << i << " || Nunions " << n << std::endl;
     for(int j=0; j!=n; ++j) {
       uni = fUni[i].at(j);
       std::cout << "    ||" << j << "|| ene asym mass "  << uni->GetEnergy() << " " << uni->GetEnergyAsymmetry() << " " << uni->GetMass() << std::endl;
-      coa1 = uni->GetCoalition(0);
-      coa2 = uni->GetCoalition(1);
+      coa1 = uni->GetCandidate(0);
+      coa2 = uni->GetCandidate(1);
       std::cout << "       | ene1 ene2 " << coa1->GetEnergy() << " " << coa2->GetEnergy() << std::endl;
     }
   }
@@ -320,8 +320,8 @@ void mxReconstruction::Make() {
   //DumpHits();
   Parties();
   //DumpParties();
-  Coalitions();
-  //DumpCoalitions();
+  Candidates();
+  //DumpCandidates();
   Unions();
 }
 //========
@@ -380,9 +380,9 @@ void mxReconstruction::Parties_ALGMPCBreaker(int lyr) {
     float peak = hit->Signal();
     // create new party
     int nmax = fPty[lyr].size();
-    mxParty *pty;
+    mxCluster *pty;
     if(fNPty[lyr]>nmax-1) {
-      pty = new mxParty();
+      pty = new mxCluster();
       pty->SetDxDy(dx,dy);
       fPty[lyr].push_back(pty);
     } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -473,10 +473,10 @@ void mxReconstruction::Parties_ALGLayer(int lyr) {
     }
   }
 
-  mxParty *pty;
+  mxCluster *pty;
   int nmax = fPty[lyr].size();
   if(fNPty[lyr]>nmax-1) {
-    pty = new mxParty();
+    pty = new mxCluster();
     pty->SetDxDy(dx,dy);
     fPty[lyr].push_back(pty);
   } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -492,7 +492,7 @@ void mxReconstruction::Parties_ALGLayer(int lyr) {
     pty->Fill( hit, x, y );
     if(fDebug>20) {
       std::cout << "  HIT x " << x << " y " << y << " sgn " << hit->Signal();
-      std::cout << " => Party x " << pty->GetX() << " y " << pty->GetY() << " sgn " << pty->Signal() << std::endl;
+      std::cout << " => Cluster x " << pty->GetX() << " y " << pty->GetY() << " sgn " << pty->Signal() << std::endl;
     }
   }
   if(pty->N()>0) {
@@ -508,7 +508,7 @@ void mxReconstruction::Parties_ALGFocal(int lyr) {
   std::sort(fHit[lyr].begin(),fHit[lyr].begin()+fNHit[lyr],GreaterSignal());
   // making local parties
   mxHit *hit;
-  mxParty *pty;
+  mxCluster *pty;
   // building
   float dx, dy;
   if(lyr==8||lyr==17) {
@@ -535,7 +535,7 @@ void mxReconstruction::Parties_ALGFocal(int lyr) {
     if(fDebug>20)
       std::cout << "  hit no " << mh << " in x y " << x << " " << y << " || signal " << hit->Signal()<< std::endl;
     for(int mp=0; mp!=fNPty[lyr]; ++mp) {
-      pty = (mxParty*) fPty[lyr].at( mp );
+      pty = (mxCluster*) fPty[lyr].at( mp );
       float test = pty->Test(x,y);
       if(fDebug>20) {
 	std::cout << "    pty no " << mp << "|| in x y " << pty->GetX() << " " << pty->GetY();
@@ -552,7 +552,7 @@ void mxReconstruction::Parties_ALGFocal(int lyr) {
     if(!append) {
       int nmax = fPty[lyr].size();
       if(fNPty[lyr]>nmax-1) {
-	pty = new mxParty();
+	pty = new mxCluster();
 	pty->SetDxDy(dx,dy);
 	fPty[lyr].push_back(pty);
       } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -665,11 +665,11 @@ void mxReconstruction::Parties_ALGPadRow(int lyr) {
 	  std::cout << "    dumping into parties" << std::endl;
 	}
       	//dumping into parties
-      	mxParty *pty;
+      	mxCluster *pty;
       	for(int l=0; l!=ngroups; ++l) {
       	  int nmax = fPty[lyr].size();
       	  if(fNPty[lyr]>nmax-1) {
-      	    pty = new mxParty();
+      	    pty = new mxCluster();
       	    pty->SetDxDy(dx,dy);
       	    fPty[lyr].push_back(pty);
       	  } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -695,10 +695,10 @@ void mxReconstruction::Parties_ALGPadRow(int lyr) {
 	  std::cout << "  > Adding hit to new buffer in [" << row << "," << col << "]" << std::endl;
       	buff[row][col] = hit;
         if(mh==(fNHit[lyr]-1)) { // dump lonely
-          mxParty *pty;
+          mxCluster *pty;
           int nmax = fPty[lyr].size();
           if(fNPty[lyr]>nmax-1) {
-            pty = new mxParty();
+            pty = new mxCluster();
             pty->SetDxDy(dx,dy);
             fPty[lyr].push_back(pty);
           } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -713,10 +713,10 @@ void mxReconstruction::Parties_ALGPadRow(int lyr) {
   }
 }
 //========
-void mxReconstruction::Coalitions() {
+void mxReconstruction::Candidates() {
   //std::cout << "COALITIONS " << std::endl;
   for(int lyr=0; lyr!=18; ++lyr) std::sort(fPty[lyr].begin(),fPty[lyr].begin()+fNPty[lyr],GreaterSignal());
-  mxParty *pty;
+  mxCluster *pty;
   // dissociating previous allignments
   for(int lyr=0; lyr!=18; ++lyr)
     for(int mp=0; mp!=fNPty[lyr]; ++mp) {
@@ -725,15 +725,15 @@ void mxReconstruction::Coalitions() {
     }
   switch(fCoaAlg) {
   case(0):
-    Coalitions_ALGSeedMPC(); // MPC ==> EX0
+    Candidates_ALGSeedMPC(); // MPC ==> EX0
     break;
   case(1):
-    Coalitions_ALGSeed6(); // EX6 ==> EX0 ==> EX7 | MPC
+    Candidates_ALGSeed6(); // EX6 ==> EX0 ==> EX7 | MPC
     break;
   }
 }
 //========
-void mxReconstruction::Coalitions_ALGSeedMPC() {
+void mxReconstruction::Candidates_ALGSeedMPC() {
   if(fDebug>10)
     std::cout << "C_ALGSeedMPC" << std::endl;
   // 0 1 2 3 4 5 6 7 || 8
@@ -749,8 +749,8 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
   //for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i) + 0.5*dz[i];
 
-  mxParty *pty;
-  mxCoalition *coa;
+  mxCluster *pty;
+  mxCandidate *coa;
   for(int arm=0; arm!=2; ++arm) {
     // call for coalition formation
     for(int lyr=arm*9+8; lyr!=arm*9+7; --lyr) {
@@ -762,7 +762,7 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
         // seeding
       	int nmax = fCoa[arm].size();
         if(fNCoa[arm]>nmax-1) {
-          coa = new mxCoalition();
+          coa = new mxCandidate();
           fCoa[arm].push_back(coa);
         } else
       	  coa = fCoa[arm].at( fNCoa[arm] );
@@ -808,14 +808,14 @@ void mxReconstruction::Coalitions_ALGSeedMPC() {
   } //arm
 }
 //========
-void mxReconstruction::Coalitions_ALGSeed6() {
+void mxReconstruction::Candidates_ALGSeed6() {
   if(fDebug>10)
     std::cout << "C_ALGSeed6" << std::endl;
   // 0 1 2 3 4 5 6 7 || 8
   // O<==========O   ||
   //             =>O || X
   // Building coalitions using EX only
-  // Coalition formation starts at layer 6 and move backwards
+  // Candidate formation starts at layer 6 and move backwards
   // then continues to last layer.
   // Parties cannot be shared among coalitions
   // Matching of MPC afterwrds in *passive* mode (used for calibration)
@@ -826,8 +826,8 @@ void mxReconstruction::Coalitions_ALGSeed6() {
   dz[8] = fGeo->PbWO4_a2();
   dz[17] = fGeo->PbWO4_a2();
   for(int i=0;i!=18;++i) Z[i] = fGeo->RZ(i);// + 0.5*dz[i];
-  mxParty *pty;
-  mxCoalition *coa;
+  mxCluster *pty;
+  mxCandidate *coa;
   for(int arm=0; arm!=2; ++arm) {
     // call for coalition formation
     int lyr=arm*9+6;
@@ -839,7 +839,7 @@ void mxReconstruction::Coalitions_ALGSeed6() {
       // seeding
       int nmax = fCoa[arm].size();
       if(fNCoa[arm]>nmax-1) {
-      	coa = new mxCoalition();
+      	coa = new mxCandidate();
       	fCoa[arm].push_back(coa);
       } else
       	coa = fCoa[arm].at( fNCoa[arm] );
@@ -911,7 +911,7 @@ void mxReconstruction::Coalitions_ALGSeed6() {
     std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],MostContributors());
     for(int icoa=0; icoa!=fNCoa[arm]; ++icoa) {
       coa = fCoa[arm].at(icoa);
-      mxParty *mpc = SeekHitInEM(coa->GetPhi(), coa->GetTheta(), arm, fCoaAlgSeed6_nc);
+      mxCluster *mpc = SeekHitInEM(coa->GetPhi(), coa->GetTheta(), arm, fCoaAlgSeed6_nc);
       if(mpc) {
 	coa->Fill( arm*9+8, mpc, coa->GetPhi(), coa->GetTheta() );
 	if(fDebug>5)
@@ -926,16 +926,16 @@ void mxReconstruction::Coalitions_ALGSeed6() {
 void mxReconstruction::FillPreEvent() {
   if(fDebug>10)
     std::cout << "FillPreEvent" << std::endl;
-  mxCoalition *coaI, *coaJ;
+  mxCandidate *coaI, *coaJ;
   for(int arm=0; arm!=2; ++arm) {
     // call for union formation
     fNCoaPreEvent[arm] = fNCoa[arm];
     for(int mi=0; mi!=fNCoa[arm]; ++mi) {
-      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      coaI = (mxCandidate*) fCoa[arm].at( mi );
       if(mi<fCoaPreEvent[arm].size())
-	coaJ = (mxCoalition*) fCoaPreEvent[arm].at( mi );
+	coaJ = (mxCandidate*) fCoaPreEvent[arm].at( mi );
       else {
-	coaJ = new mxCoalition();
+	coaJ = new mxCandidate();
 	fCoaPreEvent[arm].push_back( coaJ );
       }
       coaJ->CopyFrom( coaI );
@@ -945,20 +945,20 @@ void mxReconstruction::FillPreEvent() {
 //========
 void mxReconstruction::MixUnions() {
   // forming mixed unions
-  mxCoalition *coaI, *coaJ;
-  mxUnion *un;
+  mxCandidate *coaI, *coaJ;
+  mxDecayCandidate *un;
   for(int arm=0; arm!=2; ++arm) {
     fNUni[arm] = 0;
     // call for union formation
     for(int mi=0; mi<fNCoa[arm]-1; ++mi) {
-      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      coaI = (mxCandidate*) fCoa[arm].at( mi );
       //std::cout << coaI->GetEnergy() << " this_event" << std::endl;
       for(int mj=mi+1; mj<fNCoaPreEvent[arm]; ++mj) {
-      	coaJ = (mxCoalition*) fCoaPreEvent[arm].at( mj );
+      	coaJ = (mxCandidate*) fCoaPreEvent[arm].at( mj );
 	//std::cout << coaJ->GetEnergy() << " previous_event" << std::endl;
         int nmax = fUni[arm].size();
         if(fNUni[arm]>nmax-1) {
-          un = new mxUnion();
+          un = new mxDecayCandidate();
           fUni[arm].push_back(un);
         } else un = fUni[arm].at( fNUni[arm] );
 	un->Make(coaI,coaJ);
@@ -971,19 +971,19 @@ void mxReconstruction::MixUnions() {
 void mxReconstruction::Unions() {
   // forming global unions
   //for(int arm=0; arm!=2; ++arm) std::sort(fCoa[arm].begin(),fCoa[arm].begin()+fNCoa[arm],GreaterSignal());
-  mxCoalition *coaI, *coaJ;
-  mxUnion *un;
+  mxCandidate *coaI, *coaJ;
+  mxDecayCandidate *un;
   for(int arm=0; arm!=2; ++arm) {
     fNUni[arm] = 0;
     // call for union formation
     if(fNCoa[arm]<2) continue;
     for(int mi=0; mi<fNCoa[arm]-1; ++mi) {
-      coaI = (mxCoalition*) fCoa[arm].at( mi );
+      coaI = (mxCandidate*) fCoa[arm].at( mi );
       for(int mj=mi+1; mj<fNCoa[arm]; ++mj) {
-      	coaJ = (mxCoalition*) fCoa[arm].at( mj );
+      	coaJ = (mxCandidate*) fCoa[arm].at( mj );
         int nmax = fUni[arm].size();
         if(fNUni[arm]>nmax-1) {
-          un = new mxUnion();
+          un = new mxDecayCandidate();
           fUni[arm].push_back(un);
         } else un = fUni[arm].at( fNUni[arm] );
 	un->Make(coaI,coaJ);
@@ -997,7 +997,7 @@ void mxReconstruction::FillPP(float energy, float eta, float phi, int pdg) {
   //fMCPart->Fill(energy,eta,phi,pdg);
 }
 //========
-mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int group) {
+mxCluster* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int group) {
   if(fDebug>5)
     std::cout << "SeekHitInEM" << std::endl;
   int lyr = arm*9+8;
@@ -1007,13 +1007,13 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int grou
   float y = r*TMath::Sin(phi);
   if(fDebug>5)
     std::cout << " x y " << x << " " << y << std::endl;
-  mxParty *pty;
+  mxCluster *pty;
   float dx = fGeo->PbWO4_a0();
   float dy = fGeo->PbWO4_a1();
   if(fDebug>5)
     std::cout << " look if party is already created and attached to it" << std::endl;
   for(int mp=0; mp!=fNPty[lyr]; ++mp) {
-    pty = (mxParty*) fPty[lyr].at(mp);
+    pty = (mxCluster*) fPty[lyr].at(mp);
     if(pty->IsAssigned()) continue;
     float xp = pty->GetX();
     float yp = pty->GetY();
@@ -1038,7 +1038,7 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int grou
       std::cout << " FOUND " << hit->Idx() << std::endl;
     int nmax = fPty[lyr].size();
     if(fNPty[lyr]>nmax-1) {
-      pty = new mxParty();
+      pty = new mxCluster();
       pty->SetDxDy(dx,dy);
       fPty[lyr].push_back(pty);
     } else pty = fPty[lyr].at( fNPty[lyr] );
@@ -1101,8 +1101,8 @@ mxParty* mxReconstruction::SeekHitInEM(float phi, float theta, int arm, int grou
   return pty;
 }
 //========
-float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
-  mxParty *pty = NULL;
+float mxReconstruction::ComputePSChi2Prob(int arm, mxCandidate *coa) {
+  mxCluster *pty = NULL;
   float ph0 = coa->GetPhi();
   float th0 = coa->GetTheta();
   float chi2 = 0;
@@ -1114,7 +1114,7 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
   for(int i=0;i!=8;++i) Z[i] = fGeo->RZ(arm*9+i);// + 0.5*dz[i];
 
   for(int i=0; i!=8; ++i) {
-    pty = coa->GetParty(i);
+    pty = coa->GetCluster(i);
     if(!pty) continue;
     ncl++;
     float ephi=0, ethi=0;
@@ -1128,36 +1128,36 @@ float mxReconstruction::ComputePSChi2Prob(int arm, mxCoalition *coa) {
 void mxReconstruction::SetIdentificationAlgorithm(int combo) {
   switch(combo) {
   case(0):
-    SetPartyAlgorithm(0); // FOCAL ALLIANCE for EX and MPC
-    SetCoalitionAlgorithm(0); // MPC ==> EX0
+    SetClusterAlgorithm(0); // FOCAL ALLIANCE for EX and MPC
+    SetCandidateAlgorithm(0); // MPC ==> EX0
     break;
   case(1):
-    SetPartyAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
-    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetClusterAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
+    SetCandidateAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlgPadRow_Threshold(0.15);
     SetCoaAlgSeed6_NCrystals(1); // MATCH MPC to ONE crystal
     break;
   case(2):
-    SetPartyAlgorithm(2);// PADROW ALLIANCE for EX and LAYER ALLIANCE for MPC
-    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetClusterAlgorithm(2);// PADROW ALLIANCE for EX and LAYER ALLIANCE for MPC
+    SetCandidateAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlgPadRow_Threshold(0.15);
     SetCoaAlgSeed6_NCrystals(1); // IRRELEVANT, WILL MATCH TO FULL MPC
     break;
   case(3):
-    SetPartyAlgorithm(3);// FOCAL ALLIANCE for EX  and LAYER ALLIANCE for MPC
-    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetClusterAlgorithm(3);// FOCAL ALLIANCE for EX  and LAYER ALLIANCE for MPC
+    SetCandidateAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlgPadRow_Threshold(0.15);
     SetCoaAlgSeed6_NCrystals(1); // IRRELEVANT, WILL MATCH TO FULL MPC
     break;
   case(4):
-    SetPartyAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
-    SetCoalitionAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
+    SetClusterAlgorithm(1); // PADROW ALLIANCE for EX nothig for MPC
+    SetCandidateAlgorithm(1); // EX6 ==> EX0 ==> EX7 | MPC
     SetPtyAlgPadRow_Threshold(0.15);
     SetCoaAlgSeed6_NCrystals(3); // MATCH MPC to THREE crystals
     break;
   case(5):
-    SetPartyAlgorithm(4); // MPCBreaker for MPC only
-    SetCoalitionAlgorithm(0); // MPC ==> EX0
+    SetClusterAlgorithm(4); // MPCBreaker for MPC only
+    SetCandidateAlgorithm(0); // MPC ==> EX0
     break;
   }
 }

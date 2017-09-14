@@ -7,8 +7,8 @@
 #include "TMath.h"
 
 #include "mxDecayCandidate.h"
-#include "mxParty.h"
-#include "mxCoalition.h"
+#include "mxCluster.h"
+#include "mxCandidate.h"
 
 //========
 mxDecayCandidate::mxDecayCandidate():
@@ -19,8 +19,8 @@ mxDecayCandidate::mxDecayCandidate():
   fEnergy(0),
   fMass(0) {
   // ctor
-  fCoalitions[0] = 0;
-  fCoalitions[1] = 0;
+  fCandidates[0] = 0;
+  fCandidates[1] = 0;
 }
 //========
 mxDecayCandidate::~mxDecayCandidate() {
@@ -35,8 +35,8 @@ mxDecayCandidate::mxDecayCandidate(const mxDecayCandidate &src) {
   fEnergyAsymmetry = src.fEnergyAsymmetry;
   fEnergy = src.fEnergy;
   fMass = src.fMass;
-  fCoalitions[0] = src.fCoalitions[0];
-  fCoalitions[1] = src.fCoalitions[1];
+  fCandidates[0] = src.fCandidates[0];
+  fCandidates[1] = src.fCandidates[1];
 }
 //========
 mxDecayCandidate& mxDecayCandidate::operator=(const mxDecayCandidate &src) {
@@ -48,15 +48,15 @@ mxDecayCandidate& mxDecayCandidate::operator=(const mxDecayCandidate &src) {
     fEnergyAsymmetry = src.fEnergyAsymmetry;
     fEnergy = src.fEnergy;
     fMass = src.fMass;
-    fCoalitions[0] = src.fCoalitions[0];
-    fCoalitions[1] = src.fCoalitions[1];
+    fCandidates[0] = src.fCandidates[0];
+    fCandidates[1] = src.fCandidates[1];
   }
   return *this;
 }
 //========
-void mxDecayCandidate::Make(mxCoalition *un, mxCoalition *tu) {
-  fCoalitions[0] = un;
-  fCoalitions[1] = tu;
+void mxDecayCandidate::Make(mxCandidate *un, mxCandidate *tu) {
+  fCandidates[0] = un;
+  fCandidates[1] = tu;
   fEnergy = un->GetEnergy() + tu->GetEnergy();
   fEnergyAsymmetry = (un->GetEnergy() - tu->GetEnergy())/fEnergy;
   float ex1 = un->GetEx();
@@ -68,8 +68,8 @@ void mxDecayCandidate::Make(mxCoalition *un, mxCoalition *tu) {
   float ex = ex1 + ex2;
   float ey = ey1 + ey2;
   float ez = ez1 + ez2;
-  mxParty *pty1 = un->GetParty(8);
-  mxParty *pty2 = tu->GetParty(8);
+  mxCluster *pty1 = un->GetCluster(8);
+  mxCluster *pty2 = tu->GetCluster(8);
   if(pty1&&pty2) {
     float x1 = pty1->GetX();
     float y1 = pty1->GetY();
