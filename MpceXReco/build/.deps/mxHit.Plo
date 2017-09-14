@@ -1,0 +1,3 @@
+mxHit.lo: ../mxHit.cxx ../mxHit.h
+
+../mxHit.h:

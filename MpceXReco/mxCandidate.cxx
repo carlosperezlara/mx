@@ -4,11 +4,11 @@
 //=========================
 #include "TMath.h"
 
-#include "mxCoalition.h"
-#include "mxParty.h"
+#include "mxCandidate.h"
+#include "mxCluster.h"
 
 //========
-mxCoalition::mxCoalition():
+mxCandidate::mxCandidate():
   fNParties(0),
   fSgn(0),
   fSgnE(1),
@@ -24,11 +24,11 @@ mxCoalition::mxCoalition():
   for(int i=0; i!=9; ++i) fParties[i]=NULL;
 }
 //========
-mxCoalition::~mxCoalition() {
+mxCandidate::~mxCandidate() {
   // dtor
 }
 //========
-mxCoalition::mxCoalition(const mxCoalition &src) {
+mxCandidate::mxCandidate(const mxCandidate &src) {
   // copy ctor
   fNParties = src.fNParties;
   fSgn = src.fSgn;
@@ -45,7 +45,7 @@ mxCoalition::mxCoalition(const mxCoalition &src) {
     fParties[i] = src.fParties[i];
 }
 //========
-mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
+mxCandidate& mxCandidate::operator=(const mxCandidate &src) {
   // asgmnt operator
   if(&src!=this) {
     fNParties = src.fNParties;
@@ -65,7 +65,7 @@ mxCoalition& mxCoalition::operator=(const mxCoalition &src) {
   return *this;
 }
 //========
-void mxCoalition::CopyFrom(mxCoalition *src) {
+void mxCandidate::CopyFrom(mxCandidate *src) {
   // copy only persistent
   fNParties = src->fNParties;
   fSgn = src->fSgn;
@@ -80,46 +80,46 @@ void mxCoalition::CopyFrom(mxCoalition *src) {
   fPSChi2Prob = src->fPSChi2Prob;
 }
 //========
-float mxCoalition::GetPhi() {
+float mxCandidate::GetPhi() {
   // <phi>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSphi/fSgn+fPhi0;
 }
 //========
-float mxCoalition::GetTheta() {
+float mxCandidate::GetTheta() {
   // <theta>
   if( fNParties<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fStheta/fSgn+fTheta0;
 }
 //========
-float mxCoalition::GetEta() {
+float mxCandidate::GetEta() {
   // <eta>
   float theta = GetTheta();
   float eta = -TMath::Log( TMath::Tan(theta/2.0) );
   return eta;
 }
 //========
-float mxCoalition::SignalPreShower() {
+float mxCandidate::SignalPreShower() {
   float sgn = 0;
-  mxParty *pty;
+  mxCluster *pty;
   for(int l=0; l!=8; ++l) {
-    pty = GetParty(l);
+    pty = GetCluster(l);
     if(pty) sgn += pty->Signal();
   }
   return sgn;
 }
 //========
-float mxCoalition::SignalPbWO4() {
+float mxCandidate::SignalPbWO4() {
   float sgn = 0;
-  mxParty *pty;
-  pty = GetParty(8);
+  mxCluster *pty;
+  pty = GetCluster(8);
   if(pty) sgn += pty->Signal();
   return sgn;
 }
 //========
-int mxCoalition::NPreShower() {
+int mxCandidate::NPreShower() {
   int hts = 0;
   for(int l=0; l!=8; ++l) {
     if(IsHitLayer(l)) hts++;
@@ -127,7 +127,7 @@ int mxCoalition::NPreShower() {
   return hts;
 }
 //========
-void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float theta) {
+void mxCandidate::Fill(int lyr,  mxCluster *pty, float phi, float theta) {
   // filler
   if(fParties[lyr]) return;
   fParties[ lyr ] = pty;
@@ -156,7 +156,7 @@ void mxCoalition::Fill(int lyr,  mxParty *pty, float phi, float theta) {
   ++fNParties;
 }
 //========
-float mxCoalition::Test(float phi, float theta, float ephi, float etheta) {
+float mxCandidate::Test(float phi, float theta, float ephi, float etheta) {
   // tester
   if(fNParties<1) return -1;
   float cx = GetPhi();
@@ -168,7 +168,7 @@ float mxCoalition::Test(float phi, float theta, float ephi, float etheta) {
   return TMath::Sqrt( dx2 + dy2 );
 }
 //========
-void mxCoalition::Reset() {
+void mxCandidate::Reset() {
   fSgn=0;
   fStheta=0;
   fSphi=0;
@@ -182,7 +182,7 @@ void mxCoalition::Reset() {
   for(int i=0; i!=9; ++i) fParties[i] = NULL;
 }
 //========
-float mxCoalition::GetCov(int dim) {
+float mxCandidate::GetCov(int dim) {
   // covariance matrix
   if( TMath::AreEqualAbs(fSgn,0,1e-6) ) return -1;
   float var;
@@ -194,7 +194,7 @@ float mxCoalition::GetCov(int dim) {
   return var;
 }
 //========
-float mxCoalition::GetEtaVar() {
+float mxCandidate::GetEtaVar() {
   float sint2 = TMath::Sin(GetTheta())*TMath::Sin(GetTheta());
   if( TMath::AreEqualAbs(sint2,0,1e-6) ) return -1;
   return GetCov(1)/sint2;

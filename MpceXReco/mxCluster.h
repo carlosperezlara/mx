@@ -2,16 +2,16 @@
 // written by Carlos Perez
 // 2015-2016
 //=========================
-#ifndef __mxParty_HH__
-#define __mxParty_HH__
+#ifndef __mxCluster_HH__
+#define __mxCluster_HH__
 #include "mxHit.h"
 
-class mxParty {
+class mxCluster {
  public:
-  mxParty();
-  mxParty(const mxParty&);
-  mxParty& operator=(const mxParty&);
-  virtual ~mxParty();
+  mxCluster();
+  mxCluster(const mxCluster&);
+  mxCluster& operator=(const mxCluster&);
+  virtual ~mxCluster();
   void Fill(mxHit *hit,float,float);
   mxHit* GetHit(int val) {return val<N()?fHits[val]:NULL;}
   float Test(float,float);
@@ -49,4 +49,4 @@ class mxParty {
   float fDx;
   float fDy;
 };
-#endif /* __mxParty_H__ */
+#endif /* __mxCluster_H__ */

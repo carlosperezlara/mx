@@ -5,13 +5,13 @@
 #include "TMath.h"
 
 #include "mxHit.h"
-#include "mxParty.h"
+#include "mxCluster.h"
 
 #include <vector>
 #include <algorithm>
 
 //========
-mxParty::mxParty():
+mxCluster::mxCluster():
   fAssigned(false),
   fSgn(0),
   fSx(0),
@@ -30,11 +30,11 @@ mxParty::mxParty():
   for(int i=0; i!=128; ++i) fHits[i]=NULL;
 }
 //========
-mxParty::~mxParty() {
+mxCluster::~mxCluster() {
   // dtor
 }
 //========
-mxParty::mxParty(const mxParty &src) {
+mxCluster::mxCluster(const mxCluster &src) {
   // copy ctor
   fAssigned = src.fAssigned;
   fSgn = src.fSgn;
@@ -54,7 +54,7 @@ mxParty::mxParty(const mxParty &src) {
     fHits[i] = src.fHits[i];
 }
 //========
-mxParty& mxParty::operator=(const mxParty &src) {
+mxCluster& mxCluster::operator=(const mxCluster &src) {
   // asgmnt operator
   if(&src!=this) {
     fAssigned = src.fAssigned;
@@ -77,7 +77,7 @@ mxParty& mxParty::operator=(const mxParty &src) {
   return *this;
 }
 //========
-void mxParty::Fill(mxHit *hit, float x, float y) {
+void mxCluster::Fill(mxHit *hit, float x, float y) {
   // filler
   int n = N();
   if(n>127) return;
@@ -112,21 +112,21 @@ void mxParty::Fill(mxHit *hit, float x, float y) {
   }
 }
 //========
-float mxParty::GetX() {
+float mxCluster::GetX() {
   // <x>
   if( fN<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSx/fSgn+fX0;
 }
 //========
-float mxParty::GetY() {
+float mxCluster::GetY() {
   // <y>
   if( fN<1 ) return 0;
   if( fSgn<1e-6 ) return 0;
   return fSy/fSgn+fY0;
 }
 //========
-float mxParty::Test(float xx, float yy) {
+float mxCluster::Test(float xx, float yy) {
   // tester
   if( N()<1 ) return -1;
   float cx = GetX();
@@ -138,7 +138,7 @@ float mxParty::Test(float xx, float yy) {
   return TMath::Sqrt( dx2 + dy2 );
 }
 //========
-void mxParty::Reset() {
+void mxCluster::Reset() {
   // clean variables
   fAssigned = false;
   fSgn=0;
@@ -154,7 +154,7 @@ void mxParty::Reset() {
   fY0=0;
 }
 //========
-int mxParty::GetSizeUmbral(float per) {
+int mxCluster::GetSizeUmbral(float per) {
   if(per>1) return N();
   if(per<0.0) return 0;
   float um = Signal()*(1-per);
@@ -172,7 +172,7 @@ int mxParty::GetSizeUmbral(float per) {
   return N()-nex;
 }
 //========
-float mxParty::GetCov(int dim) {
+float mxCluster::GetCov(int dim) {
   // covariance matrix
   if( N()<1 ) return -1;
   if( fSgn<1e-6 ) return -1;

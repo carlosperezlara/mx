@@ -22,21 +22,21 @@
 #include "MpcExRawHit.h"
 #include "MpcExEventHeader.h"
 
-#include "mxEventCuts.h"
+#include "mxSafetyCuts.h"
 
 using namespace std;
 using namespace findNode;
 
 //====================================================
-mxEventCuts::mxEventCuts()
+mxSafetyCuts::mxSafetyCuts()
 {
-  printf("mxEventCuts::CTOR\n");
+  printf("mxSafetyCuts::CTOR\n");
 }
 //====================================================
-mxEventCuts::~mxEventCuts() {
+mxSafetyCuts::~mxSafetyCuts() {
 }
 //====================================================
-UChar_t mxEventCuts::PassEventCuts(PHCompositeNode* top_node) {
+UChar_t mxSafetyCuts::PassSafetyCuts(PHCompositeNode* top_node) {
   PHGlobal *phglobal = getClass<PHGlobal> (top_node, "PHGlobal");
   if(!phglobal) return 0;
   if( TMath::Abs( phglobal->getBbcZVertex() ) > 10 ) return 0;

@@ -2,18 +2,18 @@
 // written by Carlos Perez
 // 2015-2016
 //=========================
-#ifndef __mxUnion_HH__
-#define __mxUnion_HH__
+#ifndef __mxDecayCandidate_HH__
+#define __mxDecayCandidate_HH__
 #include "TMath.h"
 
 class mxCoalition;
 
-class mxUnion {
+class mxDecayCandidate {
  public:
-  mxUnion();
-  mxUnion(const mxUnion&);
-  mxUnion& operator=(const mxUnion&);
-  virtual ~mxUnion();
+  mxDecayCandidate();
+  mxDecayCandidate(const mxDecayCandidate&);
+  mxDecayCandidate& operator=(const mxDecayCandidate&);
+  virtual ~mxDecayCandidate();
   void Make(mxCoalition*,mxCoalition*);
   mxCoalition* GetCoalition(int val) {return val<2?fCoalitions[val]:NULL;}
   float GetEta() {return fEta;}
@@ -37,4 +37,4 @@ class mxUnion {
   float fEnergy;
   float fMass;
 };
-#endif /* __mxUnion_H__ */
+#endif /* __mxDecayCandidate_H__ */

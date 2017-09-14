@@ -6,12 +6,12 @@
 
 #include "TMath.h"
 
-#include "mxUnion.h"
+#include "mxDecayCandidate.h"
 #include "mxParty.h"
 #include "mxCoalition.h"
 
 //========
-mxUnion::mxUnion():
+mxDecayCandidate::mxDecayCandidate():
   fPhi(0),
   fEta(0),
   fD8(-1),
@@ -23,11 +23,11 @@ mxUnion::mxUnion():
   fCoalitions[1] = 0;
 }
 //========
-mxUnion::~mxUnion() {
+mxDecayCandidate::~mxDecayCandidate() {
   // dtor
 }
 //========
-mxUnion::mxUnion(const mxUnion &src) {
+mxDecayCandidate::mxDecayCandidate(const mxDecayCandidate &src) {
   // copy ctor
   fPhi = src.fPhi;
   fEta = src.fEta;
@@ -39,7 +39,7 @@ mxUnion::mxUnion(const mxUnion &src) {
   fCoalitions[1] = src.fCoalitions[1];
 }
 //========
-mxUnion& mxUnion::operator=(const mxUnion &src) {
+mxDecayCandidate& mxDecayCandidate::operator=(const mxDecayCandidate &src) {
   // asgmnt operator
   if(&src!=this) {
     fPhi = src.fPhi;
@@ -54,7 +54,7 @@ mxUnion& mxUnion::operator=(const mxUnion &src) {
   return *this;
 }
 //========
-void mxUnion::Make(mxCoalition *un, mxCoalition *tu) {
+void mxDecayCandidate::Make(mxCoalition *un, mxCoalition *tu) {
   fCoalitions[0] = un;
   fCoalitions[1] = tu;
   fEnergy = un->GetEnergy() + tu->GetEnergy();

@@ -2,23 +2,23 @@
 // written by Carlos Perez
 // 2015-2016
 //=========================
-#ifndef __mxCoalition_HH__
-#define __mxCoalition_HH__
+#ifndef __mxCandidate_HH__
+#define __mxCandidate_HH__
 
 #include "TMath.h"
-class mxParty;
+class mxCluster;
 
-class mxCoalition {
+class mxCandidate {
  public:
-  mxCoalition();
-  mxCoalition(const mxCoalition&);
-  mxCoalition& operator=(const mxCoalition&);
-  virtual ~mxCoalition();
-  void CopyFrom(mxCoalition*);
-  void Fill(int,mxParty*,float,float);
+  mxCandidate();
+  mxCandidate(const mxCandidate&);
+  mxCandidate& operator=(const mxCandidate&);
+  virtual ~mxCandidate();
+  void CopyFrom(mxCandidate*);
+  void Fill(int,mxCluster*,float,float);
   float Test(float,float,float,float);
   int N() {return fNParties;}
-  mxParty* GetParty(int val) {return IsHitLayer(val)?fParties[val]:NULL;}
+  mxCluster* GetCluster(int val) {return IsHitLayer(val)?fParties[val]:NULL;}
   float GetEta();
   float GetEtaVar();
   float GetTheta();
@@ -43,7 +43,7 @@ class mxCoalition {
   bool IsHitLayer(int val) {return (fParties[val]!=NULL);}
 
  protected:
-  mxParty* fParties[9];
+  mxCluster* fParties[9];
   int fNParties;
 
   float fSgn;
@@ -59,4 +59,4 @@ class mxCoalition {
 
   float fPSChi2Prob;
 };
-#endif /* __mxCoalition_H__ */
+#endif /* __mxCandidate_H__ */

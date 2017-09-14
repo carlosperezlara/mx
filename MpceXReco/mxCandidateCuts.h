@@ -2,31 +2,31 @@
 // written by Carlos Perez
 // 2015-2016
 //=========================
-#ifndef __mxCoalitionCuts_HH__
-#define __mxCoalitionCuts_HH__
+#ifndef __mxCandidateCuts_HH__
+#define __mxCandidateCuts_HH__
 
 #include "TString.h"
 
-class mxCoalition;
+class mxCandidate;
 class TH1F;
 class TH2F;
 class TProfile;
 class TList;
 
-class mxCoalitionCuts {
+class mxCandidateCuts {
  public:
-  mxCoalitionCuts(TString);
-  mxCoalitionCuts(const mxCoalitionCuts&);
-  mxCoalitionCuts& operator=(const mxCoalitionCuts&);
-  mxCoalitionCuts* Clone(TString);
-  virtual ~mxCoalitionCuts();
-  bool PassesCuts( mxCoalition* );
+  mxCandidateCuts(TString);
+  mxCandidateCuts(const mxCandidateCuts&);
+  mxCandidateCuts& operator=(const mxCandidateCuts&);
+  mxCandidateCuts* Clone(TString);
+  virtual ~mxCandidateCuts();
+  bool PassesCuts( mxCandidate* );
   void Set_PS_minNHits(int v) {fPS_minNHits=v;}
   void Set_PS_minSignal(float v) {fPS_minSignal=v;}
   void Set_HitLayer(int v) {fHitLayer[v]=true;}
   void Set_PS_minChi2Prob(float v) {fPS_minChi2Prob=v;}
   void InitQA();
-  void FillQA( mxCoalition* );
+  void FillQA( mxCandidate* );
   TList* GetList() {return fList;}
   void SetQA() {InitQA();}
   void SetEneMax(float v) {fEneMax=v;}
@@ -52,4 +52,4 @@ class mxCoalitionCuts {
   TH2F *fHEnePSEne;
   TProfile *fHX;
 };
-#endif /* __mxCoalitionCuts_H__ */
+#endif /* __mxCandidateCuts_H__ */
