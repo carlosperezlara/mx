@@ -42,7 +42,7 @@
 #include "PHMXData.h"
 #include "mSubsysReco.h"
 
-#include "mxCoalitionCuts.h"
+#include "mxCandidateCuts.h"
 
 using namespace std;
 using namespace findNode;
@@ -130,13 +130,13 @@ int mSubsysReco::Init(PHCompositeNode* top_node) {
 
   Fun4AllServer *se = Fun4AllServer::instance();
 
-  fNoCuts = new mxCoalitionCuts("mSRNoCuts");
+  fNoCuts = new mxCandidateCuts("mSRNoCuts");
   fNoCuts->SetQA();
   fNoCuts->GetList()->SetOwner(false);
   for(int i=0; i!=fNoCuts->GetList()->GetEntries(); ++i)
     se->registerHisto( ((TH1*) (fNoCuts->GetList()->At(i))) );
 
-  fCalibrationCuts = new mxCoalitionCuts("mSRCalibrationCuts");
+  fCalibrationCuts = new mxCandidateCuts("mSRCalibrationCuts");
   fCalibrationCuts->Set_HitLayer(5);
   fCalibrationCuts->Set_HitLayer(6);
   fCalibrationCuts->Set_HitLayer(7);
@@ -431,9 +431,9 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
   //fRec->DumpParties();
 
   for(int arm=0; arm!=2; ++arm) {
-    int n = fRec->GetNCoalitions(arm);
+    int n = fRec->GetNCandidates(arm);
     for(int i=0; i!=n; ++i) {
-      mxCoalition *coa = fRec->GetCoalition(arm,i);
+      mxCandidate *coa = fRec->GetCandidate(arm,i);
       if(!coa) continue;
       fNoCuts->PassesCuts(coa);
     }
@@ -444,16 +444,16 @@ int mSubsysReco::process_event(PHCompositeNode* top_node) {
     bool keyfiltered[49152];
     for(int k=0; k!=49152; ++k) keyfiltered[k] = false;
     // init buffering
-    mxCoalition *coa;
+    mxCandidate *coa;
     for(int arm=0; arm!=2; ++arm) {
-      int n = fRec->GetNCoalitions(arm);
+      int n = fRec->GetNCandidates(arm);
       for(int i=0; i!=n; ++i) {
-	coa = fRec->GetCoalition(arm,i);
+	coa = fRec->GetCandidate(arm,i);
 	if(!coa) continue;
 	if( fCalibrationCuts->PassesCuts(coa) ) {
 	//if( fNoCuts->PassesCuts(coa) ) {
 	  for(int hl=0; hl!=8; ++hl) { //leaving out MPC
-	    mxParty *pty = coa->GetParty(hl);
+	    mxCluster *pty = coa->GetCluster(hl);
 	    if(!pty) continue;
 	    for(int ht=0; ht!=pty->N(); ++ht) {
 	      mxHit *hit = pty->GetHit(ht);

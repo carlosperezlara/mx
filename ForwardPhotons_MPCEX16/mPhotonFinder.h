@@ -18,7 +18,7 @@ class PHCompositeNode;
 class mxCalibMaster;
 class mxReconstruction;
 class mxQAReconstruction;
-class mxCoalitionCuts;
+class mxCandidateCuts;
 
 class mSubsysReco: public SubsysReco {
  public:
@@ -60,8 +60,8 @@ class mSubsysReco: public SubsysReco {
   float fNSigmaCut;
   bool fByPassEXCalibration;
   int fAlgorithmCombo;
-  mxCoalitionCuts *fNoCuts;
-  mxCoalitionCuts *fCalibrationCuts;
+  mxCandidateCuts *fNoCuts;
+  mxCandidateCuts *fCalibrationCuts;
 
   TFile *fDSTfile;
   TTree *fTree;
