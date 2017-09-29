@@ -11,6 +11,7 @@ class mxHit {
   virtual ~mxHit();
   int Idx() {return fIdx;}
   float Signal() {return fSignal;}
+  void Reset();
   void Fill(int, float);
   bool IsAssigned() {return fAssigned;}
   void SetAssigned(bool val) {fAssigned=val;}

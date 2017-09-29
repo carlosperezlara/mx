@@ -16,6 +16,11 @@ mxHit::~mxHit() {
   // dtor
 }
 //========
+void mxHit::Reset() {
+  fIdx = -1;
+  fSignal = 0;
+  fAssigned = false;
+}//========
 void mxHit::Fill(int idx, float sgn) {
   // filler
   fIdx = idx;

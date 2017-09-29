@@ -8,5 +8,6 @@
 #pragma link C++ class mxCandidate+;
 #pragma link C++ class mxDecayCandidate+;
 #pragma link C++ class PHMXData+;
+#pragma link C++ class mMXRinit+;
 
 #endif /* __CINT__ */

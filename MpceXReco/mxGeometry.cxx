@@ -1,9 +1,12 @@
 #include <iostream>
 #include "mxGeometry.h"
 
+mxGeometry *mxGeometry::fGeo = NULL;
+
 mxGeometry::mxGeometry() :
   fLastIdx(-1),
   fLyrIdx(-1),
+  fSenIdx(-1),
   fX(0),
   fY(0),
   fZ(0),
@@ -47,10 +50,18 @@ mxGeometry::mxGeometry() :
   for(int i=0; i!=4; ++i) fSi_DLY[i] = dly[i];
   float sx[24] = {-6.600, +0.000, +6.600, -13.200, -6.600, +0.000, +6.600, +13.200, -16.500, -9.900, +9.900, +16.500,
 		  -16.500, -9.900, +9.900, +16.500, -13.200, -6.600, +0.000, +6.600, +13.200, -6.600, +0.000, +6.600}; 
-  for(int i=0; i!=24; ++i) fW_RX[i] = sx[i];
   float sy[24] = {+16.500, +16.500, +16.500, +9.900, +9.900, +9.900, +9.900, +9.900, +3.300, +3.300, +3.300, +3.300,
 		  -3.300, -3.300, -3.300, -3.300, -9.900, -9.900, -9.900, -9.900, -9.900, -16.500, -16.500, -16.500};
-  for(int i=0; i!=24; ++i) fW_RY[i] = sy[i];
+  int si0[24] = { 01, 0, 4, 3, 9, 8,  2, 5, 6, 7,10,11,
+		  22,23,19,20,14,15, 21,18,17,16,13,12};
+  int si1[24] = { 01, 2, 6, 7,10,11,  0, 5, 4, 3, 9, 8,
+		  22,21,17,16,13,12, 23,18,19,20,14,15};
+  for(int i=0; i!=24; ++i) {
+    fW_RX[0][i] = sx[ si0[i] ];
+    fW_RY[0][i] = sy[ si0[i] ];
+    fW_RX[1][i] = sx[ si1[i] ];
+    fW_RY[1][i] = sy[ si1[i] ];
+  }
   // MPC
   float mpcx[416] = {
     -5.8,-3.5,-1.3,-10.3,-8.1,-5.8,-3.5,-1.3,-12.6,-10.3,-8.1,-5.8,-3.5,-1.3,-14.8,-12.6,-10.3,-8.1,-5.8,-3.5,
@@ -155,6 +166,32 @@ mxGeometry::mxGeometry() :
     {343,400,409,-1},  {344,401,408,410},  {345,402,409,411},  {346,403,410,412},  {347,404,411,413},  {348,405,412,414},  {406,413,415,-1},  {232,407,414,-1}
   };
   for(int i=0; i!=416; ++i) for(int j=0; j!=4; ++j) fPbWO4_4N[i][j] = mpcneigh[i][j];
+  for(int i=0; i!=24; ++i) for(int n=0; n!=5; ++n) fPS_Sen5N[i][n] = -1;
+  fPS_Sen5N[0][0] = 6; fPS_Sen5N[0][1] = 1; fPS_Sen5N[0][2] = 8; fPS_Sen5N[0][3] = 7; fPS_Sen5N[0][4] = 2;
+  fPS_Sen5N[1][0] = 0; fPS_Sen5N[1][1] = 7; fPS_Sen5N[1][2] = 2; fPS_Sen5N[1][3] = 3;
+  fPS_Sen5N[2][0] = 0; fPS_Sen5N[2][1] = 1; fPS_Sen5N[2][2] = 7; fPS_Sen5N[2][3] = 3; fPS_Sen5N[2][4] = 4;
+  fPS_Sen5N[3][0] = 1; fPS_Sen5N[3][1] = 2; fPS_Sen5N[3][2] = 4; fPS_Sen5N[3][3] = 5;
+  fPS_Sen5N[4][0] = 2; fPS_Sen5N[4][1] = 3; fPS_Sen5N[4][2] = 5; fPS_Sen5N[4][3] = 22; fPS_Sen5N[4][4] = 23;
+  fPS_Sen5N[5][0] = 3; fPS_Sen5N[5][1] = 4; fPS_Sen5N[5][2] = 22; fPS_Sen5N[5][3] = 23;
+  fPS_Sen5N[6][0] = 0; fPS_Sen5N[6][1] = 9; fPS_Sen5N[6][2] = 8; fPS_Sen5N[6][3] = 7;
+  fPS_Sen5N[7][0] = 6; fPS_Sen5N[7][1] = 0; fPS_Sen5N[7][2] = 1; fPS_Sen5N[7][3] = 8; fPS_Sen5N[7][4] = 2;
+  fPS_Sen5N[8][0] = 6; fPS_Sen5N[8][1] = 0; fPS_Sen5N[8][2] = 9; fPS_Sen5N[8][3] = 7; fPS_Sen5N[8][4] = 10;
+  fPS_Sen5N[9][0] = 6; fPS_Sen5N[9][1] = 8; fPS_Sen5N[9][2] = 11; fPS_Sen5N[9][3] = 10;
+  fPS_Sen5N[10][0] = 9; fPS_Sen5N[10][1] = 8; fPS_Sen5N[10][2] = 11; fPS_Sen5N[10][3] = 17; fPS_Sen5N[10][4] = 16;
+  fPS_Sen5N[11][0] = 9; fPS_Sen5N[11][1] = 10; fPS_Sen5N[11][2] = 17; fPS_Sen5N[11][3] = 16;
+  fPS_Sen5N[12][0] = 14; fPS_Sen5N[12][1] = 19; fPS_Sen5N[12][2] = 20; fPS_Sen5N[12][3] = 13; fPS_Sen5N[12][4] = 18;
+  fPS_Sen5N[13][0] = 15; fPS_Sen5N[13][1] = 14; fPS_Sen5N[13][2] = 19; fPS_Sen5N[13][3] = 12;
+  fPS_Sen5N[14][0] = 16; fPS_Sen5N[14][1] = 15; fPS_Sen5N[14][2] = 19; fPS_Sen5N[14][3] = 13; fPS_Sen5N[14][4] = 12;
+  fPS_Sen5N[15][0] = 17; fPS_Sen5N[15][1] = 16; fPS_Sen5N[15][2] = 14; fPS_Sen5N[15][3] = 13;
+  fPS_Sen5N[16][0] = 11; fPS_Sen5N[16][1] = 10; fPS_Sen5N[16][2] = 17; fPS_Sen5N[16][3] = 15; fPS_Sen5N[16][4] = 14;
+  fPS_Sen5N[17][0] = 11; fPS_Sen5N[17][1] = 10; fPS_Sen5N[17][2] = 16; fPS_Sen5N[17][3] = 15;
+  fPS_Sen5N[18][0] = 19; fPS_Sen5N[18][1] = 20; fPS_Sen5N[18][2] = 21; fPS_Sen5N[18][3] = 12;
+  fPS_Sen5N[19][0] = 14; fPS_Sen5N[19][1] = 20; fPS_Sen5N[19][2] = 13; fPS_Sen5N[19][3] = 12; fPS_Sen5N[19][4] = 18;
+  fPS_Sen5N[20][0] = 22; fPS_Sen5N[20][1] = 19; fPS_Sen5N[20][2] = 21; fPS_Sen5N[20][3] = 12; fPS_Sen5N[20][4] = 18;
+  fPS_Sen5N[21][0] = 22; fPS_Sen5N[21][1] = 23; fPS_Sen5N[21][2] = 20; fPS_Sen5N[21][3] = 18;
+  fPS_Sen5N[22][0] = 4; fPS_Sen5N[22][1] = 5; fPS_Sen5N[22][2] = 23; fPS_Sen5N[22][3] = 20; fPS_Sen5N[22][4] = 21;
+  fPS_Sen5N[23][0] = 4; fPS_Sen5N[23][1] = 5; fPS_Sen5N[23][2] = 22; fPS_Sen5N[23][3] = 21;
+
 }
 //========
 float mxGeometry::Reference(int k, int r) {
@@ -163,6 +200,7 @@ float mxGeometry::Reference(int k, int r) {
   if(r==1) return fY;
   if(r==2) return fZ;
   if(r==3) return fLyrIdx;
+  if(r==4) return fSenIdx;
   return -1;
 }
 //========
@@ -173,20 +211,19 @@ void mxGeometry::UpdateVars(int k) {
   else UpdatePbWO4(k-49152);
 }
 //========
-float mxGeometry::W_X(int sidx) {
+float mxGeometry::W_X(int sidx, int arm) {
   int sen = sidx%24;
-  return fW_RX[sen];
+  return fW_RX[arm][sen];
 }
 //========
-float mxGeometry::W_Y(int sidx) {
+float mxGeometry::W_Y(int sidx, int arm) {
   int sen = sidx%24;
-  return fW_RY[sen];
+  return fW_RY[arm][sen];
 }
 //========
-float mxGeometry::W_Z(int sidx) {
-  int lyr = sidx/24;
+float mxGeometry::W_Z(int lyr) {
   float dz = 0.1 + fW_a2;
-  float z = fSi_RZ[lyr] + dz*(lyr<8?+1:-1);
+  float z = RZ(lyr) + dz*(lyr<8?+1:-1);
   return z;
 }
 //========
@@ -282,6 +319,7 @@ void mxGeometry::UpdateSiW(int key) {
   fZ = fSi_RZ[arm*8+lyr];
   fLyrIdx = arm*9+lyr;
   fLastIdx = k;
+  fSenIdx = senlyr;
 }
 //========
 float mxGeometry::RZ(int lyr) {
@@ -363,4 +401,26 @@ void mxGeometry::PbWO4_GetNeighbours(int idx, int en[4]) {
   en[3] = fPbWO4_4N[idx-49152][3];
   for(int i=0; i!=4; ++i)
     if(en[i]!=-1) en[i] += 49152;
+}
+//========
+void mxGeometry::PS_GetSensorNeighbours(int sidx, int nei[5]) {
+  nei[0] = fPS_Sen5N[sidx][0];
+  nei[1] = fPS_Sen5N[sidx][1];
+  nei[2] = fPS_Sen5N[sidx][2];
+  nei[3] = fPS_Sen5N[sidx][3];
+  nei[4] = fPS_Sen5N[sidx][4];
+}
+//========
+void mxGeometry::PS_SenRing(int sidx) {
+  if(sidx==2) return 0;
+  if(sidx==4) return 0;
+  if(sidx==7) return 0;
+  if(sidx==8) return 0;
+  if(sidx==10) return 0;
+  if(sidx==14) return 0;
+  if(sidx==16) return 0;
+  if(sidx==19) return 0;
+  if(sidx==20) return 0;
+  if(sidx==22) return 0;
+  return 1;
 }

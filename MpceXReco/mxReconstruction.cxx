@@ -54,7 +54,7 @@ mxReconstruction::mxReconstruction() :
     fNCoaPreEvent[i] = 0;
     fNUni[i] = 0;
   }
-  fGeo = new mxGeometry();
+  fGeo = mxGeometry::Instance();
   fV[0] = 0.;
   fV[1] = 0.;
   fV[2] = 0.;
@@ -89,7 +89,6 @@ mxReconstruction::~mxReconstruction() {
     for(unsigned int j=0; j!=fUni[i].size(); ++j)
       delete fUni[i].at(j);
   }
-  if(fGeo) delete fGeo;
 }
 //========
 void mxReconstruction::DumpHits() {

@@ -77,6 +77,25 @@ mxCluster& mxCluster::operator=(const mxCluster &src) {
   return *this;
 }
 //========
+void mxCluster::CopyFrom(mxCluster *src) {
+  fAssigned = src->fAssigned;
+  fSgn = src->fSgn;
+  fSx = src->fSx;
+  fSy = src->fSy;
+  fSxx = src->fSxx;
+  fSyy = src->fSyy;
+  fSxy = src->fSxy;
+  fX0 = src->fX0;
+  fY0 = src->fY0;
+  fN = src->fN;
+  fNx = src->fNx;
+  fNy = src->fNy;
+  fDx = src->fDx;
+  fDy = src->fDy;
+  for(int i=0; i!=N(); ++i)
+    fHits[i] = src->fHits[i];
+}
+//========
 void mxCluster::Fill(mxHit *hit, float x, float y) {
   // filler
   int n = N();

@@ -14,6 +14,7 @@ class mxDecayCandidate {
   mxDecayCandidate(const mxDecayCandidate&);
   mxDecayCandidate& operator=(const mxDecayCandidate&);
   virtual ~mxDecayCandidate();
+  void Reset();
   void Make(mxCandidate*,mxCandidate*);
   mxCandidate* GetCandidate(int val) {return val<2?fCandidates[val]:NULL;}
   float GetEta() {return fEta;}

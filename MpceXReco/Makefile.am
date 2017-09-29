@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
+AM_CXXFLAGS = -Wall -Werror
+
 INCLUDES = -I$(includedir) -I$(OFFLINE_MAIN)/include -I$(ROOTSYS)/include
 
 SUBDIRS = 
@@ -17,7 +19,12 @@ include_HEADERS = \
   mxCandidate.h \
   mxCandidateCuts.h \
   mxDecayCandidate.h \
-  mxReconstruction.h \
+  mxData.h \
+  mxDisplay.h \
+  mxClusterer.h \
+  mxClustererMPC.h \
+  mxClustererEX.h \
+  mMXRinit.h \
   PHMXData.h
 
 libMXRphnx_la_SOURCES = \
@@ -27,7 +34,12 @@ libMXRphnx_la_SOURCES = \
   mxCandidate.cxx \
   mxCandidateCuts.cxx \
   mxDecayCandidate.cxx \
-  mxReconstruction.cxx \
+  mxData.cxx \
+  mxDisplay.cxx \
+  mxClusterer.cxx \
+  mxClustererMPC.cxx \
+  mxClustererEX.cxx \
+  mMXRinit.cxx \
   MXRphnx_Dict.C
 
 libMXRphnx_la_LIBADD = \
@@ -36,6 +48,7 @@ libMXRphnx_la_LIBADD = \
   -lmpcex_base \
   -lmpcex_interface \
   -lmpcex_modules \
+  -lMXphnx \
   -lMpcExReco
 
 # Rule for generating CINT dictionaries from class headers.
@@ -46,7 +59,12 @@ MXRphnx_Dict.C: \
   mxCandidate.h \
   mxCandidateCuts.h \
   mxDecayCandidate.h \
-  mxReconstruction.h \
+  mxData.h \
+  mxDisplay.h \
+  mxClusterer.h \
+  mxClustererMPC.h \
+  mxClustererEX.h \
+  mMXRinit.h \
   PHMXData.h \
   MXRphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^

@@ -3,14 +3,14 @@
 
 #include <vector>
 #include "PHObject.h"
-#include "mxReconstruction.h"
+#include "mxData.h"
 
 class PHMXData:public PHObject {
  public:
   PHMXData() {}
-  virtual ~PHMXData() {fReco.Reset();}
-  mxReconstruction* GetReconstruction() {return &fReco;}
+  virtual ~PHMXData() {fData.Reset();}
+  mxData* GetData() {return &fData;}
  private:
-  mxReconstruction fReco;
+  mxData fData;
 };
 #endif /* __PHMXDATA_H__ */

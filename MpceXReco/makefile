@@ -3,7 +3,7 @@ all:	libMXR.so
 clean:
 	rm libMXR.so
 
-libMXR.so: mxHit.o mxCluster.o mxCandidate.o mxDecayCandidate.o mxGeometry.o mxReconstruction.o mxCandidateCuts.o
+libMXR.so: mxHit.o mxCluster.o mxCandidate.o mxDecayCandidate.o mxGeometry.o mxData.o mxDisplay.o
 	 `root-config --cxx` -shared -WL,-soname,libMXR.so `root-config --cflags --libs` $^ -o libMXR.so 
 	rm $^
 
@@ -16,13 +16,13 @@ mxCluster.o: mxCluster.cxx
 mxCandidate.o: mxCandidate.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^
 
-mxCandidateCuts.o: mxCandidateCuts.cxx
+mxDisplay.o: mxDisplay.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^
 
 mxDecayCandidate.o: mxDecayCandidate.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^
 
-mxReconstruction.o: mxReconstruction.cxx
+mxData.o: mxData.cxx
 	`root-config --cxx` `root-config --cflags --libs` -c $^
 
 mxGeometry.o: mxGeometry.cxx

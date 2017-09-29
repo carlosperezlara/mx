@@ -11,6 +11,7 @@ class mxCluster {
   mxCluster();
   mxCluster(const mxCluster&);
   mxCluster& operator=(const mxCluster&);
+  void CopyFrom(mxCluster *src);
   virtual ~mxCluster();
   void Fill(mxHit *hit,float,float);
   mxHit* GetHit(int val) {return val<N()?fHits[val]:NULL;}

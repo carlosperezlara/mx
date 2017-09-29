@@ -27,6 +27,17 @@ mxDecayCandidate::~mxDecayCandidate() {
   // dtor
 }
 //========
+void mxDecayCandidate::Reset(){
+  fPhi = 0;
+  fEta = 0;
+  fD8 = -1;
+  fEnergyAsymmetry = 0;
+  fEnergy = 0;
+  fMass = 0;
+  fCandidates[0] = 0;
+  fCandidates[1] = 0;
+}
+//========
 mxDecayCandidate::mxDecayCandidate(const mxDecayCandidate &src) {
   // copy ctor
   fPhi = src.fPhi;
