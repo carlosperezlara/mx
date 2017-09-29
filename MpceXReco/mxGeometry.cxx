@@ -411,7 +411,7 @@ void mxGeometry::PS_GetSensorNeighbours(int sidx, int nei[5]) {
   nei[4] = fPS_Sen5N[sidx][4];
 }
 //========
-void mxGeometry::PS_SenRing(int sidx) {
+int mxGeometry::PS_SenRing(int sidx) {
   if(sidx==2) return 0;
   if(sidx==4) return 0;
   if(sidx==7) return 0;
