@@ -18,6 +18,10 @@ void mxCalibBaseSiW::FillWith(const float val[49152]) {
   for(int k=0; k!=49152; ++k)
     fData[k] = val[k];
 }
+void mxCalibBaseSiW::FillWithConst(const float val) {
+  for(int k=0; k!=49152; ++k)
+    fData[k] = val;
+}
 void mxCalibBaseSiW::Set(int key, float val) {
   if(key<0||key>49151) return;
   fData[key] = val;;

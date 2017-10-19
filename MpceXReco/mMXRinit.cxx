@@ -12,6 +12,7 @@
 
 #include "TString.h"
 #include "TRandom3.h"
+#include "TH2F.h"
 
 #include "recoConsts.h"
 #include "PHTimeStamp.h"
@@ -140,7 +141,6 @@ int mMXRinit::InitRun(PHCompositeNode* top_node) {
     //load from scratchfile
     mxDB::read(runno,fCal);
   }
-
   return EVENT_OK; 
 }
 //====================================================
@@ -227,6 +227,7 @@ bool mMXRinit::PassDataEventCuts(PHCompositeNode* top_node) {
 //====================================================
 int mMXRinit::process_event(PHCompositeNode* top_node) {
   static int nev = 0;
+  //std::cout << " HOLA " << nev << std::endl;
   if(nev%43556==0) {
     std::cout << Form("mMXRinit::process_event %d events", nev) << std::endl;
   }
@@ -253,12 +254,13 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
   if(fCalibMode==kStatic) {
     MpcExRawHit *mMpcExRawHits = getClass<MpcExRawHit>(top_node, "MpcExRawHit");
     if(!mMpcExRawHits) return ABORTEVENT;
-    std::cout << "HITS " << mMpcExRawHits->getnhits() << std::endl;
+    //std::cout << "HITS " << mMpcExRawHits->getnhits() << std::endl;
     for(unsigned int ihit=0; ihit!=mMpcExRawHits->getnhits(); ++ihit) {
       unsigned int key = mMpcExRawHits->getOnlineKey(ihit);
       if(fSkipSouth&&key<24576) continue;
       if(fSkipNorth&&key>24575) continue;
       if( fCal->IsBadKey(key) ) continue;
+      //std::cout << "HITS " << ihit << " OF " << mMpcExRawHits->getnhits() << std::endl;
       float pedmean_hi = fCal->GetPHMu()->Get(key);
       float pedmean_lo = fCal->GetPLMu()->Get(key);
       float hi_adc = mMpcExRawHits->gethadc(ihit) - pedmean_hi;
@@ -276,19 +278,21 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float hires = ( hi_adc_corr * lmpv) * 1e-6; // in GeV
       float lores = ( lo_adc_corr / lhft * lmpv) * 1e-6; // in GeV
       if(fQAPS) {
-	fAdcHigh->Fill(hi_adc);
-	fAdcLow->Fill(lo_adc);
-	fAdcL2H->Fill(lo_adc_corr/hi_adc_corr);
-	fEnergyHigh->Fill(hires);
-	fEnergyLow->Fill(lores);
+	fAdcHigh->Fill(key,hi_adc);
+	fAdcLow->Fill(key,lo_adc);
+	if(hi_adc_corr>50&&hi_adc_corr<std::min(hi_adc_max,float(150))) {
+	  fAdcL2H->Fill(key,lo_adc_corr/hi_adc_corr);
+	}
+	fEnergyHigh->Fill(key,hires*1e3); // in MeV
+	fEnergyLow->Fill(key,lores*1e3); // in MeV
       }
       if( fCal->IsBadKey(key) ) continue;
       //float fNSigmaCut = 3.0;
       //float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
-      float enecut = 1e-4;//100 keV
-      if(ene<enecut) continue;
       bool useHi = hi_adc_corr < hi_adc_max;
       float ene = useHi?hires:lores;
+      float enecut = 1e-4;//100 keV
+      if(ene<enecut) continue;
       if(lo_adc_corr > lo_adc_max) {
 	ene = ( lo_adc_max / lhft * lmpv) * 1e-6;
       }

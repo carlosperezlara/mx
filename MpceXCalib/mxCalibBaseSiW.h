@@ -8,6 +8,7 @@ class mxCalibBaseSiW {
   float Get(int key);
   void Set(int key, float val);
   void FillWith( const float val[49152] );
+  void FillWithConst( const float val );
  protected:
   float fData[49152];
 };

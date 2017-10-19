@@ -48,7 +48,7 @@ libMXRphnx_la_LIBADD = \
   -lmpcex_base \
   -lmpcex_interface \
   -lmpcex_modules \
-  -lMXphnx \
+  -lMXCphnx \
   -lMpcExReco
 
 # Rule for generating CINT dictionaries from class headers.

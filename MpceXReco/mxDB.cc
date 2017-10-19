@@ -3,18 +3,21 @@
 #include "mxDB.exl2h.cc"
 #include "mxDB.mpctau.cc"
 
+#include <fstream>
+
 namespace mxDB {
   void read(int run, mxCalibMaster *cal) {
+    std::cout << "Reading static table for " << run << std::endl;
     exped(run,cal);
+    cal->GetPHSh()->FillWithConst(0);
+    cal->GetPLSh()->FillWithConst(0);
     exhlf(run,cal);
     //=====
-    for(int i=0; i!=49152; ++i) {
-      cal->GetLMPV()->Set(i,1);
-      cal->GetLSgm()->Set(i,1);
-    }
+    cal->GetLMPV()->FillWithConst(1);
+    cal->GetLSgm()->FillWithConst(1);
     //exlan(run,cal);
     mpctau(run,cal);
-    ifstream ifile("THEbadkeys.dat");
+    std::ifstream ifile("THEbadkeys.dat");
     for(;;) {
       int tmp;
       ifile >> tmp;

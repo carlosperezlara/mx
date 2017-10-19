@@ -11,13 +11,11 @@ noinst_HEADERS = \
   MXCphnxLinkDef.h
 
 include_HEADERS = \
-  mxSafetyCuts.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h
 
 libMXCphnx_la_SOURCES = \
-  mxSafetyCuts.cxx \
   mxCalibMaster.cxx \
   mxCalibBaseSiW.cxx \
   mxCalibBasePbWO4.cxx \
@@ -25,15 +23,10 @@ libMXCphnx_la_SOURCES = \
 
 libMXCphnx_la_LIBADD = \
   -L$(libdir) \
-  -L$(OFFLINE_MAIN)/lib \
-  -lmpcex_base \
-  -lmpcex_interface \
-  -lmpcex_modules \
-  -lMpcExReco
+  -L$(OFFLINE_MAIN)/lib
 
 # Rule for generating CINT dictionaries from class headers.
 MXCphnx_Dict.C: \
-  mxSafetyCuts.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h \

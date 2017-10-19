@@ -9,6 +9,7 @@
 class PHCompositeNode;
 class mxCalibMaster;
 class mxData;
+class TH2F;
 
 enum kCalibMode{ kStatic = 0, kDynamic };
 
