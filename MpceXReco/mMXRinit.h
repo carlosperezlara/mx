@@ -31,6 +31,7 @@ class mMXRinit: public SubsysReco {
   void SetTriggerMode2(TString b) {fTrigger2=b;}
   void SetCalibMode(int v) {fCalibMode=v;}
   void SetSimFlag() {fSim = true;}
+  void SetQAPS() {fQAPS = true;}
 
  protected:
   bool fSim;
@@ -46,6 +47,13 @@ class mMXRinit: public SubsysReco {
   float fMaxCentrality;
   TString fTrigger1;
   TString fTrigger2;
+  bool fQAPS;
+
+  TH2F *fAdcHigh;
+  TH2F *fAdcLow;
+  TH2F *fAdcL2H;
+  TH2F *fEnergyHigh;
+  TH2F *fEnergyLow;
 };
 
 #endif /* __mMXRinit_H__ */ 
