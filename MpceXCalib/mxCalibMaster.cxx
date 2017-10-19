@@ -19,8 +19,10 @@ bool mxCalibMaster::IsBadKey(int key) {
 mxCalibMaster::mxCalibMaster() :
   fPHMu( new mxCalibBaseSiW() ),
   fPHSg( new mxCalibBaseSiW() ),
+  fPHSh( new mxCalibBaseSiW() ),
   fPLMu( new mxCalibBaseSiW() ),
   fPLSg( new mxCalibBaseSiW() ),
+  fPLSh( new mxCalibBaseSiW() ),
   fLMPV( new mxCalibBaseSiW() ),
   fLSgm( new mxCalibBaseSiW() ),
   fLHft( new mxCalibBaseSiW() ),
@@ -33,8 +35,10 @@ mxCalibMaster::mxCalibMaster() :
 mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
   fPHMu( cpy.fPHMu ),
   fPHSg( cpy.fPHSg ),
+  fPHSh( cpy.fPHSh ),
   fPLMu( cpy.fPLMu ),
   fPLSg( cpy.fPLSg ),
+  fPLSh( cpy.fPLSh ),
   fLMPV( cpy.fLMPV ),
   fLSgm( cpy.fLSgm ),
   fLHft( cpy.fLHft ),
@@ -47,8 +51,10 @@ mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
 mxCalibMaster::~mxCalibMaster() {
   delete fPHMu;
   delete fPHSg;
+  delete fPHSh;
   delete fPLMu;
   delete fPLSg;
+  delete fPLSh;
   delete fLMPV;
   delete fLSgm;
   delete fLHft;
