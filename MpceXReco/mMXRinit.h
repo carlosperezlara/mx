@@ -17,7 +17,8 @@ class mMXRinit: public SubsysReco {
   mMXRinit( const char* name = "mMXRinit" );
   virtual ~mMXRinit();
 
-  bool PassEventCuts(PHCompositeNode*);
+  bool PassDataEventCuts(PHCompositeNode*);
+  bool PassSimEventCuts(PHCompositeNode*);
   virtual int Init(PHCompositeNode*);
   virtual int InitRun(PHCompositeNode*);
   virtual int process_event(PHCompositeNode*);
@@ -29,11 +30,11 @@ class mMXRinit: public SubsysReco {
   void SetTriggerMode1(TString a) {fTrigger1=a;}
   void SetTriggerMode2(TString b) {fTrigger2=b;}
   void SetCalibMode(int v) {fCalibMode=v;}
-  void SetCalibStaticLevel(int v) {fCalibStaticLevel=v;}
+  void SetSimFlag() {fSim = true;}
 
  protected:
+  bool fSim;
   int fCalibMode;
-  int fCalibStaticLevel;
   bool fSkipSouth;
   bool fSkipNorth;
   mxCalibMaster *fCal;

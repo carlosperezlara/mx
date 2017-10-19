@@ -11,6 +11,7 @@
 #include "Fun4AllServer.h"
 
 #include "TString.h"
+#include "TRandom3.h"
 
 #include "recoConsts.h"
 #include "PHTimeStamp.h"
@@ -45,8 +46,8 @@ using namespace findNode;
 //====================================================
 mMXRinit::mMXRinit( const char* name ) : 
   SubsysReco( name ),
+  fSim( false ),
   fCalibMode(kDynamic),
-  fCalibStaticLevel(10);
   fSkipSouth(false),
   fSkipNorth(false),
   fCal(NULL),
@@ -93,6 +94,7 @@ int mMXRinit::End(PHCompositeNode *topNode) {
 mMXRinit::~mMXRinit() {
   printf("mMXRinit::Dtor\n");
   if(fCal) delete fCal;
+  if(fSim) printf("mMXRinit::SimFlag enabled\n");
 }
 //====================================================
 int mMXRinit::Init(PHCompositeNode* top_node) {
@@ -119,15 +121,19 @@ int mMXRinit::InitRun(PHCompositeNode* top_node) {
 
   printf("mMXRinit::InitRun || Run number %d\n",runno);
   fCal = new mxCalibMaster();
-  //if(fCalibMode==kStatic) {
+  if(fCalibMode==kStatic) {
     //load from scratchfile
-  mxDB::read(runno,fCal,fCalibStaticLevel);
-  //}
+    mxDB::read(runno,fCal);
+  }
 
   return EVENT_OK; 
 }
 //====================================================
-bool mMXRinit::PassEventCuts(PHCompositeNode* top_node) {
+bool mMXRinit::PassSimEventCuts(PHCompositeNode* top_node) {
+  return true;
+}
+//====================================================
+bool mMXRinit::PassDataEventCuts(PHCompositeNode* top_node) {
   TriggerHelper *myTH = new TriggerHelper(top_node);
   bool trig = myTH->trigScaled(fTrigger1.Data()); //CHANGE TO NARROW VERTEX
   trig = trig || myTH->trigScaled(fTrigger2.Data()); //CHANGE TO NARROW VERTEX
@@ -210,7 +216,11 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
     std::cout << Form("mMXRinit::process_event %d events", nev) << std::endl;
   }
   nev++;
-  if(!PassEventCuts(top_node)) return ABORTEVENT;
+  if(fSim) {
+    if(!PassSimEventCuts(top_node)) return ABORTEVENT;
+  } else {
+    if(!PassDataEventCuts(top_node)) return ABORTEVENT;
+  }
   fData->Reset();
   PHGlobal *phglobal = getClass<PHGlobal> (top_node, "PHGlobal");
   if(!phglobal) return false;
@@ -228,6 +238,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
   if(fCalibMode==kStatic) {
     MpcExRawHit *mMpcExRawHits = getClass<MpcExRawHit>(top_node, "MpcExRawHit");
     if(!mMpcExRawHits) return ABORTEVENT;
+    std::cout << "HITS " << mMpcExRawHits->getnhits() << std::endl;
     for(unsigned int ihit=0; ihit!=mMpcExRawHits->getnhits(); ++ihit) {
       unsigned int key = mMpcExRawHits->getOnlineKey(ihit);
       if(fSkipSouth&&key<24576) continue;
@@ -237,13 +248,14 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float lo_adc = mMpcExRawHits->getladc(ihit)  - fCal->GetPLMu()->Get(key);
       float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
       float lhft = fCal->GetLHft()->Get(key);
-      float fNSigmaCut = 3.0;
-      float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
+      hi_adc += gRandom->Rndm();
+      lo_adc += gRandom->Rndm();
       float hires = (hi_adc * lmpv) * 1e-6; // in GeV
       float lores = (lo_adc / lhft * lmpv) * 1e-6; // in GeV
       if( fCal->IsBadKey(key) ) continue;
       bool useHi = hi_adc<150;
       float ene = useHi?hires:lores;
+      float enecut = 0.1*1e-3; // 100 keV
       if(ene>enecut) {
 	fData->Fill(key,ene);
       }
