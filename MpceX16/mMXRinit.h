@@ -52,6 +52,7 @@ class mMXRinit: public SubsysReco {
 
   TH2F *fAdcHigh;
   TH2F *fAdcLow;
+  TH2F *fAdcHighLow;
   TH2F *fAdcL2H;
   TH2F *fEnergyHigh;
   TH2F *fEnergyLow;

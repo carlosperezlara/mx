@@ -59,7 +59,13 @@ mMXRinit::mMXRinit( const char* name ) :
   fMaxCentrality(100),
   fTrigger1("BBCLL1(>0 tubes) novertex"),
   fTrigger2("BBCLL1(>0 tubes)_central_narrowvtx"),
-  fQAPS(false)
+  fQAPS(false),
+  fAdcHigh(NULL),
+  fAdcLow(NULL),
+  fAdcHighLow(NULL),
+  fAdcL2H(NULL),
+  fEnergyHigh(NULL),
+  fEnergyLow(NULL)
 {
   printf("mMXRinit::Ctor\n");
   fMPCIDX.clear();
@@ -105,11 +111,13 @@ int mMXRinit::Init(PHCompositeNode* top_node) {
   if(fQAPS) {
     fAdcHigh = new TH2F("AdcHigh","AdcHigh",49152,-0.5,49151.5,100,-20.5,79.5);
     fAdcLow = new TH2F("AdcLow","AdcLow",49152,-0.5,49151.5,100,-20.5,79.5);
+    fAdcHighLow = new TH2F("AdcHighLow","AdcHighLow;High;Low",128,-50.5,255.5,128,-50.5,255.5);
     fAdcL2H = new TH2F("AdcL2H","AdcL2H",49152,-0.5,49151.5,100,0.1,0.5);
-    fEnergyHigh = new TH2F("EnergyHigh","EnergyHigh;MeV",49152,-0.5,49151.5, 120, 0.0, 3.0);
-    fEnergyLow = new TH2F("EnergyLow","EnergyLow;MeV",49152,-0.5,49151.5, 120, 2.0, 5.0);
+    fEnergyHigh = new TH2F("EnergyHigh","EnergyHigh;MeV",49152,-0.5,49151.5, 300, 0.0, 3.0);
+    fEnergyLow = new TH2F("EnergyLow","EnergyLow;MeV",49152,-0.5,49151.5, 800, 1.0, 9.0);
     se->registerHisto( ((TH2F*) (fAdcHigh)) );
     se->registerHisto( ((TH2F*) (fAdcLow)) );
+    se->registerHisto( ((TH2F*) (fAdcHighLow)) );
     se->registerHisto( ((TH2F*) (fAdcL2H)) );
     se->registerHisto( ((TH2F*) (fEnergyHigh)) );
     se->registerHisto( ((TH2F*) (fEnergyLow)) );
@@ -265,12 +273,12 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float pedmean_lo = fCal->GetPLMu()->Get(key);
       float hi_adc = mMpcExRawHits->gethadc(ihit) - pedmean_hi;
       float lo_adc = mMpcExRawHits->getladc(ihit)  - pedmean_lo;
-      hi_adc += gRandom->Rndm();
-      lo_adc += gRandom->Rndm();
+      if(hi_adc<-12) continue;
+      if(lo_adc<-12) continue;
       float pedshift_hi = fCal->GetPHSh()->Get(key);
       float pedshift_lo = fCal->GetPLSh()->Get(key);
-      float hi_adc_corr = hi_adc - pedshift_hi;
-      float lo_adc_corr = lo_adc - pedshift_lo;
+      float hi_adc_corr = hi_adc + gRandom->Rndm() - pedshift_hi;
+      float lo_adc_corr = lo_adc + gRandom->Rndm() - pedshift_lo;
       float hi_adc_max = 255-20 - pedmean_hi - pedshift_hi;
       float lo_adc_max = 255-20 - pedmean_lo - pedshift_lo;
       float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
@@ -280,6 +288,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       if(fQAPS) {
 	fAdcHigh->Fill(key,hi_adc);
 	fAdcLow->Fill(key,lo_adc);
+	fAdcHighLow->Fill(hi_adc,lo_adc);
 	if(hi_adc_corr>50&&hi_adc_corr<std::min(hi_adc_max,float(150))) {
 	  fAdcL2H->Fill(key,lo_adc_corr/hi_adc_corr);
 	}
