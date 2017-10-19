@@ -4,9 +4,10 @@
 
 bool mxCalibMaster::IsBadKey(int key) {
   if(key>-1&&key<49152) {
-    if(fLHft->Get(key)<0) return true;
-    //if(fLMPV->Get(key)<0) return true;
-    //if(fLSgm->Get(key)<0) return true;
+    //if(fLHft->Get(key)<0.12) return true;
+    //if(fLHft->Get(key)>0.28) return true;
+    if(fLMPV->Get(key)<0) return true;
+    if(fLSgm->Get(key)<0) return true;
     if(fPHSg->Get(key)>1.5) return true;
     if(fPHSg->Get(key)<0.5) return true;
     if(fPLSg->Get(key)>1.5) return true;
