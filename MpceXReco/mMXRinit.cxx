@@ -56,7 +56,8 @@ mMXRinit::mMXRinit( const char* name ) :
   fMinCentrality(0),
   fMaxCentrality(100),
   fTrigger1("BBCLL1(>0 tubes) novertex"),
-  fTrigger2("BBCLL1(>0 tubes)_central_narrowvtx")
+  fTrigger2("BBCLL1(>0 tubes)_central_narrowvtx"),
+  fQAPS(false)
 {
   printf("mMXRinit::Ctor\n");
   fMPCIDX.clear();
@@ -97,6 +98,20 @@ mMXRinit::~mMXRinit() {
 //====================================================
 int mMXRinit::Init(PHCompositeNode* top_node) {
   printf("mMXRinit::Init\n");
+  Fun4AllServer *se = Fun4AllServer::instance();
+  if(fQAPS) {
+    fAdcHigh = new TH2F("AdcHigh","AdcHigh",49152,-0.5,49151.5,100,-20.5,79.5);
+    fAdcLow = new TH2F("AdcLow","AdcLow",49152,-0.5,49151.5,100,-20.5,79.5);
+    fAdcL2H = new TH2F("AdcL2H","AdcL2H",49152,-0.5,49151.5,100,0.1,0.5);
+    fEnergyHigh = new TH2F("EnergyHigh","EnergyHigh;MeV",49152,-0.5,49151.5, 120, 0.0, 3.0);
+    fEnergyLow = new TH2F("EnergyLow","EnergyLow;MeV",49152,-0.5,49151.5, 120, 2.0, 5.0);
+    se->registerHisto( ((TH2F*) (fAdcHigh)) );
+    se->registerHisto( ((TH2F*) (fAdcLow)) );
+    se->registerHisto( ((TH2F*) (fAdcL2H)) );
+    se->registerHisto( ((TH2F*) (fEnergyHigh)) );
+    se->registerHisto( ((TH2F*) (fEnergyLow)) );
+  }
+
   return EVENT_OK;
 }
 //====================================================
@@ -233,20 +248,38 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       if(fSkipSouth&&key<24576) continue;
       if(fSkipNorth&&key>24575) continue;
       if( fCal->IsBadKey(key) ) continue;
-      float hi_adc = mMpcExRawHits->gethadc(ihit) - fCal->GetPHMu()->Get(key);
-      float lo_adc = mMpcExRawHits->getladc(ihit)  - fCal->GetPLMu()->Get(key);
+      float pedmean_hi = fCal->GetPHMu()->Get(key);
+      float pedmean_lo = fCal->GetPLMu()->Get(key);
+      float hi_adc = mMpcExRawHits->gethadc(ihit) - pedmean_hi;
+      float lo_adc = mMpcExRawHits->getladc(ihit)  - pedmean_lo;
+      float pedshift_hi = fCal->GetPHSh()->Get(key);
+      float pedshift_lo = fCal->GetPLSh()->Get(key);
+      float hi_adc_corr = hi_adc - pedshift_hi;
+      float lo_adc_corr = lo_adc - pedshift_lo;
+      float hi_adc_max = 255-20 - pedmean_hi - pedshift_hi;
+      float lo_adc_max = 255-20 - pedmean_lo - pedshift_lo;
       float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
       float lhft = fCal->GetLHft()->Get(key);
       float fNSigmaCut = 3.0;
-      float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
-      float hires = (hi_adc * lmpv) * 1e-6; // in GeV
-      float lores = (lo_adc / lhft * lmpv) * 1e-6; // in GeV
-      if( fCal->IsBadKey(key) ) continue;
-      bool useHi = hi_adc<150;
-      float ene = useHi?hires:lores;
-      if(ene>enecut) {
-	fData->Fill(key,ene);
+      float hires = ( hi_adc_corr * lmpv) * 1e-6; // in GeV
+      float lores = ( lo_adc_corr / lhft * lmpv) * 1e-6; // in GeV
+      if(fQAPS) {
+	fAdcHigh->Fill(hi_adc);
+	fAdcLow->Fill(lo_adc);
+	fAdcL2H->Fill(lo_adc_corr/hi_adc_corr);
+	fEnergyHigh->Fill(hires);
+	fEnergyLow->Fill(lores);
       }
+      if( fCal->IsBadKey(key) ) continue;
+      //float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
+      float enecut = 1e-4;//100 keV
+      if(ene<enecut) continue;
+      bool useHi = hi_adc_corr < hi_adc_max;
+      float ene = useHi?hires:lores;
+      if(lo_adc_corr > lo_adc_max) {
+	ene = ( lo_adc_max / lhft * lmpv) * 1e-6;
+      }
+      fData->Fill(key,ene);
     }
   } else {
     TMpcExHitContainer *mMpcExHits = getClass<TMpcExHitContainer>(top_node, "TMpcExHitContainer");
