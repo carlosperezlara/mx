@@ -15,6 +15,8 @@ noinst_HEADERS = \
   MXRphnxLinkDef.h
 
 include_HEADERS = \
+  qcQ.h \
+  qcCalibBase.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h \
@@ -31,6 +33,11 @@ include_HEADERS = \
   mxClustererEX.h \
   mMXRinit.h \
   PHMXData.h
+
+libQCBphnx_la_SOURCES = \
+  qcCalibBase.cxx \
+  qcQ.cxx \
+  QCBphnx_Dict.C
 
 libMXCphnx_la_SOURCES = \
   mxCalibMaster.cxx \
@@ -53,6 +60,10 @@ libMXRphnx_la_SOURCES = \
   mMXRinit.cxx \
   MXRphnx_Dict.C
 
+libQCBphnx_la_LIBADD = \
+  -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib
+
 libMXCphnx_la_LIBADD = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib
@@ -67,6 +78,12 @@ libMXRphnx_la_LIBADD = \
   -lMXCphnx
 
 # Rule for generating CINT dictionaries from class headers.
+QCBphnx_Dict.C: \
+  qcCalibBase.h \
+  qcQ.h \
+  QCBphnxLinkDef.h
+        rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
+
 MXCphnx_Dict.C: \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
