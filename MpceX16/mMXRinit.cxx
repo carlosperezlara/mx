@@ -273,8 +273,8 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float pedmean_lo = fCal->GetPLMu()->Get(key);
       float hi_adc = mMpcExRawHits->gethadc(ihit) - pedmean_hi;
       float lo_adc = mMpcExRawHits->getladc(ihit)  - pedmean_lo;
-      if(hi_adc<-12) continue;
-      if(lo_adc<-12) continue;
+      //if(hi_adc<-12) continue;
+      //if(lo_adc<-12) continue;
       float pedshift_hi = fCal->GetPHSh()->Get(key);
       float pedshift_lo = fCal->GetPLSh()->Get(key);
       float hi_adc_corr = hi_adc + gRandom->Rndm() - pedshift_hi;

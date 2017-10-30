@@ -63,7 +63,8 @@ libMXRphnx_la_LIBADD = \
   -lmpcex_base \
   -lmpcex_interface \
   -lmpcex_modules \
-  -lMpcExReco
+  -lMpcExReco \
+  -lMXCphnx
 
 # Rule for generating CINT dictionaries from class headers.
 MXCphnx_Dict.C: \
@@ -71,7 +72,7 @@ MXCphnx_Dict.C: \
   mxCalibBaseSiW.h \
   mxCalibBasePbWO4.h \
   MXCphnxLinkDef.h
-        rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
+	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 
 MXRphnx_Dict.C: \
   mxGeometry.h \
