@@ -2,7 +2,8 @@
 #include "mxDB.exlan.cc"
 #include "mxDB.exl2h.cc"
 #include "mxDB.mpctau.cc"
-
+#include "mxDB.exlanx.cc"
+#include "mxDB.exrun.cc"
 #include <fstream>
 
 namespace mxDB {
@@ -10,8 +11,20 @@ namespace mxDB {
     std::cout << "Reading static table for " << run << std::endl;
     exped(run,cal);
     exhlf(run,cal);
-    //=====
     exlan(run,cal);
+    //=====
+    if(mxDB::loadextras) {
+      exlsgm(run,cal);
+      exla(run,cal);
+      exlf2(run,cal);
+      exlf3(run,cal);
+      exlf4(run,cal);
+      exlb(run,cal);
+      exlsl(run,cal);
+    }
+    //=====
+    exrun.cc(run,cal);
+    //=====
     mpctau(run,cal);
     std::ifstream ifile("THEbadkeys.dat");
     for(;;) {
@@ -21,4 +34,5 @@ namespace mxDB {
       cal->GetLSgm()->Set(tmp,-1);
     }
   }
+  bool loadextras = false;
 };

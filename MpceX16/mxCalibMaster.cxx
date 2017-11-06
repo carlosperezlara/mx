@@ -1,5 +1,6 @@
 #include "mxCalibMaster.h"
 #include "mxCalibBaseSiW.h"
+#include "mxCalibStageSiW.h"
 #include "mxCalibBasePbWO4.h"
 
 bool mxCalibMaster::IsBadKey(int key) {
@@ -26,6 +27,7 @@ mxCalibMaster::mxCalibMaster() :
   fLMPV( new mxCalibBaseSiW() ),
   fLSgm( new mxCalibBaseSiW() ),
   fLHft( new mxCalibBaseSiW() ),
+  fSMPV( new mxCalibStageSiW() ),
   fTau( new mxCalibBasePbWO4() ),
   fBet( new mxCalibBasePbWO4() ),
   fGam( new mxCalibBasePbWO4() )
@@ -42,6 +44,7 @@ mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
   fLMPV( cpy.fLMPV ),
   fLSgm( cpy.fLSgm ),
   fLHft( cpy.fLHft ),
+  fSMPV( cpy.fSMPV ),
   fTau( cpy.fTau ),
   fBet( cpy.fBet ),
   fGam( cpy.fGam )
@@ -58,6 +61,7 @@ mxCalibMaster::~mxCalibMaster() {
   delete fLMPV;
   delete fLSgm;
   delete fLHft;
+  delete fSMPV;
   delete fTau;
   delete fBet;
   delete fGam;
