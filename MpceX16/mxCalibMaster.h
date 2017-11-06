@@ -2,6 +2,7 @@
 #define __mxCalibMaster_HH__
 
 #include "mxCalibBaseSiW.h"
+#include "mxCalibStageSiW.h"
 #include "mxCalibBasePbWO4.h"
 
 class mxCalibMaster {
@@ -18,6 +19,8 @@ class mxCalibMaster {
   mxCalibBaseSiW* GetLMPV() {return fLMPV;}  // Landau MPV
   mxCalibBaseSiW* GetLSgm() {return fLSgm;}  // Landau Sigma
   mxCalibBaseSiW* GetLHft() {return fLHft;}  // Hi2Lo Factor
+  mxCalibStageSiW* GetSMPV() {return fSMPV;} // Landau MPV packed
+
   mxCalibBasePbWO4* GetTau() {return fTau;}  // Tau shift
   mxCalibBasePbWO4* GetBet() {return fBet;}  // Slewing Correction
   mxCalibBasePbWO4* GetGam() {return fGam;}  // Gain correction
@@ -33,6 +36,7 @@ class mxCalibMaster {
   mxCalibBaseSiW *fLMPV;
   mxCalibBaseSiW *fLSgm;
   mxCalibBaseSiW *fLHft;
+  mxCalibStageSiW *fSMPV;
   mxCalibBasePbWO4 *fTau;
   mxCalibBasePbWO4 *fBet;
   mxCalibBasePbWO4 *fGam;
