@@ -8,17 +8,21 @@ SUBDIRS =
 
 lib_LTLIBRARIES = \
   libMXCphnx.la \
-  libMXRphnx.la
+  libMXRphnx.la \
+  libQCRphnx.la
 
 noinst_HEADERS = \
   MXCphnxLinkDef.h \
-  MXRphnxLinkDef.h
+  MXRphnxLinkDef.h \
+  QCRphnxLinkDef.h
 
 include_HEADERS = \
   qcQ.h \
   qcCalibBase.h \
+  mQCRinit.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
+  mxCalibStageSiW.h \
   mxCalibBasePbWO4.h \
   mxGeometry.h \
   mxHit.h \
@@ -34,14 +38,10 @@ include_HEADERS = \
   mMXRinit.h \
   PHMXData.h
 
-libQCBphnx_la_SOURCES = \
-  qcCalibBase.cxx \
-  qcQ.cxx \
-  QCBphnx_Dict.C
-
 libMXCphnx_la_SOURCES = \
   mxCalibMaster.cxx \
   mxCalibBaseSiW.cxx \
+  mxCalibStageSiW.cxx \
   mxCalibBasePbWO4.cxx \
   MXCphnx_Dict.C
 
@@ -60,9 +60,11 @@ libMXRphnx_la_SOURCES = \
   mMXRinit.cxx \
   MXRphnx_Dict.C
 
-libQCBphnx_la_LIBADD = \
-  -L$(libdir) \
-  -L$(OFFLINE_MAIN)/lib
+libQCRphnx_la_SOURCES = \
+  qcCalibBase.cxx \
+  qcQ.cxx \
+  mQCRinit.cxx \
+  QCRphnx_Dict.C
 
 libMXCphnx_la_LIBADD = \
   -L$(libdir) \
@@ -77,16 +79,24 @@ libMXRphnx_la_LIBADD = \
   -lMpcExReco \
   -lMXCphnx
 
+libQCRphnx_la_LIBADD = \
+  -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib \
+  -lMXCphnx \
+  -lMXRphnx
+
 # Rule for generating CINT dictionaries from class headers.
-QCBphnx_Dict.C: \
+QCRphnx_Dict.C: \
   qcCalibBase.h \
   qcQ.h \
-  QCBphnxLinkDef.h
-        rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
+  mQCRinit.h \
+  QCRphnxLinkDef.h
+	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
 
 MXCphnx_Dict.C: \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
+  mxCalibStageSiW.h \
   mxCalibBasePbWO4.h \
   MXCphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^

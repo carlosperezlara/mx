@@ -26,6 +26,11 @@ void qcQ::Reset() {
   fNP = 0;
 }
 //========
+float qcQ::Psi() {
+  if(fN==0) return -99999;
+  return (TMath::Pi() + TMath::ATan2(-fY,-fX) )/fN;
+}
+//========
 void qcQ::Fill(float phi, float w) {
   // filler
   fX += w*TMath::Cos(fN*phi);

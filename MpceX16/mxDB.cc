@@ -7,6 +7,7 @@
 #include <fstream>
 
 namespace mxDB {
+  bool loadextras = false;
   void read(int run, mxCalibMaster *cal) {
     std::cout << "Reading static table for " << run << std::endl;
     exped(run,cal);
@@ -23,7 +24,7 @@ namespace mxDB {
       exlsl(run,cal);
     }
     //=====
-    exrun.cc(run,cal);
+    exrun(run,cal);
     //=====
     mpctau(run,cal);
     std::ifstream ifile("THEbadkeys.dat");
@@ -34,5 +35,4 @@ namespace mxDB {
       cal->GetLSgm()->Set(tmp,-1);
     }
   }
-  bool loadextras = false;
 };

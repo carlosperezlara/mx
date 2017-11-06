@@ -1,3 +1,3 @@
 namespace mxDB {
-  void exrun(int run, int cal);
+  void exrun(int run, mxCalibMaster *cal);
 }
