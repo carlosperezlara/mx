@@ -5,8 +5,8 @@ class mxCalibStageSiW {
   mxCalibStageSiW();
   mxCalibStageSiW( const mxCalibStageSiW &cpy );
   virtual ~mxCalibStageSiW() {}
-  float Get(int key);
-  void Set(int key, float val);
+  float Get(int sen);
+  void Set(int sen, float val);
   void FillWith( const float val[384] );
   void FillWithConst( const float val );
  protected:
