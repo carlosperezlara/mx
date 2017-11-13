@@ -77,13 +77,13 @@ libMXRphnx_la_LIBADD = \
   -lmpcex_interface \
   -lmpcex_modules \
   -lMpcExReco \
-  -lMXCphnx
+  libMXCphnx.la
 
 libQCRphnx_la_LIBADD = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib \
-  -lMXCphnx \
-  -lMXRphnx
+  libMXCphnx.la \
+  libMXRphnx.la
 
 # Rule for generating CINT dictionaries from class headers.
 QCRphnx_Dict.C: \
