@@ -35,6 +35,7 @@ class mMXRinit: public SubsysReco {
   void SetQAPS() {fQAPS = true;}
 
  protected:
+  TString fName;
   bool fSim;
   int fCalibMode;
   bool fSkipSouth;
@@ -48,6 +49,7 @@ class mMXRinit: public SubsysReco {
   float fMaxCentrality;
   TString fTrigger1;
   TString fTrigger2;
+  TH1F *fEvents;
   bool fQAPS;
 
   TH2F *fAdcHigh;

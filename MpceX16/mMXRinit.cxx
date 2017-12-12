@@ -47,6 +47,7 @@ using namespace findNode;
 //====================================================
 mMXRinit::mMXRinit( const char* name ) : 
   SubsysReco( name ),
+  fName( name ),
   fSim( false ),
   fCalibMode(kDynamic),
   fSkipSouth(false),
@@ -59,6 +60,7 @@ mMXRinit::mMXRinit( const char* name ) :
   fMaxCentrality(100),
   fTrigger1("BBCLL1(>0 tubes) novertex"),
   fTrigger2("BBCLL1(>0 tubes)_central_narrowvtx"),
+  fEvents(NULL),
   fQAPS(false),
   fAdcHigh(NULL),
   fAdcLow(NULL),
@@ -108,6 +110,12 @@ mMXRinit::~mMXRinit() {
 int mMXRinit::Init(PHCompositeNode* top_node) {
   printf("mMXRinit::Init\n");
   Fun4AllServer *se = Fun4AllServer::instance();
+  fEvents = new TH1F(Form("%s_Events",fName.Data()),"Events",7,-0.5,+6.5);
+  se->registerHisto( ((TH1*) (fEvents) ) );
+  fEvents->GetXaxis()->SetBinLabel(1,"All Raw");
+  fEvents->GetXaxis()->SetBinLabel(2,"Data Reached");
+  fEvents->GetXaxis()->SetBinLabel(3,"Centrality Cut");
+  fEvents->GetXaxis()->SetBinLabel(4,"Futher Event Cuts");
   if(fQAPS) {
     fAdcHigh = new TH2F("AdcHigh","AdcHigh",49152,-0.5,49151.5,100,-20.5,79.5);
     fAdcLow = new TH2F("AdcLow","AdcLow",49152,-0.5,49151.5,100,-20.5,79.5);
@@ -240,6 +248,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
     std::cout << Form("mMXRinit::process_event %d events", nev) << std::endl;
   }
   nev++;
+  fEvents->Fill(0);
   if(fSim) {
     if(!PassSimEventCuts(top_node)) return ABORTEVENT;
   } else {
@@ -249,6 +258,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
   PHGlobal *phglobal = getClass<PHGlobal> (top_node, "PHGlobal");
   if(!phglobal) return false;
   fData->SetVertex( 0, 0, phglobal->getBbcZVertex() );
+  fEvents->Fill(1);
 
   /*
   VtxOut *vtxout = getClass<VtxOut> (top_node, "VtxOut");

@@ -4,20 +4,38 @@ AM_CXXFLAGS = -Wall -Werror
 
 INCLUDES = -I$(includedir) -I$(OFFLINE_MAIN)/include -I$(ROOTSYS)/include
 
+dist_pkgdata_DATA = \
+Run16dAuEmcalDeadMap.txt \
+dAu62_EmcalDeadmap.txt\
+dAu39_EmcalDeadmap.txt\
+pAu15_deadmaps.txt \
+run_vs_ratiopersector.dat\
+dAu62run_vs_ratiopersector.dat\
+dAu39run_vs_ratiopersector.dat
+
+
 SUBDIRS = 
 
 lib_LTLIBRARIES = \
   libMXCphnx.la \
   libMXRphnx.la \
-  libQCRphnx.la
+  libQCRphnx.la \
+  libCARphnx.la
 
 noinst_HEADERS = \
   MXCphnxLinkDef.h \
   MXRphnxLinkDef.h \
-  QCRphnxLinkDef.h
+  QCRphnxLinkDef.h \
+  CARphnxLinkDef.h
 
 include_HEADERS = \
+  EMCC.h \
+  CNTE.h \
+  CNTDE.h \
+  mCArecoPizeroes.h \
   qcQ.h \
+  qcData.h \
+  PHQCData.h \
   qcCalibBase.h \
   mQCRinit.h \
   mxCalibMaster.h \
@@ -63,8 +81,16 @@ libMXRphnx_la_SOURCES = \
 libQCRphnx_la_SOURCES = \
   qcCalibBase.cxx \
   qcQ.cxx \
+  qcData.cxx \
   mQCRinit.cxx \
   QCRphnx_Dict.C
+
+libCARphnx_la_SOURCES = \
+  EMCC.cxx \
+  CNTE.cxx \
+  CNTDE.cxx \
+  mCArecoPizeroes.cxx \
+  CARphnx_Dict.C
 
 libMXCphnx_la_LIBADD = \
   -L$(libdir) \
@@ -85,10 +111,33 @@ libQCRphnx_la_LIBADD = \
   libMXCphnx.la \
   libMXRphnx.la
 
+libCARphnx_la_LIBADD = \
+  -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib \
+  -lSubsysReco \
+  -luti \
+  -lHardpDST \
+  -lCNT \
+  -lcgl \
+  -lpad \
+  -lemc \
+  -llpc \
+  -lTHmul \
+  -lboost_thread \
+  -lboost_date_time \
+  -lTOAD \
+  -lFROG \
+  -lfun4allfuncs \
+  libMXCphnx.la \
+  libMXRphnx.la \
+  libQCRphnx.la
+
 # Rule for generating CINT dictionaries from class headers.
 QCRphnx_Dict.C: \
   qcCalibBase.h \
   qcQ.h \
+  qcData.h \
+  PHQCData.h \
   mQCRinit.h \
   QCRphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
@@ -117,6 +166,15 @@ MXRphnx_Dict.C: \
   PHMXData.h \
   MXRphnxLinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
+
+CARphnx_Dict.C: \
+  EMCC.h \
+  CNTE.h \
+  CNTDE.h \
+  mCArecoPizeroes.h \
+  CARphnxLinkDef.h
+	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(INCLUDES) $^
+
 
 clean-local:
 	rm -f *Dict*

@@ -8,6 +8,7 @@
 class PHCompositeNode;
 
 class qcQ;
+class qcData;
 class qcCalibBase;
 class mxGeometry;
 class BbcCalib;
@@ -37,6 +38,8 @@ class mQCRinit: public SubsysReco {
 
   TString fName;
   bool fQA;
+
+  qcData *fData;
 
   qcQ *fQex[10][2][2][4]; // [ord][arm][ioc][det]
   qcQ *fQmpc[2]; // [arm]

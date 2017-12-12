@@ -10,6 +10,7 @@
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TString.h"
 #include "TProfile.h"
 #include "getClass.h"
 #include "PHCompositeNode.h"
@@ -37,7 +38,11 @@
 #include "PHMXData.h"
 #include "mxData.h"
 #include "mxHit.h"
-#include <qcQ.h>
+
+
+#include "PHQCData.h"
+#include "qcData.h"
+#include "qcQ.h"
 
 #include "TMpcExHitContainer.h"
 #include "TMpcExHit.h"
@@ -61,16 +66,17 @@ mQCRinit::mQCRinit( const char* name ) :
   printf("qcReco::CTOR\n");
   fBBCcalib = new BbcCalib();
   fBBCgeo = new BbcGeo();
+  fData = NULL;
   for(int arm=0; arm!=2; ++arm) {
-    fQbbc[arm] = new qcQ(2);
-    fQmpc[arm] = new qcQ(2);
+    fQbbc[arm] = NULL;
+    fQmpc[arm] = NULL;
     for(int det=0; det!=8; ++det) {
       fHMultBBC[arm][det/4][det%4] = NULL;
       fHPsi2Com[arm][det/4][det%4] = NULL;
       fHPsi2Cob[arm][det/4][det%4] = NULL;
       fHPsi2Reb[arm][det/4][det%4] = NULL;
       for(int ord=0; ord!=10; ++ord) {
-	fQex[ord][arm][det/4][det%4] = new qcQ(ord+1);
+	fQex[ord][arm][det/4][det%4] = NULL;
 	fHPsiex[ord][arm][det/4][det%4] = NULL;
 	fHPsiexN[ord][arm][det/4][det%4] = NULL;
 	fHPsiexM[ord][arm][det/4][det%4] = NULL;
@@ -94,7 +100,6 @@ mQCRinit::mQCRinit( const char* name ) :
     fEXPair_DET[i][0] =  iEXPair_DET[i][0];
     fEXPair_DET[i][1] =  iEXPair_DET[i][1];
   }
-
 }
 //====================================================
 int mQCRinit::End(PHCompositeNode *topNode) {
@@ -104,31 +109,22 @@ int mQCRinit::End(PHCompositeNode *topNode) {
 mQCRinit::~mQCRinit() {
   if(fBBCcalib) delete fBBCcalib;
   if(fBBCgeo) delete fBBCgeo;
-  for(int arm=0; arm!=2; ++arm) {
-    delete fQbbc[arm];
-    delete fQmpc[arm];
-    for(int ord=0; ord!=10; ++ord) {
-      for(int det=0; det!=8; ++det) {
-	delete fQex[ord][arm][det/4][det%4];
-      }
-    }
-  }
 }
 //====================================================
 int mQCRinit::Init(PHCompositeNode* top_node) {
   printf("mQCRinit::Init\n");
   Fun4AllServer *se = Fun4AllServer::instance();
-
+  
   fEvents = new TH1F(Form("%s_Events",fName.Data()),"Events",7,-0.5,+6.5);
   se->registerHisto( ((TH1*) (fEvents) ) );
   fEvents->GetXaxis()->SetBinLabel(1,"All Raw");
   fEvents->GetXaxis()->SetBinLabel(2,"Data Reached");
   fEvents->GetXaxis()->SetBinLabel(3,"Centrality Cut");
   fEvents->GetXaxis()->SetBinLabel(4,"Futher Event Cuts");
-
+  
   fCentrality = new TH2F(Form("%s_Centrality",fName.Data()),"Centrality",100,0,100,100,0,250);
   se->registerHisto( ((TH2F*) (fCentrality) ) );
-
+  
   if(fQA) {
     for(int arm=0; arm!=2; ++arm) {
       if(arm==1) continue;
@@ -190,7 +186,6 @@ int mQCRinit::Init(PHCompositeNode* top_node) {
       }
     }
   }
-
   return EVENT_OK;
 }
 //====================================================
@@ -198,7 +193,25 @@ int mQCRinit::InitRun(PHCompositeNode* top_node) {
   printf("mQCRinit::InitRun\n");
   recoConsts *rc = recoConsts::instance();
   fBBCcalib->restore(rc->get_TimeStamp(), 4002);
-
+  
+  PHNodeIterator nodeIter(top_node);
+  PHCompositeNode *dstNode = static_cast<PHCompositeNode*>(nodeIter.findFirst("PHCompositeNode","DST"));
+  if (dstNode == NULL) {
+    dstNode = new PHCompositeNode("DST");
+    top_node->addNode(dstNode);
+  }
+  
+  PHQCData *qcdata = new PHQCData();
+  PHIODataNode<PHQCData> *hitNode = new PHIODataNode<PHQCData>(qcdata,"QCR","PHQCData");
+  dstNode->addNode(hitNode);
+  fData = qcdata->GetData();
+  fQbbc[0] = fData->GetQbb();
+  fQmpc[0] = fData->GetQmp();
+  for(int ord=0; ord!=10; ++ord) {
+    for(int det=0; det!=8; ++det) {
+      fQex[ord][0][det/4][det%4] = fData->GetQex(ord,det/4,det%4);
+    }
+  }
   return EVENT_OK; 
 }
 //====================================================
@@ -208,7 +221,7 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
     std::cout << Form("mQCRinit::process_event %d events", nev) << std::endl;
   }
   nev++;
-
+  
   fEvents->Fill(0); // all raw
   PHGlobal *phglobal = getClass<PHGlobal> (top_node, "PHGlobal");
   if(!phglobal) return ABORTEVENT;
@@ -221,23 +234,21 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
   float cc =  phglobal->getCentrality();
   if(cc<0) return ABORTEVENT;
   fEvents->Fill(2); // centralitycut
-
+  
   fEvents->Fill(3); // further event cuts
   float bbcm[2];
   bbcm[0] = phglobal->getBbcChargeS();
   bbcm[1] = phglobal->getBbcChargeN();
   fCentrality->Fill(cc,bbcm[0]);
-
+  
+  fQbbc[0]->Reset();
+  fQmpc[0]->Reset();
   for(int ord=0; ord!=10; ++ord) {
-    for(int arm=0; arm!=2; ++arm) {
-      fQbbc[arm]->Reset();
-      fQmpc[arm]->Reset();
-      for(int det=0; det!=8; ++det) {
-	fQex[ord][arm][det/4][det%4]->Reset();
-      }
+    for(int det=0; det!=8; ++det) {
+      fQex[ord][0][det/4][det%4]->Reset();
     }
   }
-
+  
   //==== EX
   std::vector<mxHit*> hits;
   for(int lyr=0; lyr!=8; ++lyr) {
@@ -285,24 +296,24 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
       if(time0>+9999) continue;
       if(charge<-9999) continue;
       if(charge>+9999) continue;
-      fQbbc[1]->Fill(bbc_phi,charge);
+      //fQbbc[1]->Fill(bbc_phi,charge);
     }
     // ================
   }
-
+  
 
   if(fQA) {
     float psix[10][2][4];
     for(int ord=0; ord!=10; ++ord)
       for(int det=0; det!=8; ++det)
 	psix[ord][det/4][det%4] = -999;
-
+    
     for(int det=0; det!=8; ++det) {
       qcQ *q = fQex[0][0][det/4][det%4]; //any order will do
       if(q->NP()<5) continue;
       fHMultBBC[0][det/4][det%4]->Fill(q->NP(),bbcm[0]);
     }
-
+    
     for(int ord=0; ord!=10; ++ord) {
       for(int det=0; det!=8; ++det) {
 	qcQ *q = fQex[ord][0][det/4][det%4];
@@ -350,13 +361,12 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
       if( (cc<50)&&(cc>30) ) {
 	float psim = fQmpc[0]->Psi();
 	float psib = fQbbc[0]->Psi();
-
 	fHPsi2Com[0][det/4][det%4]->Fill( psixd, psim );
 	fHPsi2Cob[0][det/4][det%4]->Fill( psixd, psib );
       }
     }
   }
-
+  
   return EVENT_OK;
 }
 //======

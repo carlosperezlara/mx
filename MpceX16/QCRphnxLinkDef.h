@@ -4,6 +4,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class qcQ+;
+#pragma link C++ class PHQCData+;
 #pragma link C++ class mQCRinit+;
 
 #endif /* __CINT__ */

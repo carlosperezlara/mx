@@ -1,0 +1,74 @@
+#include "CNTE.h"
+
+CNTE::CNTE():
+  fDCarm(-999),
+  fDCside(-999),
+  fPx(0.0),
+  fPy(0.0),
+  fPz(0.0),
+  fPhi(0.0),
+  fPhi0(0.0),
+  fTheta0(0.0),
+  fZed(0.0),
+  fAlpha(0.0),
+  fCharge(0.0),
+  fEMCid(0.0),
+  fEcore(0.0),
+  fDisp(0.0),
+  fN0(0.0),
+  fChi2(0.0),
+  fNpe0(0.0),
+  fDep(0.0),
+  fProb(0.0),
+  fEMCdz(0.0),
+  fEMCdphi(0.0),
+  fEMCx(0.0),
+  fEMCy(0.0),
+  fEMCz(0.0),
+  fCenterPhi(0.0),
+  fCenterZ(0.0),
+  fPPC1x(0.0),
+  fPPC1y(0.0),
+  fPPC1z(0.0),
+  fEsect(0),
+  fYsect(0),
+  fZsect(0)
+
+ {
+}
+CNTE::CNTE(const CNTE &source){
+  fDCarm=source.GetDCarm();
+  fDCside=source.GetDCside();
+  fPx=source.GetPx();
+  fPy=source.GetPy();
+  fPz=source.GetPz();
+  fPhi=source.GetPhi();
+  fPhi0=source.GetPhi0();
+  fTheta0=source.GetTheta0();
+  fZed=source.GetZed();
+  fAlpha=source.GetAlpha();
+  fCharge=source.GetCharge();
+  fEMCid=source.GetEMCid();
+  fEcore=source.GetEcore();
+  fDisp=source.GetDisp();
+  fN0=source.GetN0();
+  fChi2=source.GetChi2();
+  fNpe0=source.GetNpe0();
+  fDep=source.GetDep();
+  fProb=source.GetProb();
+  fEMCdz=source.GetEMCdz();
+  fEMCdphi=source.GetEMCdphi();
+  fEMCx=source.GetEMCx();
+  fEMCy=source.GetEMCy();
+  fEMCz=source.GetEMCz();
+  fCenterPhi=source.GetCenterPhi();
+  fCenterZ=source.GetCenterZ();
+  fPPC1x=source.GetPPC1x();
+  fPPC1y=source.GetPPC1y();
+  fPPC1z=source.GetPPC1z();
+  fEsect=source.GetEsect();
+  fYsect=source.GetYsect();
+  fZsect=source.GetZsect();
+}
+CNTE::~CNTE() {
+}
