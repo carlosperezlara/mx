@@ -284,8 +284,6 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float pedmean_lo = fCal->GetPLMu()->Get(key);
       float hi_adc = mMpcExRawHits->gethadc(ihit) - pedmean_hi;
       float lo_adc = mMpcExRawHits->getladc(ihit)  - pedmean_lo;
-      //if(hi_adc<-12) continue;
-      //if(lo_adc<-12) continue;
       float pedshift_hi = fCal->GetPHSh()->Get(key);
       float pedshift_lo = fCal->GetPLSh()->Get(key);
       float hi_adc_corr = hi_adc + gRandom->Rndm() - pedshift_hi;
@@ -307,15 +305,19 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
 	fEnergyLow->Fill(key,lores*1e3); // in MeV
       }
       if( fCal->IsBadKey(key) ) continue;
-      //float fNSigmaCut = 3.0;
-      //float enecut = TMath::Max( (fCal->GetLMPV()->Get(key) - fNSigmaCut*fCal->GetLSgm()->Get(key)) * 1e-6 , 1e-6);
-      bool useHi = hi_adc_corr < hi_adc_max;
-      float ene = useHi?hires:lores;
-      float enecut = 1e-4;//100 keV
-      if(ene<enecut) continue;
-      if(lo_adc_corr > lo_adc_max) {
-	ene = ( lo_adc_max / lhft * lmpv) * 1e-6;
+      unsigned int pkt = key/3072;
+      float THRESHOLD = 1.7e-3; // 1.7 MeV
+      float THRESHOLD2 = 4.0e-3; // 4 MeV
+      if(pkt==2||pkt==6||pkt==10||pkt==14) {
+	THRESHOLD = 1.2e-3; // 1.2 MeV
       }
+      bool useHi = hires<THRESHOLD;
+      float ene = useHi?hires:lores;
+      if( (!useHi) && (ene>THRESHOLD2) ) {
+	ene = THRESHOLD2;
+      }
+      float enecut = 1e-4; // 0.1 MeV
+      if(ene<enecut) continue;
       fData->Fill(key,ene);
     }
   } else {
