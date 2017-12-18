@@ -11,6 +11,7 @@
 #include "TMath.h"
 #include "TH2F.h"
 #include "TH1F.h"
+#include "TProfile.h"
 
 #include "getClass.h"
 #include "PHGlobal.h"
@@ -36,10 +37,17 @@
 #include "emcTowerContainer.h"
 #include "EmcIndexer.h"
 
+#include "PHQCData.h"
+#include "qcData.h"
+#include "qcQ.h"
+
+using namespace findNode;
+
 mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
   SubsysReco("mCArecoPizeroes"),
   fTriggerBits(0),
-  fVZ(0),
+  fVZ(0.0),
+  fBBPsi(0.0),
   fEvents(NULL) {
   std::cout << "mCAReco::Ctor" << std::endl;
   for(int i=0; i!=2; ++i) {
@@ -49,15 +57,43 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
     fEMC_ECoreCorr[i] = NULL;
     fPi0_Pt[i] = NULL;
     fPi0_Mass[i] = NULL;
+    fPi0_Alpha[i] = NULL;
+    
+    fTRK_NTrks[i] = NULL;
+    fTRK_ZED[i] = NULL;
+    fTRK_EMCDZ[i] = NULL;
+    fTRK_EMCDPHI[i] = NULL;
+    fTRK_PC3DZ[i] = NULL;
+    fTRK_PC3DPHI[i] = NULL;
+    fTRK_EMCPC3_DZ[i] = NULL;
+    fTRK_EMCPC3_DPHI[i] = NULL;
+    fTRK_N0[i] = NULL;
+    fTRK_DISP[i] = NULL;
+    fTRK_CHI2[i] = NULL;
+    fTRK_NPE0[i] = NULL;
+    fTRK_PROB[i] = NULL;
+    fTRK_CHARGE[i] = NULL;
+    fTRK_ALPHA[i] = NULL;
+    fTRK_PT[i] = NULL;
+    fTRK_PHIPC[i] = NULL;
+    fTRK_PC_XY[i] = NULL;
+    fTRK_QUALITY[i] = NULL;
+    fTRK_COSEX[i] = NULL;
+    fTRK_COSBB[i] = NULL;
   }
   for(int i=0; i!=8; ++i) {
     fEMC_XY[i] = NULL;
     fEMC_YZ[i] = NULL;
+    fEMC_YZpos[i] = NULL;
     fEMCSector[i] = 1.0;
     for(int j=0; j!=48; ++j)
       for(int k=0; k!=96; ++k)
 	fEMCDead[i][j][k] = 0;
   }
+  for(int i=0; i!=10; ++i)
+    for(int j=0; j!=2; ++j)
+      for(int k=0; k!=4; ++k)
+	fEXPsi[i][j][k]=0.0;
   return;
 }
 
@@ -110,6 +146,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     fTRK_PHIPC[i] = new TH1F( Form("TRK_PHIPC_%d",i), Form("TRK_PHIPC_%d",i), 100, 0., +7.);
     fTRK_PC_XY[i] = new TH2F( Form("TRK_PC_XY_%d",i), Form("TRK_PC_XY_%d",i), 100, -600., +600., 100, -600., +600.);
     fTRK_QUALITY[i] = new TH1F( Form("TRK_QUALITY_%d",i), Form("TRK_QUALITY_%d",i), 100, -0.5, 99.5);
+    fTRK_COSEX[i] = new TProfile( Form("TRK_COSEX_%d",i), Form("TRK_COSEX_%d",i), 100, 0, 10);
+    fTRK_COSBB[i] = new TProfile( Form("TRK_COSBB_%d",i), Form("TRK_COSBB_%d",i), 100, 0, 10);
     se->registerHisto( ((TH1F*) (fTRK_NTrks[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_ZED[i]) ) );
     se->registerHisto( ((TH2F*) (fTRK_EMCDZ[i]) ) );
@@ -129,6 +167,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     se->registerHisto( ((TH1F*) (fTRK_PHIPC[i]) ) );
     se->registerHisto( ((TH2F*) (fTRK_PC_XY[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_QUALITY[i]) ) );
+    se->registerHisto( ((TProfile*) (fTRK_COSEX[i]) ) );
+    se->registerHisto( ((TProfile*) (fTRK_COSBB[i]) ) );
   }
 
   for(int i=0; i!=8; ++i) {
@@ -146,7 +186,7 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
 }
 
 int mCArecoPizeroes::InitRun(PHCompositeNode *topNode) {
-  RunHeader *header = findNode::getClass<RunHeader>(topNode,"RunHeader");
+  RunHeader *header = getClass<RunHeader>(topNode,"RunHeader");
   if(!header) std::cout << "can't find RunHeader" << std::endl;
   int runnumber=header->get_RunNumber();
   //==== Loading triggers
@@ -173,18 +213,24 @@ int mCArecoPizeroes::InitRun(PHCompositeNode *topNode) {
 
 int mCArecoPizeroes::process_event(PHCompositeNode *topNode) {
   fEvents->Fill(0);
-  PHGlobal *phg = findNode::getClass<PHGlobal>(topNode,"PHGlobal");
+  PHGlobal *phg = getClass<PHGlobal>(topNode,"PHGlobal");
   if(!phg) return DISCARDEVENT;
   fVZ = phg->getBbcZVertex();
   fEvents->Fill(1);
   fEvents->Fill(2);
   //------------------------
-  TrigLvl1 *_Trig_ptr = findNode::getClass<TrigLvl1>(topNode, "TrigLvl1");
+  TrigLvl1 *_Trig_ptr = getClass<TrigLvl1>(topNode, "TrigLvl1");
   if(!_Trig_ptr) return DISCARDEVENT;
   unsigned int trigger_scaled = _Trig_ptr->get_lvl1_trigscaled();
   unsigned int passes_trigger = trigger_scaled & fTriggerBits;
   if(passes_trigger==0) return DISCARDEVENT;
   //------------------------
+  PHQCData *phqcdata = getClass<PHQCData> (topNode,"QCR");
+  if(!phqcdata) return ABORTEVENT;
+  qcData *qcdata = phqcdata->GetData();
+  fEXPsi[1][0][0] = qcdata->GetQex(1,0,0)->Psi();
+  fBBPsi = qcdata->GetQbb()->Psi();
+
   fEvents->Fill(3);
   fEvents->Fill(4);
 
@@ -201,7 +247,7 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
   //  3 (8)   UV unique
   //  4 (16)  PC1 found
   //  5 (48)  PC1 unique
-  PHCentralTrack *trk = findNode::getClass<PHCentralTrack>(topNode,"PHCentralTrack");
+  PHCentralTrack *trk = getClass<PHCentralTrack>(topNode,"PHCentralTrack");
   if(!trk) return;
   int ntrks = trk->get_npart();
   int ntrks2=0;
@@ -230,10 +276,10 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     float disp = trk->get_disp(i); // displacement of ring center wrt Track projection in the RICH PMT array
     float chi2 = trk->get_chi2(i); // chi2 in units of cm^2. It is not per degree of freedom. Typically cuts are placed on chi2/npe0 as a seme-normalized chi2/dof.
     // TOF
-    float tofphi = trk->get_tofphi(i); // phi coord in rads of measured hit at TOF
-    float ptofx = trk->get_ptofx(i); // track model x-projection to tof (cm)
-    float ptofy = trk->get_ptofy(i); // track model y-projection to tof (cm)
-    float pltof = trk->get_pltof(i); // path length of particle trajectory from vertex to TOF
+    //float tofphi = trk->get_tofphi(i); // phi coord in rads of measured hit at TOF
+    //float ptofx = trk->get_ptofx(i); // track model x-projection to tof (cm)
+    //float ptofy = trk->get_ptofy(i); // track model y-projection to tof (cm)
+    //float pltof = trk->get_pltof(i); // path length of particle trajectory from vertex to TOF
 
     // TRACKING
     float charge = trk->get_charge(i); // -1 +1
@@ -246,6 +292,9 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     //double p = sqrt(px*px + py*py+pz*pz);
     //double theta=0.5*TMath::Pi()/TMath::ACos(pz/p);
     int qua = trk->get_quality(i);
+    float phi = trk->get_phi(i);
+    float dcose = TMath::Cos(2*(phi-fEXPsi[1][0][0]));
+    float dcosb = TMath::Cos(2*(phi-fBBPsi));
     fTRK_ZED[0]->Fill(zed);
     fTRK_EMCDZ[0]->Fill(emcdz,pc3_dz);
     fTRK_EMCDPHI[0]->Fill(emcdphi,pc3_dphi);
@@ -266,6 +315,8 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     //fTRK_PC_XY[0]->Fill(pc2_x,pc2_y);
     fTRK_PC_XY[0]->Fill(pc3_x,pc3_y);
     fTRK_QUALITY[0]->Fill(qua);
+    fTRK_COSEX[0]->Fill(pT,dcose);
+    fTRK_COSBB[0]->Fill(pT,dcosb);
     if(qua!=63) continue;
     ++ntrks2;
     fTRK_ZED[1]->Fill(zed);
@@ -288,13 +339,15 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     fTRK_PC_XY[1]->Fill(pc2_x,pc2_y);
     fTRK_PC_XY[1]->Fill(pc3_x,pc3_y);
     fTRK_QUALITY[1]->Fill(qua);
+    fTRK_COSEX[1]->Fill(pT,dcose);
+    fTRK_COSBB[1]->Fill(pT,dcosb);
   }
   fTRK_NTrks[0]->Fill( ntrks );
   fTRK_NTrks[1]->Fill( ntrks2 );
 }
 //========================
 void mCArecoPizeroes::CentralArmClusters(PHCompositeNode *topNode) {
-  emcClusterContainer *emccont = findNode::getClass<emcClusterContainer>(topNode, "emcClusterContainer");
+  emcClusterContainer *emccont = getClass<emcClusterContainer>(topNode, "emcClusterContainer");
   if(!emccont) return;
   int nclu = emccont->size();
   int nclu2 = 0;
@@ -431,4 +484,3 @@ float mCArecoPizeroes::NLC_EMC_PbGl(float ene) {
   if(ene>100.) return 0;
   return 0.021+(1-0.020/ene);
 }
-

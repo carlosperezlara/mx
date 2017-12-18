@@ -19,6 +19,6 @@ void mxCalibBasePbWO4::FillWith(const float val[416]) {
     fData[k] = val[k];
 }
 void mxCalibBasePbWO4::Set(int key, float val) {
-  if(key<49152||key>(49152+416)) return;
+  if(key<49152||key>=(49152+416)) return;
   fData[key-49152] = val;;
 }

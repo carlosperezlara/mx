@@ -6,6 +6,7 @@
 
 class TH1F;
 class TH2F;
+class TProfile;
 class TF1;
 
 class Fun4AllServer;
@@ -49,6 +50,8 @@ class mCArecoPizeroes: public SubsysReco
   int fEMCDead[8][48][96];
   float fEMCSector[8];
   float fVZ;
+  float fEXPsi[10][2][4];
+  float fBBPsi;
 
   TH1F *fEvents;
 
@@ -82,6 +85,8 @@ class mCArecoPizeroes: public SubsysReco
   TH1F *fTRK_PHIPC[2];
   TH2F *fTRK_PC_XY[2];
   TH1F *fTRK_QUALITY[2];
+  TProfile *fTRK_COSEX[2];
+  TProfile *fTRK_COSBB[2];
 };
 
 #endif /* __MCARECOPIZEROES_H__ */

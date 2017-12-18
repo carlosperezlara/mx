@@ -275,6 +275,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
     //std::cout << "HITS " << mMpcExRawHits->getnhits() << std::endl;
     for(unsigned int ihit=0; ihit!=mMpcExRawHits->getnhits(); ++ihit) {
       unsigned int key = mMpcExRawHits->getOnlineKey(ihit);
+      unsigned int sen = key/128;
       if(fSkipSouth&&key<24576) continue;
       if(fSkipNorth&&key>24575) continue;
       if( fCal->IsBadKey(key) ) continue;
@@ -291,7 +292,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float lo_adc_corr = lo_adc + gRandom->Rndm() - pedshift_lo;
       float hi_adc_max = 255-20 - pedmean_hi - pedshift_hi;
       float lo_adc_max = 255-20 - pedmean_lo - pedshift_lo;
-      float lmpv = 147.0/fCal->GetLMPV()->Get(key); // in keV;
+      float lmpv = 147.0/fCal->GetLMPV()->Get(key)/fCal->GetSMPV()->Get(sen); // in keV;
       float lhft = fCal->GetLHft()->Get(key);
       float hires = ( hi_adc_corr * lmpv) * 1e-6; // in GeV
       float lores = ( lo_adc_corr / lhft * lmpv) * 1e-6; // in GeV
