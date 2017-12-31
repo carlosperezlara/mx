@@ -37,6 +37,7 @@ include_HEADERS = \
   qcData.h \
   PHQCData.h \
   qcCalibBase.h \
+  qcCalibMaster.h \
   mQCRinit.h \
   mxCalibMaster.h \
   mxCalibBaseSiW.h \
@@ -80,6 +81,7 @@ libMXRphnx_la_SOURCES = \
 
 libQCRphnx_la_SOURCES = \
   qcCalibBase.cxx \
+  qcCalibMaster.cxx \
   qcQ.cxx \
   qcData.cxx \
   mQCRinit.cxx \
@@ -135,6 +137,7 @@ libCARphnx_la_LIBADD = \
 # Rule for generating CINT dictionaries from class headers.
 QCRphnx_Dict.C: \
   qcCalibBase.h \
+  qcCalibMaster.h \
   qcQ.h \
   qcData.h \
   PHQCData.h \

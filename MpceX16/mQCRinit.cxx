@@ -39,6 +39,9 @@
 #include "mxData.h"
 #include "mxHit.h"
 
+#include "qcCalibBase.h"
+#include "qcCalibMaster.h"
+#include "qcDB.cc"
 
 #include "PHQCData.h"
 #include "qcData.h"
@@ -109,6 +112,7 @@ int mQCRinit::End(PHCompositeNode *topNode) {
 mQCRinit::~mQCRinit() {
   if(fBBCcalib) delete fBBCcalib;
   if(fBBCgeo) delete fBBCgeo;
+  if(fCalib) delete fCalib;
 }
 //====================================================
 int mQCRinit::Init(PHCompositeNode* top_node) {
@@ -212,6 +216,14 @@ int mQCRinit::InitRun(PHCompositeNode* top_node) {
       fQex[ord][0][det/4][det%4] = fData->GetQex(ord,det/4,det%4);
     }
   }
+
+  RunHeader *runhead = getClass<RunHeader> (top_node, "RunHeader");
+  if(!runhead) { cout<<PHWHERE<<" exiting."<<endl; exit(1); }
+  int runno = runhead->get_RunNumber();
+  printf("mQCRinit::InitRun || Run number %d\n",runno);
+  fCalib = new qcCalibMaster();
+  qcDB::read(runno,fCalib);
+
   return EVENT_OK; 
 }
 //====================================================

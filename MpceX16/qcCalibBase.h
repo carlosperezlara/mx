@@ -9,9 +9,9 @@ class qcCalibBase {
   float GetIm(int order);
   void SetRe(int order, float val);
   void SetIm(int order, float val);
-  void FillReImWith( float re[10], float im[10] );
+  void FillReImWith( float re[16], float im[16] );
  protected:
-  float fRe[10];
-  float fIm[10];
+  float fRe[16];
+  float fIm[16];
 };
 #endif /* __qcCalibBase_H__ */
