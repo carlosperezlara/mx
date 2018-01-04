@@ -7,6 +7,7 @@
 class TH1F;
 class TH2F;
 class TProfile;
+class TProfile2D;
 class TF1;
 
 class Fun4AllServer;
@@ -54,6 +55,7 @@ class mCArecoPizeroes: public SubsysReco
   float fBBPsi;
 
   TH1F *fEvents;
+  TH1F *fPsiEX;
 
   TH1F *fEMC_NClu[2];
   TH1F *fEMC_Chi2[2];
@@ -65,6 +67,8 @@ class mCArecoPizeroes: public SubsysReco
   TH1F *fPi0_Pt[2];
   TH2F *fPi0_Mass[2];
   TH1F *fPi0_Alpha[2];
+  TProfile2D *fPi0_COSEX[2];
+  TProfile2D *fPi0_COSBB[2];
 
   TH1F *fTRK_NTrks[2];
   TH1F *fTRK_ZED[2];
@@ -82,6 +86,8 @@ class mCArecoPizeroes: public SubsysReco
   TH1F *fTRK_CHARGE[2];
   TH1F *fTRK_ALPHA[2];
   TH1F *fTRK_PT[2];
+  TH1F *fTRK_PHI[2];
+  TH1F *fTRK_DPHI[2];
   TH1F *fTRK_PHIPC[2];
   TH2F *fTRK_PC_XY[2];
   TH1F *fTRK_QUALITY[2];

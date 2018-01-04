@@ -16,7 +16,7 @@ class BbcGeo;
 
 class TH1F;
 class TH2F;
-class TProfile;
+class TProfile2D;
 
 class mQCRinit: public SubsysReco {
  public:
@@ -61,6 +61,7 @@ class mQCRinit: public SubsysReco {
   TH2F *fHPsi2Cox[2][16]; // [arm][pair]
   TH2F *fHPsi2Com[2][2][4]; // [arm][ioc][det]
   TH2F *fHPsi2Cob[2][2][4]; // [arm][ioc][det]
+  TProfile2D *fPPsiex[10][2][2][4]; // [ord][arm][ioc][det]
 
 };
 

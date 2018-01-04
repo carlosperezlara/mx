@@ -289,7 +289,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       float hi_adc_corr = hi_adc + gRandom->Rndm() - pedshift_hi;
       float lo_adc_corr = lo_adc + gRandom->Rndm() - pedshift_lo;
       float hi_adc_max = 255-20 - pedmean_hi - pedshift_hi;
-      float lo_adc_max = 255-20 - pedmean_lo - pedshift_lo;
+      //float lo_adc_max = 255-20 - pedmean_lo - pedshift_lo;
       float lmpv = 147.0/fCal->GetLMPV()->Get(key)/fCal->GetSMPV()->Get(sen); // in keV;
       float lhft = fCal->GetLHft()->Get(key);
       float hires = ( hi_adc_corr * lmpv) * 1e-6; // in GeV

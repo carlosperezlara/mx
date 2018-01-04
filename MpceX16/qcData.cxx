@@ -10,7 +10,7 @@ qcData::qcData() {
   std::cout << "qcData:: ctor" << std::endl;
   for(int ord=0; ord!=10; ++ord) {
     for(int det=0; det!=8; ++det) {
-      fQex[ord][det/4][det%4] = new qcQ(ord);
+      fQex[ord][det/4][det%4] = new qcQ(ord+1);
     }
   }
   fQbb = new qcQ(2);

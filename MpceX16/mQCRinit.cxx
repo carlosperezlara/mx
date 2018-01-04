@@ -11,7 +11,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TString.h"
-#include "TProfile.h"
+#include "TProfile2D.h"
 #include "getClass.h"
 #include "PHCompositeNode.h"
 #include "RunHeader.h" 
@@ -78,6 +78,7 @@ mQCRinit::mQCRinit( const char* name ) :
       for(int ord=0; ord!=10; ++ord) {
 	fQex[ord][arm][det/4][det%4] = NULL;
 	fHPsiex[ord][arm][det/4][det%4] = NULL;
+	fPPsiex[ord][arm][det/4][det%4] = NULL;
 	fHPsiexN[ord][arm][det/4][det%4] = NULL;
 	fHPsiexM[ord][arm][det/4][det%4] = NULL;
 	fHQexNorm[ord][arm][det/4][det%4] = NULL;
@@ -140,7 +141,7 @@ int mQCRinit::Init(PHCompositeNode* top_node) {
 						 30, 0, TMath::TwoPi()/(2), 30, 0, TMath::TwoPi()/(2) );
 	fHPsi2Reb[arm][det/4][det%4] = new TH2F( Form("Psi2Reb_ARM%d_BBC_DET%d%c", arm, det%4, det/4==0?'I':'O'),
 						 Form("Psi2Rex_ARM%d_BBC_DET%d%c", arm, det%4, det/4==0?'I':'O'),
-						 20, -0.5, 99.5, 100, 0, +1 );
+						 20, 0.0, 100.0, 100, 0, +1 );
 	se->registerHisto( ((TH2F*) fHMultBBC[arm][det/4][det%4] ) );
 	se->registerHisto( ((TH2F*) fHPsi2Com[arm][det/4][det%4] ) );
 	se->registerHisto( ((TH2F*) fHPsi2Cob[arm][det/4][det%4] ) );
@@ -148,7 +149,10 @@ int mQCRinit::Init(PHCompositeNode* top_node) {
 	for(int ord=0; ord!=10; ++ord) {
 	  fHPsiex[ord][arm][det/4][det%4] = new TH2F( Form("Psi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 						      Form("Psi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
-						      20, -0.5, 99.5, 360, 0, TMath::TwoPi()/(ord+1) );
+						      20, 0.0, 100.0, 360, 0, TMath::TwoPi()/(ord+1) );
+	  fPPsiex[ord][arm][det/4][det%4] = new TProfile2D( Form("PPsi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
+							    Form("PPsi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
+							    20, 0.0, 100.0, 40, -0.5, 39.5 );
 	  fHPsiexN[ord][arm][det/4][det%4] = new TH2F( Form("NPsi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 						       Form("NPsi%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 						       100,0,1500, 360, 0, TMath::TwoPi()/(ord+1) );
@@ -157,14 +161,15 @@ int mQCRinit::Init(PHCompositeNode* top_node) {
 						       100,0,500, 360, 0, TMath::TwoPi()/(ord+1) );
 	  fHQexNorm[ord][arm][det/4][det%4] = new TH2F( Form("QNorm%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 							Form("QNorm%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
-							20, -0.5, 99.5, 360, 0, 7 );
+							20, 0.0, 100.0, 360, 0, 7 );
 	  fHQex[ord][arm][det/4][det%4][0] = new TH2F( Form("Qx%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 						       Form("Qx%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
-						       20, -0.5, 99.5, 360, -1,+1 );
+						       20, 0.0, 100.0, 360, -1,+1 );
 	  fHQex[ord][arm][det/4][det%4][1] = new TH2F( Form("Qy%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
 						       Form("Qy%dex_ARM%d_DET%d%c", ord+1, arm, det%4, det/4==0?'I':'O'),
-						       20, -0.5, 99.5, 360, -1, +1 );
+						       20, 0.0, 100.0, 360, -1, +1 );
 	  se->registerHisto( ((TH2F*) (fHPsiex[ord][arm][det/4][det%4]) ) );
+	  se->registerHisto( ((TProfile2D*) (fPPsiex[ord][arm][det/4][det%4]) ) );
 	  se->registerHisto( ((TH2F*) (fHPsiexN[ord][arm][det/4][det%4]) ) );
 	  se->registerHisto( ((TH2F*) (fHPsiexM[ord][arm][det/4][det%4]) ) );
 	  se->registerHisto( ((TH2F*) (fHQexNorm[ord][arm][det/4][det%4]) ) );
@@ -177,7 +182,7 @@ int mQCRinit::Init(PHCompositeNode* top_node) {
 	TString det1 = Form("%d%c", fEXPair_DET[pair][1], fEXPair_IOC[pair][1]==0?'I':'O' );
 	fHPsi2Rex[arm][pair] = new TH2F( Form("Psi2Rex_ARM%d_PAIR%d_DET%s_DET%s", arm, pair, det0.Data(), det1.Data()),
 					 Form("Psi2Rex_ARM%d_PAIR%d_DET%s_DET%s", arm, pair, det0.Data(), det1.Data()),
-					 20, -0.5, 99.5, 100, 0, +1 );
+					 20, 0.0, 100.0, 100, 0, +1 );
 	fHPsi2Cox[arm][pair] = new TH2F( Form("Psi2Cox_ARM%d_PAIR%d_DET%s_DET%s", arm, pair, det0.Data(), det1.Data()),
 					 Form("Psi2Cox_ARM%d_PAIR%d_DET%s_DET%s", arm, pair, det0.Data(), det1.Data()),
 					 30, 0, TMath::TwoPi()/(2), 30, 0, TMath::TwoPi()/(2) );
@@ -259,7 +264,7 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
       int key = hit->Idx();
       int ioc = fGeo->PS_SenRing( fGeo->PS_Idx2Sen(key) );
       float energy = hit->Signal()*1e3; // in MeV
-      if(energy<0.1||energy>1.0) continue;
+      if(energy<0.1||energy>1.2) continue;
       float phi = TMath::Pi() + TMath::ATan2(-fGeo->Y(key),-fGeo->X(key));
       for(int ord=0; ord!=10; ++ord)
 	fQex[ord][0][ioc][lyr/2]->Fill( phi, energy );
@@ -321,6 +326,10 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
 	//std::cout << " DET " << det << " ENTRIES " << q->M() << std::endl;
 	psix[ord][det/4][det%4] = q->Psi();
 	fHPsiex[ord][0][det/4][det%4]->Fill( cc, psix[ord][det/4][det%4] );
+	for(int iord=0; iord!=20; ++iord) {
+	  fPPsiex[ord][0][det/4][det%4]->Fill( cc, iord, TMath::Sin((iord+1)*psix[ord][det/4][det%4]) );
+	  fPPsiex[ord][0][det/4][det%4]->Fill( cc, iord+20, TMath::Cos((iord+1)*psix[ord][det/4][det%4]) );
+	}
 	fHPsiexN[ord][0][det/4][det%4]->Fill( q->NP(), psix[ord][det/4][det%4] );
 	fHPsiexM[ord][0][det/4][det%4]->Fill( q->M(), psix[ord][det/4][det%4] );
 	fHQexNorm[ord][0][det/4][det%4]->Fill( cc, TMath::Sqrt(q->ModulusSquared()/q->M()), q->M() );

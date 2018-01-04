@@ -12,6 +12,7 @@
 #include "TH2F.h"
 #include "TH1F.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 
 #include "getClass.h"
 #include "PHGlobal.h"
@@ -48,7 +49,8 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
   fTriggerBits(0),
   fVZ(0.0),
   fBBPsi(0.0),
-  fEvents(NULL) {
+  fEvents(NULL),
+  fPsiEX(NULL) {
   std::cout << "mCAReco::Ctor" << std::endl;
   for(int i=0; i!=2; ++i) {
     fEMC_NClu[i] = NULL;
@@ -58,6 +60,8 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
     fPi0_Pt[i] = NULL;
     fPi0_Mass[i] = NULL;
     fPi0_Alpha[i] = NULL;
+    fPi0_COSEX[i] = NULL;
+    fPi0_COSBB[i] = NULL;
     
     fTRK_NTrks[i] = NULL;
     fTRK_ZED[i] = NULL;
@@ -75,6 +79,8 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
     fTRK_CHARGE[i] = NULL;
     fTRK_ALPHA[i] = NULL;
     fTRK_PT[i] = NULL;
+    fTRK_PHI[i] = NULL;
+    fTRK_DPHI[i] = NULL;
     fTRK_PHIPC[i] = NULL;
     fTRK_PC_XY[i] = NULL;
     fTRK_QUALITY[i] = NULL;
@@ -109,6 +115,9 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
   fEvents->GetXaxis()->SetBinLabel(3,"Centrality Cut");
   fEvents->GetXaxis()->SetBinLabel(4,"Futher Event Cuts");
 
+  fPsiEX = new TH1F("caReco_PsiEx","caReco_PsiEx",100,0,TMath::TwoPi());
+  se->registerHisto( ((TH1*) (fPsiEX) ) );
+
   for(int i=0; i!=2; ++i) {
     fEMC_NClu[i] = new TH1F( Form("EMC_NClu_%d",i), Form("EMC_NClu_%d",i), 100, 0, 400 );
     fEMC_Chi2[i] = new TH1F( Form("EMC_Chi2_%d",i), Form("EMC_Chi2_%d",i), 100, 0, 5 );
@@ -119,6 +128,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     fPi0_Mass[i] = new TH2F( Form("Pi0_Mass_%d",i), Form("Pi0_Mass_%d",i),
 			     100,0,10, 1000, 0, 1.0 );
     fPi0_Alpha[i] = new TH1F( Form("Pi0_Alpha_%d",i), Form("Pi0_Alpha_%d",i), 100, 0, 1.0 );
+    fPi0_COSEX[i] = new TProfile2D( Form("Pi0_COSEX_%d",i), Form("Pi0_COSEX_%d",i), 100, 0, 10, 1000, 0, 1.0);
+    fPi0_COSBB[i] = new TProfile2D( Form("Pi0_COSBB_%d",i), Form("Pi0_COSBB_%d",i), 100, 0, 10, 1000, 0, 1.0);
     se->registerHisto( ((TH1F*) (fEMC_NClu[i]) ) );
     se->registerHisto( ((TH1F*) (fEMC_Chi2[i]) ) );
     se->registerHisto( ((TH1F*) (fEMC_ECore[i]) ) );
@@ -126,6 +137,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     se->registerHisto( ((TH1F*) (fPi0_Pt[i]) ) );
     se->registerHisto( ((TH2F*) (fPi0_Mass[i]) ) );
     se->registerHisto( ((TH1F*) (fPi0_Alpha[i]) ) );
+    se->registerHisto( ((TProfile2D*) (fPi0_COSEX[i]) ) );
+    se->registerHisto( ((TProfile2D*) (fPi0_COSBB[i]) ) );
 
     fTRK_NTrks[i] = new TH1F( Form("TRK_NTrks_%d",i), Form("TRK_NTrks_%d",i), 100, 0, 100);
     fTRK_ZED[i] = new TH1F( Form("TRK_ZED_%d",i), Form("TRK_ZED_%d",i), 100, -100, +100);
@@ -143,6 +156,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     fTRK_CHARGE[i] = new TH1F( Form("TRK_CHARGE_%d",i), Form("TRK_CHARGE_%d",i), 100, -3., +3.);
     fTRK_ALPHA[i] = new TH1F( Form("TRK_ALPHA_%d",i), Form("TRK_ALPHA_%d",i), 100, -2., +2.);
     fTRK_PT[i] = new TH1F( Form("TRK_PT_%d",i), Form("TRK_PT_%d",i), 100, -10., +10.);
+    fTRK_PHI[i] = new TH1F( Form("TRK_PHI_%d",i), Form("TRK_PHI_%d",i), 100, 0., TMath::TwoPi());
+    fTRK_DPHI[i] = new TH1F( Form("TRK_DPHI_%d",i), Form("TRK_DPHI_%d",i), 100, -TMath::TwoPi(), TMath::TwoPi());
     fTRK_PHIPC[i] = new TH1F( Form("TRK_PHIPC_%d",i), Form("TRK_PHIPC_%d",i), 100, 0., +7.);
     fTRK_PC_XY[i] = new TH2F( Form("TRK_PC_XY_%d",i), Form("TRK_PC_XY_%d",i), 100, -600., +600., 100, -600., +600.);
     fTRK_QUALITY[i] = new TH1F( Form("TRK_QUALITY_%d",i), Form("TRK_QUALITY_%d",i), 100, -0.5, 99.5);
@@ -164,6 +179,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
     se->registerHisto( ((TH1F*) (fTRK_CHARGE[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_ALPHA[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_PT[i]) ) );
+    se->registerHisto( ((TH1F*) (fTRK_PHI[i]) ) );
+    se->registerHisto( ((TH1F*) (fTRK_DPHI[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_PHIPC[i]) ) );
     se->registerHisto( ((TH2F*) (fTRK_PC_XY[i]) ) );
     se->registerHisto( ((TH1F*) (fTRK_QUALITY[i]) ) );
@@ -230,7 +247,7 @@ int mCArecoPizeroes::process_event(PHCompositeNode *topNode) {
   qcData *qcdata = phqcdata->GetData();
   fEXPsi[1][0][0] = qcdata->GetQex(1,0,0)->Psi();
   fBBPsi = qcdata->GetQbb()->Psi();
-
+  fPsiEX->Fill(fEXPsi[1][0][0]);
   fEvents->Fill(3);
   fEvents->Fill(4);
 
@@ -293,6 +310,7 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     //double theta=0.5*TMath::Pi()/TMath::ACos(pz/p);
     int qua = trk->get_quality(i);
     float phi = trk->get_phi(i);
+    if(phi<0) phi += TMath::TwoPi();
     float dcose = TMath::Cos(2*(phi-fEXPsi[1][0][0]));
     float dcosb = TMath::Cos(2*(phi-fBBPsi));
     fTRK_ZED[0]->Fill(zed);
@@ -310,6 +328,8 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     fTRK_CHARGE[0]->Fill(charge);
     fTRK_ALPHA[0]->Fill(alpha);
     fTRK_PT[0]->Fill(charge*pT);
+    fTRK_PHI[0]->Fill(phi);
+    fTRK_DPHI[0]->Fill(phi-fEXPsi[1][0][0]);
     fTRK_PHIPC[0]->Fill(phi_pc);
     fTRK_PC_XY[0]->Fill(pc1_x,pc1_y);
     //fTRK_PC_XY[0]->Fill(pc2_x,pc2_y);
@@ -334,6 +354,8 @@ void mCArecoPizeroes::CentralArmTracks(PHCompositeNode *topNode) {
     fTRK_CHARGE[1]->Fill(charge);
     fTRK_ALPHA[1]->Fill(alpha);
     fTRK_PT[1]->Fill(charge*pT);
+    fTRK_PHI[1]->Fill(phi);
+    fTRK_DPHI[1]->Fill(phi-fEXPsi[1][0][0]);
     fTRK_PHIPC[1]->Fill(phi_pc);
     fTRK_PC_XY[1]->Fill(pc1_x,pc1_y);
     fTRK_PC_XY[1]->Fill(pc2_x,pc2_y);
@@ -404,15 +426,22 @@ void mCArecoPizeroes::CentralArmClusters(PHCompositeNode *topNode) {
       float pt = b.Pt();
       float m = b.M();
       float alpha = TMath::Abs(eneA-eneB)/(eneA+eneB);
+      float phi = b.Phi();
+      float dcose = TMath::Cos(2*(phi-fEXPsi[1][0][0]));
+      float dcosb = TMath::Cos(2*(phi-fBBPsi));
       fPi0_Pt[0]->Fill( pt );
       fPi0_Mass[0]->Fill( pt, m );
       fPi0_Alpha[0]->Fill( alpha );
+      fPi0_COSEX[0]->Fill(pt,m,dcose);
+      fPi0_COSBB[0]->Fill(pt,m,dcosb);
       if(pt<0.1) continue;
       if(pt>20.0) continue;
       if(alpha>0.8) continue;
       fPi0_Pt[1]->Fill( pt );
       fPi0_Mass[1]->Fill( pt, m );
       fPi0_Alpha[1]->Fill( alpha );
+      fPi0_COSEX[1]->Fill(pt,m,dcose);
+      fPi0_COSBB[1]->Fill(pt,m,dcosb);
     }
   }
 
