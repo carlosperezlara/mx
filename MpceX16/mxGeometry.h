@@ -20,6 +20,8 @@ class mxGeometry {
   inline int PS_Idx2Row(int idx) { return idx%4; } // 0 - 3
   inline int PS_Idx2Col(int idx) { return (idx%128)/4; } // 0 - 31
   inline int EM_Idx2Arm(int idx) { return idx<196?0:1; } // 0 - 1
+  inline int PS_Idx2OctLCS(int idx) { return ((idx%128)/32)*4+idx%4; } // 0 - 15
+  int PS_Idx2Oct(int idx) { return PS_Idx2Sen(idx)*16+PS_Idx2OctLCS();  } // 0 - 383
   //=================
 
   //================

@@ -39,10 +39,6 @@
 #include "mxData.h"
 #include "mxHit.h"
 
-#include "qcCalibBase.h"
-#include "qcCalibMaster.h"
-#include "qcDB.cc"
-
 #include "PHQCData.h"
 #include "qcData.h"
 #include "qcQ.h"
@@ -60,7 +56,6 @@ using namespace findNode;
 mQCRinit::mQCRinit( const char* name ) : 
   SubsysReco( name ),
   fGeo( mxGeometry::Instance() ),
-  fCalib( NULL ),
   fName( name ),
   fQA(false),
   fEvents( NULL ),
@@ -113,7 +108,6 @@ int mQCRinit::End(PHCompositeNode *topNode) {
 mQCRinit::~mQCRinit() {
   if(fBBCcalib) delete fBBCcalib;
   if(fBBCgeo) delete fBBCgeo;
-  if(fCalib) delete fCalib;
 }
 //====================================================
 int mQCRinit::Init(PHCompositeNode* top_node) {
@@ -222,13 +216,6 @@ int mQCRinit::InitRun(PHCompositeNode* top_node) {
     }
   }
 
-  RunHeader *runhead = getClass<RunHeader> (top_node, "RunHeader");
-  if(!runhead) { cout<<PHWHERE<<" exiting."<<endl; exit(1); }
-  int runno = runhead->get_RunNumber();
-  printf("mQCRinit::InitRun || Run number %d\n",runno);
-  fCalib = new qcCalibMaster();
-  qcDB::read(runno,fCalib);
-
   return EVENT_OK; 
 }
 //====================================================
@@ -282,6 +269,9 @@ int mQCRinit::process_event(PHCompositeNode* top_node) {
 	fQex[ord][0][ioc][lyr/2]->Fill( phi, energy );
     }
   }
+  //std::cout << "in INIT " << fQex[1][0][0][0]->M();
+  //std::cout << " | " << fData->GetQex(1,0,0)->M() << std::endl;
+
   //==== MPC
   hits = mxdata->GetHits(8);
   for(int ht=0; ht!=mxdata->GetNHits(8); ++ht) {

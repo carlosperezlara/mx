@@ -9,7 +9,6 @@ class PHCompositeNode;
 
 class qcQ;
 class qcData;
-class qcCalibMaster;
 class mxGeometry;
 class BbcCalib;
 class BbcGeo;
@@ -31,7 +30,6 @@ class mQCRinit: public SubsysReco {
 
  protected:
   mxGeometry *fGeo;
-  qcCalibMaster *fCalib;
 
   BbcCalib *fBBCcalib;
   BbcGeo *fBBCgeo;

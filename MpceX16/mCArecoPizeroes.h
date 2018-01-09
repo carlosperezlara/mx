@@ -28,6 +28,8 @@ class CNTDE;
 class CNTE;
 class EMCC;
 
+class qcCalibMaster;
+
 class mCArecoPizeroes: public SubsysReco
 {
  public:
@@ -54,8 +56,10 @@ class mCArecoPizeroes: public SubsysReco
   float fEXPsi[10][2][4];
   float fBBPsi;
 
+  qcCalibMaster *fQCCalib;
+
   TH1F *fEvents;
-  TH1F *fPsiEX;
+  TH2F *fPsiEX;
 
   TH1F *fEMC_NClu[2];
   TH1F *fEMC_Chi2[2];

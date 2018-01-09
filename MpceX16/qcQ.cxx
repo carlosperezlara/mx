@@ -38,3 +38,11 @@ void qcQ::Fill(float phi, float w) {
   fM += w;
   fNP++;
 }
+//========
+void qcQ::SetXY(float x, float y) {
+  // filler
+  fX = x;
+  fY = y;
+  fM = 1;
+  fNP = 1;
+}

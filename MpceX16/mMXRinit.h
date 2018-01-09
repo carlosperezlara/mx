@@ -42,6 +42,7 @@ class mMXRinit: public SubsysReco {
   bool fSkipNorth;
   mxCalibMaster *fCal;
   mxData *fData;
+  mxDisplay *fDisplay;
   std::map<int,int> fMPCIDX;
   float fMinVertex;
   float fMaxVertex;

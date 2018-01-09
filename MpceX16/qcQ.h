@@ -16,6 +16,7 @@ class qcQ {
   float Y() {return fY;}
   float Psi();
   void Fill(float, float);
+  void SetXY(float, float);
   float ModulusSquared() {return (fX*fX+fY*fY);}
   void Reset();
   void SetOrder(int val) {fN=val;}

@@ -1,5 +1,8 @@
 #ifndef __qcCalibMaster_HH__
 #define __qcCalibMaster_HH__
+
+class qcCalibBase;
+
 class qcCalibMaster {
  public:
   qcCalibMaster();

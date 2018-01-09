@@ -41,6 +41,9 @@
 #include "PHQCData.h"
 #include "qcData.h"
 #include "qcQ.h"
+#include "qcCalibMaster.h"
+#include "qcCalibBase.h"
+#include "qcDB.cc"
 
 using namespace findNode;
 
@@ -49,6 +52,7 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
   fTriggerBits(0),
   fVZ(0.0),
   fBBPsi(0.0),
+  fQCCalib(new qcCalibMaster()),
   fEvents(NULL),
   fPsiEX(NULL) {
   std::cout << "mCAReco::Ctor" << std::endl;
@@ -104,6 +108,7 @@ mCArecoPizeroes::mCArecoPizeroes(const char *outfile) :
 }
 
 mCArecoPizeroes::~mCArecoPizeroes() {
+  delete fQCCalib;
 }
 
 int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
@@ -115,8 +120,8 @@ int mCArecoPizeroes::Init(PHCompositeNode *topNode) {
   fEvents->GetXaxis()->SetBinLabel(3,"Centrality Cut");
   fEvents->GetXaxis()->SetBinLabel(4,"Futher Event Cuts");
 
-  fPsiEX = new TH1F("caReco_PsiEx","caReco_PsiEx",100,0,TMath::TwoPi());
-  se->registerHisto( ((TH1*) (fPsiEX) ) );
+  fPsiEX = new TH2F("caReco_PsiEx","caReco_PsiEx",100,0,TMath::TwoPi(),100,0,TMath::TwoPi());
+  se->registerHisto( ((TH2F*) (fPsiEX) ) );
 
   for(int i=0; i!=2; ++i) {
     fEMC_NClu[i] = new TH1F( Form("EMC_NClu_%d",i), Form("EMC_NClu_%d",i), 100, 0, 400 );
@@ -206,6 +211,11 @@ int mCArecoPizeroes::InitRun(PHCompositeNode *topNode) {
   RunHeader *header = getClass<RunHeader>(topNode,"RunHeader");
   if(!header) std::cout << "can't find RunHeader" << std::endl;
   int runnumber=header->get_RunNumber();
+
+  printf("mQCRinit::InitRun || Run number %d\n",runnumber);
+  fQCCalib = new qcCalibMaster();
+  qcDB::read(runnumber,fQCCalib);
+
   //==== Loading triggers
   unsigned int trigger_FVTXNSBBCScentral = 0x00100000;
   unsigned int trigger_FVTXNSBBCS        = 0x00400000;     
@@ -245,9 +255,15 @@ int mCArecoPizeroes::process_event(PHCompositeNode *topNode) {
   PHQCData *phqcdata = getClass<PHQCData> (topNode,"QCR");
   if(!phqcdata) return ABORTEVENT;
   qcData *qcdata = phqcdata->GetData();
-  fEXPsi[1][0][0] = qcdata->GetQex(1,0,0)->Psi();
+  //std::cout << qcdata->GetQex(1,0,0)->M() << std::endl;
+  qcQ psi2(2);
+  int icc = int(phg->getCentrality()/5.0);
+  psi2.SetXY(qcdata->GetQex(1,0,0)->X() - fQCCalib->GetEXSecond(0,0)->GetRe(icc),
+	    qcdata->GetQex(1,0,0)->Y() - fQCCalib->GetEXSecond(0,0)->GetIm(icc)
+	    );
+  fEXPsi[1][0][0] = psi2.Psi();
   fBBPsi = qcdata->GetQbb()->Psi();
-  fPsiEX->Fill(fEXPsi[1][0][0]);
+  fPsiEX->Fill(fEXPsi[1][0][0],qcdata->GetQex(1,0,0)->Psi());
   fEvents->Fill(3);
   fEvents->Fill(4);
 

@@ -37,6 +37,7 @@
 #include "TriggerHelper.h"
 
 #include "mxData.h"
+#include "mxDisplay.h"
 
 #include "PHMXData.h"
 #include "mMXRinit.h"
@@ -54,6 +55,7 @@ mMXRinit::mMXRinit( const char* name ) :
   fSkipNorth(false),
   fCal(NULL),
   fData(NULL),
+  fDisplay(NULL),
   fMinVertex(-100),
   fMaxVertex(+100),
   fMinCentrality(0),
@@ -105,6 +107,7 @@ mMXRinit::~mMXRinit() {
   printf("mMXRinit::Dtor\n");
   if(fCal) delete fCal;
   if(fSim) printf("mMXRinit::SimFlag enabled\n");
+  if(fDisplay) delete fDisplay;
 }
 //====================================================
 int mMXRinit::Init(PHCompositeNode* top_node) {
@@ -146,6 +149,8 @@ int mMXRinit::InitRun(PHCompositeNode* top_node) {
   PHIODataNode<PHMXData> *hitNode = new PHIODataNode<PHMXData>(mxdata,"MXR","PHMXData");
   dstNode->addNode(hitNode);
   fData = mxdata->GetData();
+  fDisplay = new mxDisplay();
+  fDisplay->Link2Data( fData );
 
   RunHeader *runhead = getClass<RunHeader> (top_node, "RunHeader");
   if(!runhead) { cout<<PHWHERE<<" exiting."<<endl; exit(1); }
@@ -259,6 +264,8 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
   if(!phglobal) return false;
   fData->SetVertex( 0, 0, phglobal->getBbcZVertex() );
   fEvents->Fill(1);
+  fEvents->Fill(2);
+  fEvents->Fill(3);
 
   /*
   VtxOut *vtxout = getClass<VtxOut> (top_node, "VtxOut");
@@ -355,5 +362,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
   }
   /////////////////
   //std::cout << "mMXRinit::EndOdProcesses" << std::endl;
+
+  //fDisplay->DumpHits();
   return EVENT_OK;
 }
