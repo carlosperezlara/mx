@@ -33,6 +33,7 @@ class mMXRinit: public SubsysReco {
   void SetCalibMode(int v) {fCalibMode=v;}
   void SetSimFlag() {fSim = true;}
   void SetQAPS() {fQAPS = true;}
+  void SetParityMask() {fParity = true;}
 
  protected:
   TString fName;
@@ -52,6 +53,7 @@ class mMXRinit: public SubsysReco {
   TString fTrigger2;
   TH1F *fEvents;
   bool fQAPS;
+  bool fParity;
 
   TH2F *fAdcHigh;
   TH2F *fAdcLow;

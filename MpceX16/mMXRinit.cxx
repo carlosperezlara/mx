@@ -64,6 +64,7 @@ mMXRinit::mMXRinit( const char* name ) :
   fTrigger2("BBCLL1(>0 tubes)_central_narrowvtx"),
   fEvents(NULL),
   fQAPS(false),
+  fParity(false),
   fAdcHigh(NULL),
   fAdcLow(NULL),
   fAdcHighLow(NULL),
@@ -286,6 +287,7 @@ int mMXRinit::process_event(PHCompositeNode* top_node) {
       if(fSkipSouth&&key<24576) continue;
       if(fSkipNorth&&key>24575) continue;
       if( fCal->IsBadKey(key) ) continue;
+      if(fParity&&fCal->GetPari()->Get(key)==1) continue;
       //std::cout << "HITS " << ihit << " OF " << mMpcExRawHits->getnhits() << std::endl;
       float pedmean_hi = fCal->GetPHMu()->Get(key);
       float pedmean_lo = fCal->GetPLMu()->Get(key);

@@ -26,6 +26,7 @@ mxCalibMaster::mxCalibMaster() :
   fLMPV( new mxCalibBaseSiW() ),
   fLSgm( new mxCalibBaseSiW() ),
   fLHft( new mxCalibBaseSiW() ),
+  fPari( new mxCalibBaseSiW() ),
   fSMPV( new mxCalibStageSiW() ),
   fTau( new mxCalibBasePbWO4() ),
   fBet( new mxCalibBasePbWO4() ),
@@ -43,6 +44,7 @@ mxCalibMaster::mxCalibMaster(const mxCalibMaster &cpy) :
   fLMPV( cpy.fLMPV ),
   fLSgm( cpy.fLSgm ),
   fLHft( cpy.fLHft ),
+  fPari( cpy.fPari ),
   fSMPV( cpy.fSMPV ),
   fTau( cpy.fTau ),
   fBet( cpy.fBet ),
@@ -60,6 +62,7 @@ mxCalibMaster::~mxCalibMaster() {
   delete fLMPV;
   delete fLSgm;
   delete fLHft;
+  delete fPari;
   delete fSMPV;
   delete fTau;
   delete fBet;

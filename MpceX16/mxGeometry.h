@@ -15,13 +15,14 @@ class mxGeometry {
   inline int PS_Idx2Arm(int idx) { return idx/24576; } // 0 - 1
   inline int PS_Idx2Pkt(int idx) { return (idx%24576)/3072; } // 0 - 8
   int PS_Idx2Lyr(int idx) { return Reference(idx,3); } // 0 - 17
-  int PS_Idx2Sen(int idx) { return Reference(idx,4); } // 0 - 23
+  int PS_Idx2Sen(int idx) { return Reference(idx,4); } // 0 - 23 (SenLyr)
+  int PS_Idx2SenPkt(int idx) { return Reference(idx,5); } // 0 - 23 (SenPkt)
   int PS_SenRing(int sen); // 0 - 1
   inline int PS_Idx2Row(int idx) { return idx%4; } // 0 - 3
   inline int PS_Idx2Col(int idx) { return (idx%128)/4; } // 0 - 31
   inline int EM_Idx2Arm(int idx) { return idx<196?0:1; } // 0 - 1
   inline int PS_Idx2OctLCS(int idx) { return ((idx%128)/32)*4+idx%4; } // 0 - 15
-  int PS_Idx2Oct(int idx) { return PS_Idx2Sen(idx)*16+PS_Idx2OctLCS();  } // 0 - 383
+  int PS_Idx2Oct(int idx) { return PS_Idx2Sen(idx)*16+PS_Idx2OctLCS(idx);  } // 0 - 383
   //=================
 
   //================
@@ -75,6 +76,7 @@ class mxGeometry {
   int fLastIdx;
   int fLyrIdx;
   int fSenIdx;
+  int fSenPktIdx;
   float fX;
   float fY;
   float fZ;

@@ -19,6 +19,7 @@ class mxCalibMaster {
   mxCalibBaseSiW* GetLMPV() {return fLMPV;}  // Landau MPV
   mxCalibBaseSiW* GetLSgm() {return fLSgm;}  // Landau Sigma
   mxCalibBaseSiW* GetLHft() {return fLHft;}  // Hi2Lo Factor
+  mxCalibBaseSiW* GetPari() {return fPari;}  // Parity Mask
   mxCalibStageSiW* GetSMPV() {return fSMPV;} // Landau MPV packed
 
   mxCalibBasePbWO4* GetTau() {return fTau;}  // Tau shift
@@ -36,6 +37,7 @@ class mxCalibMaster {
   mxCalibBaseSiW *fLMPV;
   mxCalibBaseSiW *fLSgm;
   mxCalibBaseSiW *fLHft;
+  mxCalibBaseSiW *fPari;
   mxCalibStageSiW *fSMPV;
   mxCalibBasePbWO4 *fTau;
   mxCalibBasePbWO4 *fBet;

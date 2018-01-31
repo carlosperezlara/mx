@@ -201,6 +201,7 @@ float mxGeometry::Reference(int k, int r) {
   if(r==2) return fZ;
   if(r==3) return fLyrIdx;
   if(r==4) return fSenIdx;
+  if(r==5) return fSenPktIdx;
   return -1;
 }
 //========
@@ -320,6 +321,7 @@ void mxGeometry::UpdateSiW(int key) {
   fLyrIdx = arm*9+lyr;
   fLastIdx = k;
   fSenIdx = senlyr;
+  fSenPktIdx = sen;
 }
 //========
 float mxGeometry::RZ(int lyr) {
