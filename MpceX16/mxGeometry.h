@@ -23,6 +23,8 @@ class mxGeometry {
   inline int EM_Idx2Arm(int idx) { return idx<196?0:1; } // 0 - 1
   inline int PS_Idx2OctLCS(int idx) { return ((idx%128)/32)*4+idx%4; } // 0 - 15
   int PS_Idx2Oct(int idx) { return PS_Idx2Sen(idx)*16+PS_Idx2OctLCS(idx);  } // 0 - 383
+  float PS_RefX(int arm, int lyr, int senlyr) { return fSi_RX[ arm*48 + (lyr%2)*24 + senlyr ]; } //
+  float PS_RefY(int arm, int lyr, int senlyr) { return fSi_RY[ arm*48 + (lyr%2)*24 + senlyr ]; } //
   //=================
 
   //================
